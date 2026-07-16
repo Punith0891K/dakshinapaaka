@@ -1,93 +1,70 @@
+import Image from "next/image";
+import Button from "@/components/ui/Button";
+import Container from "@/components/ui/Container";
+
 export default function Hero() {
   return (
-    <section
-      className="
-      relative
-      flex
-      h-screen
-      items-center
-      justify-center
-      overflow-hidden
-      "
-    >
-      {/* Background */}
+    <section className="min-h-screen bg-[#FAF7F2] pt-32 pb-20">
 
-      <div
-        className="
-        absolute
-        inset-0
-        bg-[url('/images/hero/restaurant.jpg')]
-        bg-cover
-        bg-center
-        "
-      />
+      <Container>
 
-      {/* Overlay */}
+        <div className="mx-auto max-w-5xl text-center">
 
-      <div className="absolute inset-0 bg-black/65" />
+          {/* Restaurant Image */}
 
-      {/* Content */}
+          <div className="relative overflow-hidden rounded-[28px] shadow-2xl">
 
-      <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
+            <Image
+              src="/images/hero/restaurant.jpg"
+              alt="Dakshinapaaka Restaurant"
+              width={1800}
+              height={1200}
+              priority
+              className="h-[260px] w-full object-cover md:h-[500px]"
+            />
 
-        <p className="mb-6 uppercase tracking-[10px] text-green-400">
+            <div className="absolute inset-0 bg-black/40" />
 
-          Authentic South Indian Cuisine
+          </div>
 
-        </p>
+          {/* Content */}
 
-        <h1 className="mb-8 text-6xl font-bold leading-tight text-white md:text-8xl">
+          <div className="mt-12">
 
-          Experience the Taste of
-          <br />
-          Tradition
+            <p className="mb-4 text-sm font-semibold uppercase tracking-[6px] text-[#2F6B3D]">
+              Authentic South Indian Cuisine
+            </p>
 
-        </h1>
+            <h1 className="mx-auto max-w-4xl text-5xl font-bold leading-tight text-[#181818] md:text-7xl">
 
-        <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-300">
+              Experience the Taste
+              <br />
+              of Tradition
 
-          Every meal is prepared using traditional recipes,
-          fresh ingredients, and the rich culinary heritage
-          of South India.
+            </h1>
 
-        </p>
+            <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-[#666]">
 
-        <div className="flex justify-center gap-5">
+              Traditional recipes crafted with fresh
+              ingredients and warm hospitality in the
+              heart of Mysuru.
 
-          <button
-            className="
-            rounded-full
-            bg-green-700
-            px-8
-            py-4
-            font-semibold
-            text-white
-            transition
-            hover:bg-green-800
-            "
-          >
-            Explore Menu
-          </button>
+            </p>
 
-          <button
-            className="
-            rounded-full
-            border
-            border-white
-            px-8
-            py-4
-            text-white
-            transition
-            hover:bg-white
-            hover:text-black
-            "
-          >
-            Contact Us
-          </button>
+            <div className="mt-10 flex justify-center">
+
+              <Button>
+                Explore Our Menu
+              </Button>
+
+            </div>
+
+          </div>
 
         </div>
 
-      </div>
+      </Container>
+
     </section>
   );
 }
