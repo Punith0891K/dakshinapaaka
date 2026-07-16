@@ -2,41 +2,82 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
+
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
+    <header
+  className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+    scrolled
+      ? "bg-white/70 backdrop-blur-xl shadow-lg"
+      : "bg-transparent"
+  }`}
+>
 
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[1600px] px-6">
 
-        <nav className="flex h-24 items-center justify-between px-6">
+        <nav
+  className={`flex items-center justify-between px-6 transition-all duration-300 ${
+    scrolled ? "h-[72px]" : "h-24"
+  }`}
+>
 
           {/* Logo */}
 
-          <Image
-            src="/images/logo/logo.png"
-            alt="Dakshinapaaka"
-            width={90}
-            height={90}
-            priority
-          />
+<Link href="/" className="shrink-0">
+  <Image
+    src="/images/logo/logo.png"
+    alt="Dakshinapaaka"
+    width={scrolled ? 70 : 90}
+    height={scrolled ? 70 : 90}
+    priority
+    className="transition-all duration-300"
+  />
+</Link>
 
           {/* Desktop Menu */}
 
-          <div className="hidden lg:flex gap-10">
+      <div className="hidden lg:flex items-center gap-8">
 
-            <Link href="/">Home</Link>
+  {[
+    { name: "Home", href: "#" },
+    { name: "About", href: "#about" },
+    { name: "Menu", href: "#menu" },
+    { name: "Gallery", href: "#gallery" },
+    { name: "Contact", href: "#contact" },
+  ].map((item) => (
 
-            <Link href="#about">About</Link>
+    <Link
+      key={item.name}
+      href={item.href}
+      className={`group relative pb-1 font-medium transition-all duration-300 ${
+        scrolled
+          ? "text-gray-800 hover:text-[#2F6B3D]"
+          : "text-white hover:text-[#C8A44D]"
+      }`}
+    >
+      {item.name}
 
-            <Link href="#menu">Menu</Link>
+      <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#C8A44D] transition-all duration-300 group-hover:w-full"></span>
 
-            <Link href="#gallery">Gallery</Link>
+    </Link>
 
-            <Link href="#contact">Contact</Link>
+  ))}
 
-          </div>
-
+</div>
           {/* Call */}
 
           <a
