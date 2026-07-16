@@ -1,61 +1,51 @@
 import Image from "next/image";
-import Button from "@/components/ui/Button";
-import Container from "@/components/ui/Container";
 
 export default function Hero() {
   return (
-    <section className="min-h-screen bg-[#FAF7F2] pt-32 pb-20">
+    <section className="relative min-h-screen w-full">
 
-      <Container>
+      {/* Background Image */}
 
-        <div className="mx-auto max-w-5xl text-center">
+      <Image
+        src="/images/hero/hero-main.jpg"
+        alt="Dakshinapaaka Restaurant"
+        fill
+        priority
+        className="object-cover object-[70%_center]"
+      />
 
-          {/* Restaurant Image */}
+      {/* Gradient Overlay */}
 
-          <div className="relative overflow-hidden rounded-[28px] shadow-2xl">
+      <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/35 to-transparent" />
 
-            <Image
-              src="/images/hero/restaurant.jpg"
-              alt="Dakshinapaaka Restaurant"
-              width={1800}
-              height={1200}
-              priority
-              className="h-[260px] w-full object-cover md:h-[500px]"
-            />
+      {/* Content */}
 
-            <div className="absolute inset-0 bg-black/40" />
+      <div className="relative z-10 flex min-h-screen items-center">
 
-          </div>
+        <div className="mx-auto w-full max-w-7xl px-6 lg:px-10">
 
-          {/* Content */}
+          <div className="max-w-2xl">
 
-          <div className="mt-12">
-
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[6px] text-[#2F6B3D]">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-[6px] text-[#43B05C]">
               Authentic South Indian Cuisine
             </p>
 
-            <h1 className="mx-auto max-w-4xl text-5xl font-bold leading-tight text-[#181818] md:text-7xl">
-
+            <h1 className="font-serif text-5xl font-bold leading-tight text-white md:text-6xl lg:text-7xl">
               Experience the Taste
               <br />
               of Tradition
-
             </h1>
 
-            <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-[#666]">
-
-              Traditional recipes crafted with fresh
-              ingredients and warm hospitality in the
-              heart of Mysuru.
-
+            <p className="mt-8 max-w-xl text-lg leading-8 text-gray-200">
+              Traditional South Indian cuisine prepared with fresh
+              ingredients and warm hospitality in the heart of Mysuru.
             </p>
 
-            <div className="mt-10 flex justify-center">
+            <div className="mt-10">
 
-              <Button>
-                Explore Our Menu
-              </Button>
+              <button className="rounded-full bg-[#2F6B3D] px-8 py-4 font-semibold text-white transition hover:scale-105 hover:bg-[#255632]">
+                Explore Our Menu →
+              </button>
 
             </div>
 
@@ -63,7 +53,13 @@ export default function Hero() {
 
         </div>
 
-      </Container>
+      </div>
+
+      {/* Scroll Indicator */}
+
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white animate-bounce">
+        ↓
+      </div>
 
     </section>
   );
