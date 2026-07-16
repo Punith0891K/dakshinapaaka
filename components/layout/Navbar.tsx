@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu } from "lucide-react";
+import MobileMenu from "@/components/ui/MobileMenu";
 
 export default function Navbar() {
 
@@ -99,22 +99,9 @@ export default function Navbar() {
 
           {/* Mobile */}
 
-         <button
-  className="
-    lg:hidden
-    p-2
-    rounded-xl
-    hover:bg-white/10
-    transition
-  "
->
-
-            <Menu
-  size={28}
-  className={scrolled ? "text-black" : "text-white"}
-/>
-
-          </button>
+ <div className="lg:hidden">
+ <MobileMenu scrolled={scrolled} />
+</div>
 
         </nav>
 
