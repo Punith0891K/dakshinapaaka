@@ -5,13 +5,18 @@ export default function Hero() {
     <section className="relative min-h-screen overflow-hidden">
 
       {/* Background */}
-      <Image
-        src="/images/hero/hero_main.jpg"
-        alt="Dakshinapaaka"
-        fill
-        priority
-        className="object-cover object-[72%_center] lg:object-center"
-      />
+  <Image
+  src="/images/hero/hero_main.jpg"
+  alt="Dakshinapaaka"
+  fill
+  priority
+ className="
+object-cover
+object-[58%_center]
+sm:object-[65%_center]
+lg:object-[85%_center]
+"
+/>
 
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/20" />
