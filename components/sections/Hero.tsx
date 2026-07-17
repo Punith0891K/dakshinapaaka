@@ -3,22 +3,30 @@ import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[100svh] overflow-hidden bg-[#080A08]">
+    <section
+  className="
+    relative
+    min-h-[125svh]
+    overflow-hidden
+    bg-[#080A08]
+    sm:min-h-[100svh]
+  "
+>
 
       {/* Background Artwork */}
-      <Image
-        src="/images/hero/hero_main.jpg"
-        alt="Dakshinapaaka"
-        fill
-        priority
-        sizes="100vw"
-        className="
-          object-cover
-          object-[52%_center]
-          sm:object-[58%_center]
-          lg:object-center
-        "
-      />
+ <Image
+  src="/images/hero/hero_main.jpg"
+  alt="Dakshinapaaka"
+  fill
+  priority
+  sizes="100vw"
+  className="
+    object-cover
+    object-[50%_-120px]
+    sm:object-[58%_center]
+    lg:object-center
+  "
+/>
 
       {/* Overall cinematic tone */}
       <div className="absolute inset-0 bg-black/20" />
@@ -58,15 +66,22 @@ export default function Hero() {
       <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent" />
 
       {/* Content */}
-      <div
-        className="
-          relative z-10
-          flex min-h-[100svh]
-          items-center
-          pt-28 pb-20
-          lg:pt-24
-        "
-      >
+<div
+  className="
+    relative z-10
+    flex
+    min-h-[125svh]
+    items-start
+    pb-20
+    pt-[62svh]
+
+    sm:min-h-[100svh]
+    sm:items-center
+    sm:pt-28
+
+    lg:pt-24
+  "
+>
         <div
           className="
             mx-auto
@@ -99,28 +114,28 @@ export default function Hero() {
             </div>
 
             {/* Heading */}
-            <h1
-              className="
-                font-serif
-                text-[48px]
-                font-semibold
-                leading-[0.95]
-                tracking-[-0.025em]
-                text-white
-                sm:text-[58px]
-                lg:text-[64px]
-                xl:text-[68px]
-              "
-            >
-              Experience
-              <span className="block">
-                the Taste of
-              </span>
+ <h1
+  className="
+    font-serif
+    text-[44px]
+    font-semibold
+    leading-[0.95]
+    tracking-[-0.025em]
+    text-white
+    sm:text-[58px]
+    lg:text-[64px]
+    xl:text-[68px]
+  "
+>
+  Experience
+  <span className="block">
+    the Taste of
+  </span>
 
-              <span className="block italic text-[#E4C15D]">
-                Tradition
-              </span>
-            </h1>
+  <span className="block italic text-[#E4C15D]">
+    Tradition
+  </span>
+</h1>
 
             {/* Ornament */}
             <div className="mt-6 flex items-center gap-3">
