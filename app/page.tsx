@@ -1,7 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
-// import SignatureDishes from "@/components/sections/SignatureDishes";
+import SignatureDishes from "@/components/sections/SignatureDishes";
 // import WhyChooseUs from "@/components/sections/WhyChooseUs";
 // import Testimonials from "@/components/sections/Testimonials";
 // import Gallery from "@/components/sections/Gallery";
@@ -13,11 +13,11 @@ export default function Home() {
     <>
       <Navbar />
 
-      <main>
-        <Hero />
-        <About />
-      </main>
-
+<main>
+  <Hero />
+  <About />
+  <SignatureDishes />
+</main>
       {/* <Footer /> */}
     </>
   );

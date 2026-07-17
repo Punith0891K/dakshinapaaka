@@ -1,111 +1,210 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Hero() {
   return (
-   <section className="relative min-h-screen overflow-hidden">
+    <section className="relative min-h-[100svh] overflow-hidden bg-[#080A08]">
 
-      {/* Background */}
-  <Image
-  src="/images/hero/hero_main.jpg"
-  alt="Dakshinapaaka"
-  fill
-  priority
-className="
-object-cover
-object-[52%_center]
-sm:object-[62%_center]
-lg:object-[85%_center]
-"
-/>
+      {/* Background Artwork */}
+      <Image
+        src="/images/hero/hero_main.jpg"
+        alt="Dakshinapaaka"
+        fill
+        priority
+        sizes="100vw"
+        className="
+          object-cover
+          object-[52%_center]
+          sm:object-[58%_center]
+          lg:object-center
+        "
+      />
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/35 lg:bg-black/10" />
+      {/* Overall cinematic tone */}
+      <div className="absolute inset-0 bg-black/20" />
 
-      {/* Left Gradient */}
-     <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-transparent lg:from-black/70 lg:via-black/25" />
-      {/* Hero Content */}
-      <div className="relative z-10 flex min-h-screen items-center pt-32 pb-14 lg:pt-0">  
+      {/* Dedicated left content gradient */}
+      <div
+        className="
+          absolute inset-0
+          bg-gradient-to-r
+          from-black/95
+          via-black/65
+          to-transparent
+          lg:from-black/90
+          lg:via-black/45
+          lg:to-transparent
+        "
+      />
 
-        <div className="mx-auto w-full max-w-7xl px-6 sm:px-8 lg:px-10">
+      {/* Extra local shadow behind desktop text only */}
+      <div
+        className="
+          pointer-events-none
+          absolute
+          left-0 top-0
+          hidden h-full w-[48%]
+          bg-gradient-to-r
+          from-black/45
+          to-transparent
+          lg:block
+        "
+      />
 
-          <div className="max-w-[340px] sm:max-w-md lg:max-w-xl lg:-ml-12">
+      {/* Navbar readability */}
+      <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/55 to-transparent" />
 
-            {/* Subtitle */}
-            <p className="
-             mb-4
-            uppercase
-            tracking-[3px]
-            sm:tracking-[5px]
-            lg:tracking-[8px]
-            text-[#43B05C]
-            text-[12px]
-            sm:text-sm
-            font-semibold
-">
-              Authentic South Indian Cuisine
-            </p>
+      {/* Bottom fade */}
+      <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent" />
+
+      {/* Content */}
+      <div
+        className="
+          relative z-10
+          flex min-h-[100svh]
+          items-center
+          pt-28 pb-20
+          lg:pt-24
+        "
+      >
+        <div
+          className="
+            mx-auto
+            w-full
+            max-w-[1500px]
+            px-6
+            sm:px-10
+            lg:px-16
+            xl:px-20
+          "
+        >
+          <div className="max-w-[350px] sm:max-w-[480px] lg:max-w-[540px]">
+
+            {/* Eyebrow */}
+            <div className="mb-5 flex items-center gap-4">
+              <span className="h-px w-8 bg-[#C8A44D] lg:w-12" />
+
+              <p
+                className="
+                  text-[10px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.3em]
+                  text-[#62B875]
+                  sm:text-xs
+                "
+              >
+                Authentic South Indian Cuisine
+              </p>
+            </div>
 
             {/* Heading */}
-            <h1 className="
-font-serif
-text-[54px]
-leading-[0.95]
-sm:text-6xl
-lg:text-7xl
-font-bold
-text-white
-">
-              Experience the Taste
-              <br />
-              of Tradition
+            <h1
+              className="
+                font-serif
+                text-[48px]
+                font-semibold
+                leading-[0.95]
+                tracking-[-0.025em]
+                text-white
+                sm:text-[58px]
+                lg:text-[64px]
+                xl:text-[68px]
+              "
+            >
+              Experience
+              <span className="block">
+                the Taste of
+              </span>
+
+              <span className="block italic text-[#E4C15D]">
+                Tradition
+              </span>
             </h1>
 
+            {/* Ornament */}
+            <div className="mt-6 flex items-center gap-3">
+              <span className="h-px w-16 bg-[#C8A44D]" />
+              <span className="text-[10px] text-[#C8A44D]">✦</span>
+              <span className="h-px w-6 bg-[#C8A44D]/40" />
+            </div>
+
             {/* Description */}
-            <p className="
-mt-6
-text-base
-leading-8
-sm:text-lg
-lg:text-xl
-text-gray-200
-max-w-xs
-sm:max-w-md
-">
-              Traditional South Indian cuisine prepared with fresh ingredients
-              and warm hospitality in the heart of Mysuru.
+            <p
+              className="
+                mt-6
+                max-w-[340px]
+                text-[15px]
+                leading-7
+                text-white/75
+                sm:max-w-[430px]
+                sm:text-base
+                sm:leading-8
+              "
+            >
+              Discover the soul of South India through authentic recipes,
+              fresh ingredients and warm hospitality in the heart of Mysuru.
             </p>
 
             {/* CTA */}
-            <button
-             className="
-mt-10
-rounded-full
-bg-[#2F6B3D]
-px-8
-py-4
-text-base
-lg:px-9
-lg:text-lg
-font-semibold
-text-white
-transition-all
-duration-300
-hover:scale-105
-hover:bg-[#255632]
-"
-            >
-              Explore Our Menu →
-            </button>
+            <div className="mt-8">
+              <Link
+                href="#menu"
+                className="
+                  group
+                  inline-flex
+                  items-center
+                  gap-5
+                  rounded-full
+                  border
+                  border-[#C8A44D]/40
+                  bg-[#276B3A]
+                  px-7
+                  py-4
+                  text-sm
+                  font-semibold
+                  text-white
+                  shadow-[0_14px_35px_rgba(0,0,0,0.3)]
+                  transition-all
+                  duration-300
+                  hover:-translate-y-1
+                  hover:bg-[#215C32]
+                "
+              >
+                Explore Our Menu
+
+                <span className="transition-transform duration-300 group-hover:translate-x-1">
+                  →
+                </span>
+              </Link>
+            </div>
 
           </div>
-
         </div>
-
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 animate-bounce text-3xl text-white lg:block">
-        ↓
+      {/* Desktop Scroll Indicator */}
+      <div
+        className="
+          absolute
+          bottom-7
+          left-1/2
+          z-20
+          hidden
+          -translate-x-1/2
+          flex-col
+          items-center
+          gap-2
+          lg:flex
+        "
+      >
+        <span className="text-[8px] uppercase tracking-[0.4em] text-white/50">
+          Discover
+        </span>
+
+        <div className="flex h-9 w-5 justify-center rounded-full border border-white/25 pt-2">
+          <span className="h-1 w-1 animate-bounce rounded-full bg-[#C8A44D]" />
+        </div>
       </div>
 
     </section>
