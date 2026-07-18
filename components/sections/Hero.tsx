@@ -3,47 +3,102 @@ import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section
-  className="
-    relative
-    min-h-[125svh]
-    overflow-hidden
-    bg-[#080A08]
-    sm:min-h-[100svh]
-  "
+<section
+className="
+relative
+min-h-[115svh]
+lg:min-h-screen
+overflow-hidden
+bg-[#080A08]
+"
 >
 
       {/* Background Artwork */}
- <Image
-  src="/images/hero/hero_main.jpg"
-  alt="Dakshinapaaka"
+{/* Desktop Hero */}
+<Image
+  src="/images/hero/hero-desktop.png"
+  alt="Dakshinapaaka Hero"
   fill
   priority
+  quality={100}
+  sizes="(min-width:1024px) 100vw"
+  className="
+    hidden
+    lg:block
+    object-cover
+    object-center
+    select-none
+    pointer-events-none
+  "
+/>
+
+{/* Mobile Hero */}
+<Image
+  src="/images/hero/hero-mobile.png"
+  alt="Dakshinapaaka Hero"
+  fill
+  priority
+  quality={100}
   sizes="100vw"
   className="
+    block
+    lg:hidden
     object-cover
-    object-[50%_-120px]
-    sm:object-[58%_center]
-    lg:object-center
+    object-top
+    select-none
+    pointer-events-none
   "
 />
 
       {/* Overall cinematic tone */}
-      <div className="absolute inset-0 bg-black/20" />
+      <div
+  className="
+    absolute
+    inset-0
+    bg-black/10
+    lg:bg-black/20
+  "
+/>
 
       {/* Dedicated left content gradient */}
-      <div
-        className="
-          absolute inset-0
-          bg-gradient-to-r
-          from-black/95
-          via-black/65
-          to-transparent
-          lg:from-black/90
-          lg:via-black/45
-          lg:to-transparent
-        "
-      />
+<>
+
+{/* Mobile Bottom Gradient */}
+<div
+  className="
+    absolute
+    inset-x-0
+    bottom-0
+    h-[72%]
+
+    bg-gradient-to-t
+    from-[#020202]
+    via-[#020202]
+    via-25%
+    via-[#050505]/95
+    via-55%
+    to-transparent
+
+    lg:hidden
+  "
+/>
+
+{/* Desktop Gradient */}
+<div
+  className="
+    hidden
+    lg:block
+
+    absolute
+    inset-0
+
+    bg-gradient-to-r
+    from-black/60
+    via-black/20
+    to-transparent
+  "
+/>
+</>
 
       {/* Extra local shadow behind desktop text only */}
       <div
@@ -68,19 +123,21 @@ export default function Hero() {
       {/* Content */}
 <div
   className="
-    relative z-10
+    relative
+    z-10
     flex
-    min-h-[125svh]
-    items-start
+    flex-col
+    justify-end
+
+    min-h-[115svh]
+
     pb-20
-    pt-[62svh]
+    pt-[68svh]
 
-    sm:min-h-[100svh]
-    sm:items-center
-    sm:pt-28
-
+    lg:min-h-screen
+    lg:justify-center
     lg:pt-24
-  "
+"
 >
         <div
           className="
@@ -115,17 +172,17 @@ export default function Hero() {
 
             {/* Heading */}
  <h1
-  className="
-    font-serif
-    text-[44px]
-    font-semibold
-    leading-[0.95]
-    tracking-[-0.025em]
-    text-white
-    sm:text-[58px]
-    lg:text-[64px]
-    xl:text-[68px]
-  "
+className="
+  font-serif
+  text-[44px]
+  font-semibold
+  leading-[0.95]
+  tracking-[-0.025em]
+  text-white
+  md:text-[58px]
+  lg:text-[64px]
+  xl:text-[68px]
+"
 >
   Experience
   <span className="block">
