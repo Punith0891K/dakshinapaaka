@@ -44,13 +44,25 @@ export default function MobileMenu({
         type="button"
         aria-label="Open navigation menu"
         onClick={() => setOpen(true)}
-        className={`flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-300 ${
+        className={`flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           scrolled
             ? "border-[#C8A44D]/40 bg-[#174D32] text-[#E6C66A] shadow-lg"
             : "border-white/30 bg-black/20 text-white backdrop-blur-md"
         }`}
       >
-        <Menu size={24} strokeWidth={1.8} />
+        <motion.div
+  animate={{
+    rotate: open ? 90 : 0,
+    scale: open ? 0 : 1,
+    opacity: open ? 0 : 1,
+  }}
+  transition={{
+    duration: 0.35,
+    ease: [0.22, 1, 0.36, 1],
+  }}
+>
+  <Menu size={24} strokeWidth={1.8} />
+</motion.div>
       </button>
 
       {/* Background Overlay */}
@@ -70,10 +82,10 @@ export default function MobileMenu({
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
-      transition={{
-  type: "tween",
-  duration: 0.28,
-  ease: [0.25, 1, 0.5, 1],
+transition={{
+  type: "spring",
+  stiffness: 260,
+  damping: 28,
 }}
       className="fixed right-0 top-0 z-[999] flex h-dvh w-[90%] max-w-[410px] flex-col overflow-hidden transform-gpu will-change-transform rounded-bl-[24px] border-l border-[#C8A44D]/20 bg-[#FBF6EC] shadow-[-12px_0_35px_rgba(0,0,0,0.16)]"
     >
@@ -111,9 +123,26 @@ export default function MobileMenu({
             type="button"
             aria-label="Close navigation menu"
             onClick={() => setOpen(false)}
-className="flex h-12 w-12 items-center justify-center rounded-full border border-[#C8A44D] bg-[#153F2B] text-[#E2B955] shadow-[0_8px_25px_rgba(21,63,43,0.25)] transition-all duration-500 hover:rotate-90 active:scale-95"
+className="flex h-12 w-12 items-center justify-center rounded-full border border-[#C8A44D] bg-[#153F2B] text-[#E2B955] shadow-[0_8px_25px_rgba(21,63,43,0.25)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:rotate-45 active:scale-95"
           >
-            <X size={24} strokeWidth={1.6} />
+            <motion.div
+  initial={{
+    rotate: -90,
+    scale: 0,
+    opacity: 0,
+  }}
+  animate={{
+    rotate: 0,
+    scale: 1,
+    opacity: 1,
+  }}
+  transition={{
+    duration: 0.35,
+    ease: [0.22, 1, 0.36, 1],
+  }}
+>
+  <X size={24} strokeWidth={1.6} />
+</motion.div>
           </button>
         </div>
 
