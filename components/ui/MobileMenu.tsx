@@ -54,14 +54,14 @@ export default function MobileMenu({
       </button>
 
       {/* Background Overlay */}
-      <div
-        onClick={() => setOpen(false)}
-        className={`fixed inset-0 z-[998] bg-black/65 backdrop-blur-md transition-all duration-500 ${
-          open
-            ? "pointer-events-auto opacity-100"
-            : "pointer-events-none opacity-0"
-        }`}
-      />
+    <div
+  onClick={() => setOpen(false)}
+  className={`fixed inset-0 z-[998] bg-black/65 backdrop-blur-sm transition-opacity duration-200 ${
+    open
+      ? "pointer-events-auto opacity-100"
+      : "pointer-events-none opacity-0"
+  }`}
+/>
 
       {/* Premium Mobile Menu */}
  <AnimatePresence>
@@ -71,10 +71,11 @@ export default function MobileMenu({
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{
-        duration: 0.45,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className="fixed right-0 top-0 z-[999] flex h-dvh w-[90%] max-w-[410px] flex-col overflow-hidden rounded-bl-[36px] border-l border-[#C8A44D]/30 bg-[#FBF6EC] shadow-[-25px_0_80px_rgba(0,0,0,0.28)]"
+  type: "tween",
+  duration: 0.28,
+  ease: [0.25, 1, 0.5, 1],
+}}
+      className="fixed right-0 top-0 z-[999] flex h-dvh w-[90%] max-w-[410px] flex-col overflow-hidden transform-gpu will-change-transform rounded-bl-[24px] border-l border-[#C8A44D]/20 bg-[#FBF6EC] shadow-[-12px_0_35px_rgba(0,0,0,0.16)]"
     >
         {/* Subtle Decorative Background */}
         <div
@@ -135,15 +136,16 @@ className="flex h-12 w-12 items-center justify-center rounded-full border border
               const Icon = item.icon;
 
           return (
-  <motion.div
-    key={item.name}
-    initial={{ opacity: 0, x: 40 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{
-      delay: index * 0.08,
-      duration: 0.4,
-    }}
-  >
+<motion.div
+  initial={{ opacity: 0, x: 16 }}
+  animate={{ opacity: 1, x: 0 }}
+  exit={{ opacity: 0, x: 16 }}
+  transition={{
+    delay: index * 0.025,
+    duration: 0.18,
+    ease: "easeOut",
+  }}
+>
     <Link
       href={item.href}
       onClick={() => setOpen(false)}
