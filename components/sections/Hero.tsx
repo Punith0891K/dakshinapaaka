@@ -1,6 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-
+import { motion } from "framer-motion";
 export default function Hero() {
   return (
 <section
@@ -15,40 +17,46 @@ bg-[#080A08]
 
       {/* Background Artwork */}
 {/* Desktop Hero */}
-<Image
-  src="/images/hero/hero-desktop.png"
-  alt="Dakshinapaaka Hero"
-  fill
-  priority
-  quality={100}
-  sizes="(min-width:1024px) 100vw"
-  className="
-    hidden
-    lg:block
-    object-cover
-    object-center
-    select-none
-    pointer-events-none
-  "
-/>
+<motion.div
+  initial={{ scale: 1.08, opacity: 0 }}
+  animate={{ scale: 1, opacity: 1 }}
+  transition={{
+    duration: 2,
+    ease: "easeOut",
+  }}
+  className="absolute inset-0 hidden lg:block"
+>
+  <Image
+    src="/images/hero/hero-desktop.png"
+    alt="Dakshinapaaka Hero"
+    fill
+    priority
+    quality={100}
+    sizes="(min-width:1024px) 100vw"
+    className="object-cover object-center select-none pointer-events-none"
+  />
+</motion.div>
 
 {/* Mobile Hero */}
-<Image
-  src="/images/hero/hero-mobile.png"
-  alt="Dakshinapaaka Hero"
-  fill
-  priority
-  quality={100}
-  sizes="100vw"
-  className="
-    block
-    lg:hidden
-    object-cover
-    object-top
-    select-none
-    pointer-events-none
-  "
-/>
+<motion.div
+  initial={{ scale: 1.08, opacity: 0 }}
+  animate={{ scale: 1, opacity: 1 }}
+  transition={{
+    duration: 2,
+    ease: "easeOut",
+  }}
+  className="absolute inset-0 lg:hidden"
+>
+  <Image
+    src="/images/hero/hero-mobile.png"
+    alt="Dakshinapaaka Hero"
+    fill
+    priority
+    quality={100}
+    sizes="100vw"
+    className="object-cover object-top select-none pointer-events-none"
+  />
+</motion.div>
 
       {/* Overall cinematic tone */}
       <div
@@ -153,36 +161,35 @@ bg-[#080A08]
           <div className="max-w-[350px] sm:max-w-[480px] lg:max-w-[540px]">
 
             {/* Eyebrow */}
-            <div className="mb-5 flex items-center gap-4">
-              <span className="h-px w-8 bg-[#C8A44D] lg:w-12" />
+     <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{
+    duration: 0.7,
+    delay: 0.1,
+    ease: "easeOut",
+  }}
+  className="mb-5 flex items-center gap-4"
+>
+  <span className="h-px w-8 bg-[#C8A44D] lg:w-12" />
 
-              <p
-                className="
-                  text-[10px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.3em]
-                  text-[#62B875]
-                  sm:text-xs
-                "
-              >
-                Authentic South Indian Cuisine
-              </p>
-            </div>
+  <p
+   className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#62B875] sm:text-xs"
+  >
+    Authentic South Indian Cuisine
+  </p>
+</motion.div>
 
             {/* Heading */}
- <h1
-className="
-  font-serif
-  text-[44px]
-  font-semibold
-  leading-[0.95]
-  tracking-[-0.025em]
-  text-white
-  md:text-[58px]
-  lg:text-[64px]
-  xl:text-[68px]
-"
+<motion.h1
+  initial={{ opacity: 0, y: 40 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{
+    duration: 0.8,
+    delay: 0.3,
+    ease: "easeOut",
+  }}
+className="font-serif text-[44px] font-semibold leading-[0.95] tracking-[-0.025em] text-white md:text-[58px] lg:text-[64px] xl:text-[68px]"
 >
   Experience
   <span className="block">
@@ -192,68 +199,145 @@ className="
   <span className="block italic text-[#E4C15D]">
     Tradition
   </span>
-</h1>
+</motion.h1>
 
             {/* Ornament */}
-            <div className="mt-6 flex items-center gap-3">
-              <span className="h-px w-16 bg-[#C8A44D]" />
-              <span className="text-[10px] text-[#C8A44D]">✦</span>
-              <span className="h-px w-6 bg-[#C8A44D]/40" />
-            </div>
+        <motion.div
+  initial={{ opacity: 0, y: 12 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{
+    duration: 0.7,
+    delay: 0.45,
+    ease: "easeOut",
+  }}
+  className="mt-6 flex items-center gap-3"
+>
+  <motion.span
+    initial={{ scaleX: 0 }}
+    animate={{ scaleX: 1 }}
+    transition={{
+      duration: 0.5,
+      delay: 0.45,
+      ease: "easeOut",
+    }}
+    className="h-px w-16 origin-left bg-[#C8A44D]"
+  />
+
+  <motion.span
+    initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
+    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+    transition={{
+      duration: 0.5,
+      delay: 0.6,
+      ease: "easeOut",
+    }}
+    className="text-[10px] text-[#C8A44D]"
+  >
+    ✦
+  </motion.span>
+
+  <motion.span
+    initial={{ scaleX: 0 }}
+    animate={{ scaleX: 1 }}
+    transition={{
+      duration: 0.5,
+      delay: 0.75,
+      ease: "easeOut",
+    }}
+    className="h-px w-6 origin-left bg-[#C8A44D]/40"
+  />
+</motion.div>
 
             {/* Description */}
-            <p
-              className="
-                mt-6
-                max-w-[340px]
-                text-[15px]
-                leading-7
-                text-white/75
-                sm:max-w-[430px]
-                sm:text-base
-                sm:leading-8
-              "
-            >
-              Discover the soul of South India through authentic recipes,
-              fresh ingredients and warm hospitality in the heart of Mysuru.
-            </p>
+    <motion.p
+  initial={{ opacity: 0, y: 30 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{
+    duration: 0.8,
+    delay: 0.5,
+    ease: "easeOut",
+  }}
+  className="
+    mt-6
+    max-w-[340px]
+    text-[15px]
+    leading-7
+    text-white/75
+    sm:max-w-[430px]
+    sm:text-base
+    sm:leading-8
+  "
+>
+  Discover the soul of South India through authentic recipes,
+  fresh ingredients and warm hospitality in the heart of Mysuru.
+</motion.p>
 
             {/* CTA */}
-            <div className="mt-8">
+           <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{
+    duration: 0.8,
+    delay: 0.7,
+    ease: "easeOut",
+  }}
+  className="mt-8"
+>
               <Link
                 href="#menu"
-                className="
-                  group
-                  inline-flex
-                  items-center
-                  gap-5
-                  rounded-full
-                  border
-                  border-[#C8A44D]/40
-                  bg-[#276B3A]
-                  px-7
-                  py-4
-                  text-sm
-                  font-semibold
-                  text-white
-                  shadow-[0_14px_35px_rgba(0,0,0,0.3)]
-                  transition-all
-                  duration-300
-                  hover:-translate-y-1
-                  hover:bg-[#215C32]
-                "
+              className="
+relative
+overflow-hidden
+group
+inline-flex
+items-center
+gap-5
+rounded-full
+border
+border-[#C8A44D]/40
+bg-[#276B3A]
+px-7
+py-4
+text-sm
+font-semibold
+text-white
+shadow-[0_12px_30px_rgba(0,0,0,0.30)]
+transition-all
+duration-500
+hover:-translate-y-1.5
+hover:scale-[1.03]
+active:scale-[0.98]
+hover:bg-[#215C32]
+hover:shadow-[0_22px_55px_rgba(0,0,0,0.45)]
+"
               >
                 Explore Our Menu
 
                 <span className="transition-transform duration-300 group-hover:translate-x-1">
                   →
                 </span>
+                <span
+  className="
+    absolute
+    inset-0
+    -translate-x-full
+    skew-x-[-20deg]
+    bg-gradient-to-r
+    from-transparent
+    via-white/20
+    to-transparent
+    transition-transform
+    duration-700
+    group-hover:translate-x-[220%]
+  "
+/>
               </Link>
+              </motion.div>
             </div>
 
           </div>
         </div>
-      </div>
+      
 
       {/* Desktop Scroll Indicator */}
       <div

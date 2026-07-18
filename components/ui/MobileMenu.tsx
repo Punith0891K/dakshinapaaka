@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Menu,
   X,
@@ -63,11 +64,18 @@ export default function MobileMenu({
       />
 
       {/* Premium Mobile Menu */}
-      <div
-        className={`fixed right-0 top-0 z-[999] flex h-dvh w-[90%] max-w-[410px] flex-col overflow-hidden rounded-bl-[36px] border-l border-[#C8A44D]/30 bg-[#FBF6EC] shadow-[-25px_0_80px_rgba(0,0,0,0.28)] transition-transform duration-500 ease-out ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
+ <AnimatePresence>
+  {open && (
+    <motion.div
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{
+        duration: 0.45,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      className="fixed right-0 top-0 z-[999] flex h-dvh w-[90%] max-w-[410px] flex-col overflow-hidden rounded-bl-[36px] border-l border-[#C8A44D]/30 bg-[#FBF6EC] shadow-[-25px_0_80px_rgba(0,0,0,0.28)]"
+    >
         {/* Subtle Decorative Background */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
@@ -126,16 +134,19 @@ className="flex h-12 w-12 items-center justify-center rounded-full border border
             {menuItems.map((item, index) => {
               const Icon = item.icon;
 
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  style={{
-                    transitionDelay: open
-                      ? `${100 + index * 70}ms`
-                      : "0ms",
-                  }}
+          return (
+  <motion.div
+    key={item.name}
+    initial={{ opacity: 0, x: 40 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{
+      delay: index * 0.08,
+      duration: 0.4,
+    }}
+  >
+    <Link
+      href={item.href}
+      onClick={() => setOpen(false)}
                   className={`
                     group
                     flex items-center
@@ -143,11 +154,6 @@ className="flex h-12 w-12 items-center justify-center rounded-full border border
                     border-b border-[#C8A44D]/20
                     px-4 py-5
                     transition-all duration-500
-                    ${
-                      open
-                        ? "translate-x-0 opacity-100"
-                        : "translate-x-10 opacity-0"
-                    }
                   `}
                 >
                   {/* Icon */}
@@ -169,6 +175,7 @@ className="flex h-12 w-12 items-center justify-center rounded-full border border
                     ✦
                   </span>
                 </Link>
+            </motion.div>
               );
             })}
 
@@ -200,7 +207,9 @@ className="mt-8 flex items-center justify-center gap-3 rounded-full border borde
           </div>
         </div>
 
-      </div>
+     </motion.div>
+)}
+</AnimatePresence>
     </>
   );
 }

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import FadeIn from "@/components/ui/FadeIn";
 import {
   CookingPot,
   Leaf,
@@ -55,13 +56,14 @@ export default function About() {
 
       <div className="relative z-10 mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-12">
 
-        <div className="grid items-center gap-16 lg:grid-cols-[1fr_1.05fr] lg:gap-20">
+        <div className="grid items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
 
           {/* LEFT CONTENT */}
           <div>
 
-            {/* Small Heading */}
-            <div className="mb-6">
+          {/* Small Heading */}
+           <FadeIn>
+          <div className="mb-6">
               <p className="text-center text-xs font-semibold uppercase tracking-[4px] text-[#1F6138] lg:text-left lg:text-sm lg:tracking-[6px]">
                 About Dakshinapaaka
               </p>
@@ -73,47 +75,56 @@ export default function About() {
                 <span className="h-px w-10 bg-[#C8A44D]" />
               </div>
             </div>
+            </FadeIn>
 
             {/* Main Heading */}
+            <FadeIn delay={0.1}>
             <h2 className="text-center font-serif text-5xl font-bold leading-[1.05] text-[#181818] sm:text-6xl lg:text-left lg:text-[72px]">
               Crafted with
               <br />
               Tradition
             </h2>
+            </FadeIn>
 
             {/* Bottom ornament */}
-            <div className="mt-6 flex items-center justify-center gap-3 lg:justify-start">
+           <FadeIn delay={0.2}>
+  <div className="mt-6 flex items-center justify-center gap-3 lg:justify-start">
               <span className="h-px w-16 bg-[#C8A44D]/70" />
               <span className="text-lg text-[#C8A44D]">❈</span>
               <span className="h-px w-16 bg-[#C8A44D]/70" />
             </div>
+            </FadeIn>
 
             {/* Description */}
+            <FadeIn delay={0.3}>
             <p className="mx-auto mt-8 max-w-2xl text-center text-base leading-8 text-[#4B4B4B] sm:text-lg lg:mx-0 lg:text-left lg:leading-9">
               At Dakshinapaaka, every meal celebrates the rich culinary
               heritage of South India. Our chefs prepare each dish using
               authentic recipes, premium ingredients, and time-honoured
               cooking techniques to create an unforgettable dining experience.
             </p>
+            </FadeIn>
 
             {/* Feature Cards */}
-            <div className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-
-              {features.map((feature) => {
+            <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-2 xl:grid-cols-4">
+                {features.map((feature, index) => {
                 const Icon = feature.icon;
 
-                return (
-                  <div
-                    key={feature.title}
-                    className="group rounded-[22px] border border-[#C8A44D]/10 bg-white/70 px-3 py-6 text-center shadow-[0_12px_35px_rgba(74,55,30,0.08)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-[#C8A44D]/30 hover:shadow-[0_20px_45px_rgba(74,55,30,0.14)] sm:px-5"
-                  >
+ return (
+    <FadeIn
+      key={feature.title}
+      delay={0.4 + index * 0.1}
+    >
+      <div
+        className="group flex flex-col items-center rounded-[22px] border border-[#C8A44D]/10 bg-white/75 px-4 py-5 text-center shadow-[0_10px_28px_rgba(74,55,30,0.08)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-[#C8A44D]/30 hover:shadow-[0_18px_40px_rgba(74,55,30,0.14)]"
+      >
                     {/* Icon */}
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#174D2C] text-[#D5B15B] shadow-md transition-transform duration-500 group-hover:scale-110">
-                      <Icon size={24} strokeWidth={1.7} />
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#174D2C] text-[#D5B15B] shadow-md transition-transform duration-500 group-hover:scale-110">
+                      <Icon size={20} strokeWidth={1.8} />
                     </div>
 
                     {/* Card Title */}
-                    <h3 className="mt-5 font-serif text-lg font-semibold leading-tight text-[#24201C]">
+                    <h3 className="mt-4 font-serif text-base font-semibold leading-tight text-[#24201C]">
                       {feature.title}
                     </h3>
 
@@ -121,24 +132,28 @@ export default function About() {
                     <div className="mx-auto my-4 h-px w-8 bg-[#C8A44D]" />
 
                     {/* Description */}
-                    <p className="text-xs leading-5 text-gray-500 sm:text-sm">
+                    <p className="mx-auto max-w-[150px] text-[13px] leading-6 text-gray-500">
                       {feature.description}
                     </p>
-                  </div>
-                );
+                 </div>
+</FadeIn>
+);
               })}
 
             </div>
           </div>
+          
 
           {/* RIGHT IMAGE */}
-          <div className="relative mx-auto w-full max-w-[620px]">
+      
+<FadeIn delay={0.3}>
+  <div className="relative mx-auto w-full max-w-[680px]">
 
             {/* Gold decorative outline */}
             <div className="absolute -inset-3 rounded-[38px] border border-[#C8A44D]/30" />
 
             {/* Image */}
-            <div className="relative h-[420px] overflow-hidden rounded-[30px] shadow-[0_30px_80px_rgba(46,35,20,0.22)] sm:h-[520px] lg:h-[620px]">
+            <div className="relative h-[420px] overflow-hidden rounded-[30px] shadow-[0_30px_80px_rgba(46,35,20,0.22)] sm:h-[520px] lg:h-[690px]">
               <Image
                 src="/images/hero/interior.jpeg"
                 alt="Dakshinapaaka Restaurant Interior"
@@ -169,8 +184,11 @@ export default function About() {
             </div>
 
           </div>
+          </FadeIn>
         </div>
       </div>
+
+      
 
       {/* Bottom decorative strip */}
       <div className="absolute bottom-0 left-0 right-0 h-[5px] bg-gradient-to-r from-[#173D28] via-[#C8A44D] to-[#173D28]" />
