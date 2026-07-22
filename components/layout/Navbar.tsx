@@ -97,7 +97,7 @@ setActiveSection(current);
     className="relative z-10 flex shrink-0 items-center transition-transform duration-500 hover:scale-[1.06]"
   >
             <Image
-              src="/images/logo/logo.png"
+              src="/images/logo/dakshinapaaka.png"
               alt="Dakshinapaaka"
               width={100}
               height={100}

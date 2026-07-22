@@ -2,6 +2,13 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import {
+  UtensilsCrossed,
+  Leaf,
+  Soup,
+  Flame,
+  CupSoda,
+} from "lucide-react";
 
 export default function MenuCover() {
   return (
@@ -106,7 +113,7 @@ to-transparent
   <div className="text-center">
 
     <p className="text-xs uppercase tracking-[0.5em] text-[#D6B15A]">
-      Since 2023
+      Since 2024
     </p>
 
    <div className="mt-10 flex justify-center">
@@ -121,10 +128,10 @@ to-transparent
       justify-center
       rounded-full
       border
-      border-[#D6B15A]/30
-      bg-white/5
+      border-[#D6B15A]
+      bg-black
       backdrop-blur-sm
-      shadow-[0_0_60px_rgba(214,177,90,.28)]
+      shadow-[0_15px_50px_rgba(0,0,0,.45)]
     "
   >
  <Image
@@ -148,9 +155,9 @@ to-transparent
    <h1
   className="
 font-playfair
-text-4xl
+text-[44px]
 font-bold
-tracking-[0.08em]
+tracking-[0.04em]
 bg-gradient-to-b
 from-[#FFF2B0]
 via-[#D6B15A]
@@ -160,31 +167,90 @@ text-transparent
 drop-shadow-[0_2px_4px_rgba(0,0,0,.4)]
 "
 >
-  Dakshinapaaka
+  Dakshina Paaka
 </h1>
 
-  <div className="mx-auto mt-8 h-px w-32 bg-gradient-to-r
-from-transparent
-via-[#D6B15A]
-to-transparent" 
-/>
+<div className="mt-8 flex items-center justify-center gap-4">
+
+  <div className="h-px w-28 bg-[#D6B15A]/50" />
+
+  <span className="text-[#D6B15A] text-xl">
+    ❦
+  </span>
+
+  <div className="h-px w-28 bg-[#D6B15A]/50" />
+
+</div>
 
    <p className="mt-6 text-lg leading-8 tracking-wide text-[#E6DCCB]">
   Authentic South Indian Cuisine
 </p>
 
-<p className="mt-3 text-sm uppercase tracking-[0.35em] text-[#C8A44D]">
-  Traditional • Chinese • Beverages
-</p>
+<div className="mt-8 flex items-start justify-center gap-5">
 
+  {[
+    {
+      icon: UtensilsCrossed,
+      line1: "North",
+      line2: "Indian",
+    },
+    {
+      icon: Leaf,
+      line1: "South",
+      line2: "Indian",
+    },
+    {
+      icon: Soup,
+      line1: "Chinese",
+    },
+    {
+      icon: Flame,
+      line1: "Tandoor",
+    },
+    {
+      icon: CupSoda,
+      line1: "Beverages",
+    },
+  ].map((item, index) => {
+    const Icon = item.icon;
+
+    return (
+      <div
+        key={item.line1}
+        className="relative flex w-[72px] flex-col items-center"
+      >
+        {index !== 0 && (
+          <div className="absolute -left-3 top-2 h-16 w-px bg-[#D6B15A]/30" />
+        )}
+
+        <Icon
+          size={24}
+          strokeWidth={1.7}
+          className="text-[#D6B15A]"
+        />
+
+        <span className="mt-3 text-[11px] uppercase tracking-[0.18em] text-[#D6B15A]">
+          {item.line1}
+        </span>
+
+        {item.line2 && (
+          <span className="text-[11px] uppercase tracking-[0.18em] text-[#D6B15A]">
+            {item.line2}
+          </span>
+        )}
+      </div>
+    );
+  })}
+
+</div>
   </div>
 
   {/* Bottom */}
 
   <div className="text-center">
 
-    <p className="text-sm uppercase tracking-[0.35em] text-[#D6B15A]">
-      Digital Menu
+    <p className="text-base uppercase tracking-[0.45em] text-[#D6B15A]">
+      Menu
     </p>
 
     <div className="mx-auto mt-6 h-px w-20 bg-[#D6B15A]/50" />
@@ -193,6 +259,15 @@ to-transparent"
       Crafted with Tradition
       <br />
       Served with Love
+      <div className="mt-8 flex justify-center">
+
+<span className="text-3xl text-[#D6B15A]">
+
+♡
+
+</span>
+
+</div>
     </p>
 
   </div>
