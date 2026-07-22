@@ -95,8 +95,24 @@ export default function MenuModal({
         <>
           {/* Premium Background */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+           initial={{
+    opacity:0,
+    backdropFilter:"blur(0px)"
+}}
+
+animate={{
+    opacity:1,
+    backdropFilter:"blur(18px)"
+}}
+
+exit={{
+    opacity:0,
+    backdropFilter:"blur(0px)"
+}}
+
+transition={{
+    duration:.7
+}}
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 z-[9998] overflow-hidden bg-black/90 backdrop-blur-xl"
@@ -106,17 +122,54 @@ export default function MenuModal({
 
             {/* Gold Glow */}
             <div className="absolute bottom-1/4 right-1/4 h-[360px] w-[360px] rounded-full bg-[#C8A44D]/25 blur-[150px]" />
+<motion.div
+    initial={{
+        opacity:0,
+        scale:.6
+    }}
 
+    animate={{
+        opacity:.25,
+        scale:1
+    }}
+
+    transition={{
+        duration:1.2
+    }}
+
+    className="
+    absolute
+    inset-0
+    bg-[radial-gradient(circle,#C8A44D22_0%,transparent_70%)]
+    "
+/>
             {/* Soft Gradient */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" />
           </motion.div>
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.25 }}
+           initial={{
+  opacity: 0,
+  scale: 0.82,
+  y: 80,
+}}
+
+animate={{
+  opacity: 1,
+  scale: 1,
+  y: 0,
+}}
+
+exit={{
+  opacity: 0,
+  scale: 1.08,
+}}
+
+transition={{
+  duration: 0.8,
+  ease: [0.22, 1, 0.36, 1],
+}}
             className="fixed inset-0 z-[9999] flex items-center justify-center p-5"
           >
             {/* Close Button */}
@@ -146,27 +199,97 @@ export default function MenuModal({
               <ChevronLeft size={28} />
             </motion.button>
 
-            {/* Content */}
-            <div className="flex flex-col items-center gap-4">
-              <MenuViewer
-                page={page}
-                nextPage={nextPage}
-                prevPage={prevPage}
-              />
+  {/* Content */}
 
-              <motion.div
-                animate={{
-                  opacity: showControls ? 1 : 0,
-                  y: showControls ? 0 : 20,
-                }}
-                transition={{ duration: 0.25 }}
-              >
-                <ThumbnailBar
-                  page={page}
-                  setPage={setPage}
-                />
-              </motion.div>
-            </div>
+<div className="flex w-full max-w-7xl flex-col items-center">
+
+  {/* Header */}
+
+  <motion.div
+    initial={{ opacity: 0, y: -25 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.15 }}
+    className="mb-10 text-center"
+  >
+
+    <p className="mb-3 text-xs uppercase tracking-[0.55em] text-[#D4AF37]">
+      Dakshinapaaka
+    </p>
+
+    <h2 className="font-playfair text-5xl text-white">
+      Digital Menu
+    </h2>
+
+    <div className="mx-auto mt-5 h-px w-40 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+
+  </motion.div>
+
+  {/* Viewer */}
+
+  <motion.div
+    initial={{
+      opacity: 0,
+      y: 35,
+      scale: 0.94,
+    }}
+    animate={{
+      opacity: 1,
+      y: 0,
+      scale: 1,
+    }}
+    transition={{
+      delay: 0.2,
+      duration: 0.8,
+      ease: [0.22, 1, 0.36, 1],
+    }}
+  >
+    <MenuViewer
+      page={page}
+      nextPage={nextPage}
+      prevPage={prevPage}
+    />
+  </motion.div>
+
+  {/* Counter */}
+
+  <motion.div
+    animate={{
+      opacity: showControls ? 1 : 0,
+      y: showControls ? 0 : 10,
+    }}
+    className="mt-7 text-sm tracking-[0.45em] text-[#D4AF37]"
+  >
+    {String(page + 1).padStart(2, "0")} / {String(menuPages.length).padStart(2, "0")}
+  </motion.div>
+
+  {/* Thumbnails */}
+
+  <motion.div
+    animate={{
+      opacity: showControls ? 1 : 0,
+      y: showControls ? 0 : 20,
+    }}
+    transition={{ duration: 0.25 }}
+    className="mt-8"
+  >
+    <ThumbnailBar
+      page={page}
+      setPage={setPage}
+    />
+  </motion.div>
+
+  {/* Keyboard Hint */}
+
+  <motion.p
+    animate={{
+      opacity: showControls ? 0.5 : 0,
+    }}
+    className="mt-8 text-xs uppercase tracking-[0.35em] text-white/60"
+  >
+    ← Previous &nbsp;&nbsp;&nbsp; → Next &nbsp;&nbsp;&nbsp; Esc Close
+  </motion.p>
+
+</div>
 
             {/* Next */}
             <motion.button

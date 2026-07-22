@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 export default function MenuCover() {
   return (
@@ -32,6 +33,21 @@ export default function MenuCover() {
     to-transparent
   "
 />
+
+<div
+  className="
+    absolute
+    left-5
+    top-8
+    bottom-8
+    w-px
+    bg-gradient-to-b
+    from-transparent
+    via-[#D6B15A]/60
+    to-transparent
+  "
+/>
+
 {/* Paper Edge */}
 <div
   className="
@@ -39,12 +55,13 @@ export default function MenuCover() {
     right-0
     top-5
     bottom-5
-    w-3
+    w-5
     rounded-r-full
-    bg-gradient-to-l
-    from-[#FFF9EC]
-    via-[#F2E5C7]
-    to-transparent
+  bg-gradient-to-l
+from-[#FFFDF5]
+via-[#F8EFD5]
+via-[#E6D7AF]
+to-transparent
     opacity-80
   "
 />
@@ -89,7 +106,7 @@ export default function MenuCover() {
   <div className="text-center">
 
     <p className="text-xs uppercase tracking-[0.5em] text-[#D6B15A]">
-      Since 2024
+      Since 2023
     </p>
 
    <div className="mt-10 flex justify-center">
@@ -107,7 +124,7 @@ export default function MenuCover() {
       border-[#D6B15A]/30
       bg-white/5
       backdrop-blur-sm
-      shadow-[0_0_40px_rgba(214,177,90,0.18)]
+      shadow-[0_0_60px_rgba(214,177,90,.28)]
     "
   >
  <Image
@@ -130,18 +147,27 @@ export default function MenuCover() {
 
    <h1
   className="
-    mt-8
-    font-playfair
-    text-5xl
-    font-bold
-    tracking-[0.08em]
-    text-[#F8F3E9]
-  "
+font-playfair
+text-4xl
+font-bold
+tracking-[0.08em]
+bg-gradient-to-b
+from-[#FFF2B0]
+via-[#D6B15A]
+to-[#8F6A1E]
+bg-clip-text
+text-transparent
+drop-shadow-[0_2px_4px_rgba(0,0,0,.4)]
+"
 >
   Dakshinapaaka
 </h1>
 
-    <div className="mx-auto mt-8 h-px w-32 bg-[#D6B15A]/60" />
+  <div className="mx-auto mt-8 h-px w-32 bg-gradient-to-r
+from-transparent
+via-[#D6B15A]
+to-transparent" 
+/>
 
    <p className="mt-6 text-lg leading-8 tracking-wide text-[#E6DCCB]">
   Authentic South Indian Cuisine
@@ -179,12 +205,14 @@ export default function MenuCover() {
   className="
     absolute
     inset-0
-    opacity-[0.06]
+    opacity-[0.045]
+    mix-blend-overlay
     pointer-events-none
     [background-image:
-      radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.18)_1px,transparent_1px),
-      radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.12)_1px,transparent_1px)]
-    [background-size:34px_34px]
+      radial-gradient(circle at 20% 20%,rgba(255,255,255,.20) 1px,transparent 1.5px),
+      radial-gradient(circle at 70% 40%,rgba(255,255,255,.10) 1px,transparent 1.5px),
+      radial-gradient(circle at 40% 80%,rgba(255,255,255,.14) 1px,transparent 1.5px)]
+    [background-size:22px_22px]
   "
 />
 
@@ -201,7 +229,56 @@ export default function MenuCover() {
     pointer-events-none
   "
 />
+<div
+  className="
+    pointer-events-none
+    absolute
+    inset-0
+    overflow-hidden
+    rounded-[32px]
+  "
+>
+
+ <motion.div
+  animate={{
+    x: ["-180%", "220%"],
+  }}
+  transition={{
+    duration: 3.5,
+    repeat: Infinity,
+    repeatDelay: 2,
+    ease: "easeInOut",
+  }}
+  className="
+    absolute
+    top-0
+    h-full
+    w-36
+    rotate-12
+    bg-gradient-to-r
+    from-transparent
+    via-white/18
+    to-transparent
+  "
+/>
+</div>
+
+<div
+  className="
+    absolute
+    -right-2
+    top-5
+    bottom-5
+    w-4
+    rounded-r-xl
+    bg-gradient-to-l
+    from-[#FFFDF7]
+    via-[#E7D8B3]
+    to-[#B99A53]
+    opacity-90
+  "
+/>
     </div>
-    
   );
+  
 }
