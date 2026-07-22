@@ -113,7 +113,7 @@ exit={{
 transition={{
     duration:.7
 }}
-            exit={{ opacity: 0 }}
+        
             onClick={onClose}
             className="fixed inset-0 z-[9998] overflow-hidden bg-black/90 backdrop-blur-xl"
           >
