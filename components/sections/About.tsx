@@ -106,7 +106,7 @@ export default function About() {
             </FadeIn>
 
             {/* Feature Cards */}
-            <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-10 grid grid-cols-2 gap-5 lg:grid-cols-2 xl:grid-cols-4">
                 {features.map((feature, index) => {
                 const Icon = feature.icon;
 
@@ -115,16 +115,36 @@ export default function About() {
       key={feature.title}
       delay={0.4 + index * 0.1}
     >
-      <div
-        className="group flex flex-col items-center rounded-[22px] border border-[#C8A44D]/10 bg-white/75 px-4 py-5 text-center shadow-[0_10px_28px_rgba(74,55,30,0.08)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-[#C8A44D]/30 hover:shadow-[0_18px_40px_rgba(74,55,30,0.14)]"
-      >
+     <div
+  className="
+    group
+    flex
+    h-[285px]
+    flex-col
+    items-center
+    rounded-[22px]
+    border
+    border-[#C8A44D]/10
+    bg-white/75
+    px-5
+    py-6
+    text-center
+    shadow-[0_10px_28px_rgba(74,55,30,0.08)]
+    backdrop-blur-sm
+    transition-all
+    duration-500
+    hover:-translate-y-2
+    hover:border-[#C8A44D]/30
+    hover:shadow-[0_18px_40px_rgba(74,55,30,0.14)]
+  "
+>
                     {/* Icon */}
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#174D2C] text-[#D5B15B] shadow-md transition-transform duration-500 group-hover:scale-110">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#174D2C] text-[#D5B15B] shadow-lg transition-transform duration-500 group-hover:scale-110">
                       <Icon size={20} strokeWidth={1.8} />
                     </div>
 
                     {/* Card Title */}
-                    <h3 className="mt-4 font-serif text-base font-semibold leading-tight text-[#24201C]">
+                    <h3 className="mt-4 min-h-[52px] font-serif text-[20px] font-semibold leading-6 text-[#24201C]">
                       {feature.title}
                     </h3>
 
@@ -132,7 +152,7 @@ export default function About() {
                     <div className="mx-auto my-4 h-px w-8 bg-[#C8A44D]" />
 
                     {/* Description */}
-                    <p className="mx-auto max-w-[150px] text-[13px] leading-6 text-gray-500">
+                    <p className="mt-auto max-w-[160px] text-[14px] leading-7 text-[#666]">
                       {feature.description}
                     </p>
                  </div>

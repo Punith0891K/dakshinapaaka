@@ -1,49 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-
-const dishes = [
-  {
-    name: "Traditional South Indian Meals",
-    category: "Traditional",
-    description:
-      "A wholesome traditional spread served with rice, poori, curries and authentic accompaniments.",
-    image: "/images/food/food1.png",
-  },
-  {
-    name: "Andhra Meals",
-    category: "Regional Speciality",
-    description:
-      "A traditional Andhra-style meal served with steamed rice, flavourful curries, dal, chutneys, rasam and classic accompaniments.",
-    image: "/images/food/food3.png",
-  },
-  {
-    name: "Filter Coffee",
-    category: "Beverage",
-    description:
-      "Freshly brewed South Indian filter coffee, rich in aroma and served the traditional way.",
-    image: "/images/food/food2.png",
-  },
-  {
-    name: "Khara Bath",
-    category: "Karnataka Speciality",
-    description:
-      "A classic Karnataka-style savoury dish prepared with semolina, aromatic spices and traditional seasoning.",
-    image: "/images/food/food4.jpg",
-  },
-
-  {
-  name: "Mysore Masala Dosa",
-  category: "Mysuru Speciality",
-  description:
-    "A crisp golden dosa spread with spicy Mysore-style chutney and filled with a flavourful potato masala, served with traditional accompaniments.",
-  image: "/images/food/food5.png",
-},
-];
+import { signatureDishes } from "@/data/signatureDishes";
 
 export default function SignatureDishes() {
   return (
     <section
-      id="menu"
+      id="signature-dishes"
       className="
         relative
         overflow-hidden
@@ -52,13 +14,27 @@ export default function SignatureDishes() {
         bg-cover
         bg-center
         bg-no-repeat
-        py-20
-        sm:py-24
-        lg:py-32
+       pt-10
+pb-20
+sm:pt-14
+sm:pb-24
+lg:pt-16
+lg:pb-28
       "
     >
       {/* Soft overlay */}
       <div className="pointer-events-none absolute inset-0 bg-[#FFF9EE]/20" />
+
+      {/* Decorative Mandala */}
+<div className="pointer-events-none absolute inset-x-0 top-8 flex justify-center opacity-[0.06]">
+  <Image
+    src="/images/design/mandala.png"
+    alt=""
+    width={420}
+    height={420}
+    className="select-none"
+  />
+</div>
 
       {/* Decorative side text */}
       <div className="pointer-events-none absolute left-6 top-1/2 z-[1] hidden -translate-y-1/2 -rotate-90 lg:block">
@@ -73,27 +49,50 @@ export default function SignatureDishes() {
         {/* Heading */}
         {/* Heading */}
         <div className="mx-auto mb-12 max-w-2xl text-center lg:mb-16">
+{/* Premium Decorative Divider */}
+<div className="mb-12 flex items-center justify-center">
+  <div className="flex items-center gap-5">
+    <span className="h-px w-20 bg-gradient-to-r from-transparent via-[#C8A44D]/60 to-[#C8A44D]" />
 
-          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.4em] text-[#2F6B3D] sm:text-sm">
-            A Taste of Tradition
-          </p>
+    <div className="relative flex items-center justify-center">
+      <span className="text-[#C8A44D] text-2xl">❋</span>
+
+      <div className="absolute h-10 w-10 rounded-full border border-[#C8A44D]/20" />
+    </div>
+
+    <span className="h-px w-20 bg-gradient-to-l from-transparent via-[#C8A44D]/60 to-[#C8A44D]" />
+  </div>
+</div>
+      <div className="mb-5 flex items-center justify-center gap-4">
+  <span className="h-px w-10 bg-[#C8A44D]/60" />
+
+  <span className="text-[#C8A44D]">✦</span>
+
+  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[#2F6B3D]">
+    A Taste of Tradition
+  </p>
+
+  <span className="text-[#C8A44D]">✦</span>
+
+  <span className="h-px w-10 bg-[#C8A44D]/60" />
+</div>
 
           <h2
-            className="
-              font-serif
-              text-4xl
-              font-semibold
-              leading-[1.05]
-              text-[#1E1E1E]
-              sm:text-5xl
-              lg:text-6xl
-            "
-          >
-            Our Signature
-            <span className="block italic text-[#2F6B3D]">
-              Dishes
-            </span>
-          </h2>
+  className="
+    font-serif
+    text-4xl
+    font-semibold
+    leading-[1.05]
+    text-[#1E1E1E]
+    sm:text-5xl
+    lg:text-6xl
+  "
+>
+  Chef's Signature
+  <span className="block italic text-[#2F6B3D]">
+    Collection
+  </span>
+</h2>
 
           {/* Ornament */}
           <div className="mt-6 flex items-center justify-center gap-4">
@@ -106,17 +105,18 @@ export default function SignatureDishes() {
             <span className="h-px w-14 bg-gradient-to-l from-transparent to-[#C8A44D]" />
           </div>
 
-          <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-black/60 sm:text-lg">
-            Discover authentic South Indian flavours prepared with
-            time-honoured recipes and the warmth of traditional hospitality.
-          </p>
+      <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-[#6B5B45] md:text-xl">
+  Experience a handpicked selection of our finest dishes, where authentic
+  recipes, fresh ingredients, and timeless South Indian flavours come
+  together to create an unforgettable dining experience.
+</p>
 
         </div>
 
         {/* Dish Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:gap-8">
 
-          {dishes.map((dish) => (
+          {signatureDishes.map((dish) => (
 
             <article
               key={dish.name}
@@ -208,7 +208,7 @@ export default function SignatureDishes() {
                   text-white/70
                 "
               >
-                Dakshinapaaka
+                Dakshina paaka
               </div>
 
               {/* Content */}
@@ -224,32 +224,46 @@ export default function SignatureDishes() {
                 "
               >
 
-                {/* Gold Line */}
-                <div
-                  className="
-                    mb-5
-                    h-px
-                    w-12
-                    bg-[#C8A44D]
-                    transition-all
-                    duration-500
-                    group-hover:w-20
-                  "
-                />
+              {/* Gold Line */}
+<div
+  className="
+    mb-5
+    h-px
+    w-12
+    bg-[#C8A44D]
+    transition-all
+    duration-500
+    group-hover:w-20
+  "
+/>
 
-                <h3
-                  className="
-                    max-w-md
-                    font-serif
-                    text-3xl
-                    font-semibold
-                    leading-tight
-                    text-white
-                    sm:text-4xl
-                  "
-                >
-                  {dish.name}
-                </h3>
+{/* Signature Badge */}
+<p
+  className="
+    mb-3
+    text-[11px]
+    font-semibold
+    uppercase
+    tracking-[0.25em]
+    text-[#C8A44D]
+  "
+>
+  {dish.badge}
+</p>
+
+<h3
+  className="
+    max-w-md
+    font-serif
+    text-3xl
+    font-semibold
+    leading-tight
+    text-white
+    sm:text-4xl
+  "
+>
+  {dish.name}
+</h3>
 
                 <p
                   className="
@@ -288,45 +302,43 @@ export default function SignatureDishes() {
         {/* Bottom CTA */}
         <div className="mt-12 text-center lg:mt-16">
 
-          <p
-            className="
-              mb-6
-              font-serif
-              text-xl
-              italic
-              text-black/55
-            "
-          >
-            Explore more flavours from our kitchen
-          </p>
+         <p
+  className="
+    text-center
+    font-serif
+    text-[28px]
+    italic
+    text-[#7A6440]
+    lg:text-[24px]
+  "
+>
+  Discover more signature dishes crafted with authentic flavours.
+</p>
 
           <Link
             href="#contact"
             className="
-              group
-              inline-flex
-              items-center
-              gap-4
-              rounded-full
-              border
-              border-[#2F6B3D]
-              bg-[#2F6B3D]
-              px-9
-              py-4
-              text-sm
-              font-semibold
-              uppercase
-              tracking-[0.12em]
-              text-white
-              shadow-[0_12px_30px_rgba(47,107,61,0.22)]
-              transition-all
-              duration-300
-              hover:-translate-y-1
-              hover:bg-[#245631]
-              hover:shadow-[0_18px_40px_rgba(47,107,61,0.3)]
-            "
+group
+inline-flex
+items-center
+gap-3
+rounded-full
+bg-[#174D32]
+px-10
+py-5
+font-semibold
+uppercase
+tracking-[0.18em]
+text-white
+shadow-[0_14px_35px_rgba(23,77,50,0.25)]
+transition-all
+duration-500
+hover:-translate-y-1
+hover:bg-[#1E5C3A]
+hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)]
+"
           >
-            Explore Our Menu
+            Explore Signature Dishes
 
             <span className="text-lg transition-transform duration-300 group-hover:translate-x-1">
               →

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-
+import Image from "next/image";
 import MenuShowcase from "../menu/MenuShowcase";
 import MenuModal from "../menu/MenuModal";
 
@@ -11,16 +11,42 @@ export default function Menu() {
 
   return (
     <>
-      <section
-        id="menu"
-        className="relative overflow-hidden bg-[#FAF7F2] py-28"
-      >
-        {/* Background Glow */}
-        <div className="absolute inset-0">
-          <div className="absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#C89B3C]/10 blur-[140px]" />
-        </div>
+    <section
+  id="menu"
+  className="relative overflow-hidden py-26 lg:py-30"
+>
+     {/* Background */}
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-16 px-6 lg:grid-cols-2">
+<Image
+  src="/images/hero/menu-bg.png"
+  alt=""
+  fill
+  priority
+  className="
+    object-cover
+    object-[58%_center]
+    pointer-events-none
+    select-none
+    -z-30
+  "
+/>
+
+{/* Premium Overlay */}
+
+<div
+  className="
+    absolute
+    inset-0
+    -z-20
+    bg-gradient-to-r
+    from-[#FAF7F2]/70
+    via-[#FAF7F2]/25
+    to-transparent
+  "
+/>
+
+
+        <div className="relative mx-auto grid max-w-[1450px] items-center gap-24 px-6 lg:grid-cols-2">
 
           {/* LEFT CONTENT */}
 
@@ -34,23 +60,101 @@ export default function Menu() {
               Our Menu
             </span>
 
-            <h2 className="font-serif text-5xl leading-tight text-[#173F35] lg:text-6xl">
-              Traditional
-              <br />
-              South Indian
-              <br />
-              Cuisine
-            </h2>
+   <h2
+  className="
+    mt-5
+    font-serif
+    text-[54px]
+    leading-[0.95]
+    tracking-[-0.03em]
+    text-[#143C34]
+    lg:text-[72px]
+  "
+>
+  Explore Our
+  <br />
+  <span className="text-[#0F5B43]">
+    Authentic
+  </span>
+  <br />
+  Menu
+</h2>
 
-            <p className="mt-8 max-w-lg text-lg leading-8 text-[#5F5F5F]">
-              Experience authentic flavours prepared using recipes
-              passed down through generations. Every dish reflects
-              the richness of South Indian culinary heritage.
-            </p>
+           <p className="mt-8 max-w-xl text-lg leading-8 text-[#5B5B5B]">
+  Discover a carefully curated collection of authentic South Indian
+  delicacies, rich North Indian favourites, sizzling Tandoor
+  specialties, Indo-Chinese classics, refreshing beverages and
+  signature house specials — all crafted with premium ingredients
+  and traditional recipes.
+</p>
+
+<div className="mt-10 flex flex-wrap gap-3">
+
+  {[
+    "South Indian",
+    "North Indian",
+    "Chinese",
+    "Tandoor",
+    "Beverages",
+  ].map((item) => (
+    <span
+      key={item}
+      className="
+        rounded-full
+        border
+        border-[#C89B3C]/25
+        bg-white/70
+        px-4
+        py-2
+        text-sm
+        font-medium
+        text-[#1F5B45]
+        shadow-sm
+      "
+    >
+      {item}
+    </span>
+  ))}
+
+</div>
+
+<div className="mt-10 flex gap-10">
+
+  <div>
+    <p className="text-3xl font-bold text-[#1F5B45]">
+      100+
+    </p>
+
+    <p className="mt-1 text-sm uppercase tracking-[0.25em] text-[#9B7B35]">
+      Dishes
+    </p>
+  </div>
+
+  <div>
+    <p className="text-3xl font-bold text-[#1F5B45]">
+      5
+    </p>
+
+    <p className="mt-1 text-sm uppercase tracking-[0.25em] text-[#9B7B35]">
+      Categories
+    </p>
+  </div>
+
+  <div>
+    <p className="text-3xl font-bold text-[#1F5B45]">
+      Fresh
+    </p>
+
+    <p className="mt-1 text-sm uppercase tracking-[0.25em] text-[#9B7B35]">
+      Ingredients
+    </p>
+  </div>
+
+</div>
 
             <button
               onClick={() => setOpen(true)}
-              className="group mt-10 rounded-full bg-[#1F5B45] px-8 py-4 text-white transition hover:scale-105 hover:bg-[#184738]"
+              className="group mt-10 rounded-full bg-[#276B3A] px-8 py-4 text-white transition hover:scale-105 hover:bg-[#215C32]"
             >
               Explore Menu
               <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">
@@ -63,6 +167,7 @@ export default function Menu() {
 
           <MenuShowcase onOpen={() => setOpen(true)} />
         </div>
+
       </section>
 
       <MenuModal open={open} onClose={() => setOpen(false)} />

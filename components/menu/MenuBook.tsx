@@ -30,9 +30,11 @@ export default function MenuBook({ onOpen }: Props) {
   animate={{
     y: [0, -5, 0],
   }}
-  whileHover={{
-    y: -12,
-  }}
+whileHover={{
+  y: -10,
+  scale: 1.02,
+  rotateZ: -0.6,
+}}
   transition={{
     y: {
       repeat: Infinity,

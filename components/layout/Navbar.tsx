@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import MobileMenu from "@/components/ui/MobileMenu";
 import { motion } from "framer-motion";
+import { Leaf } from "lucide-react";
 
 const navItems = [
   { name: "Home", href: "#" },
@@ -82,7 +83,8 @@ setActiveSection(current);
   }`}
 >
           {/* Logo */}
-    <motion.div
+    {/* Logo + Pure Veg Badge */}
+<motion.div
   initial={{ opacity: 0, scale: 0.9, y: -12 }}
   animate={{ opacity: 1, scale: 1, y: 0 }}
   transition={{
@@ -90,26 +92,67 @@ setActiveSection(current);
     delay: 0.15,
     ease: "easeOut",
   }}
+  className="flex items-center gap-4"
 >
   <Link
     href="/"
     aria-label="Dakshinapaaka Home"
     className="relative z-10 flex shrink-0 items-center transition-transform duration-500 hover:scale-[1.06]"
   >
-            <Image
-              src="/images/logo/dakshinapaaka.png"
-              alt="Dakshinapaaka"
-              width={100}
-              height={100}
-              priority
-              className={`h-auto object-contain transition-all duration-500 ease-out ${
-                scrolled
-                  ? "w-[58px] lg:w-[64px]"
-                  : "w-[68px] lg:w-[82px]"
-              }`}
-            />
-          </Link>
-          </motion.div>
+  <Image
+  src="/images/logo/dakshinapaaka.png"
+  alt="Dakshinapaaka"
+  width={100}
+  height={100}
+  priority
+  className={`
+    h-auto
+    object-contain
+    transition-all
+    duration-500
+    ${
+      scrolled
+        ? "w-[72px] lg:w-[82px] brightness-[0.9] contrast-125 saturate-125 drop-shadow-[0_2px_6px_rgba(0,0,0,0.18)]"
+        : "w-[82px] lg:w-[96px] brightness-110 contrast-110 drop-shadow-[0_3px_8px_rgba(0,0,0,0.35)]"
+    }
+  `}
+/>
+  </Link>
+
+  {/* Pure Veg Badge */}
+  <div
+    className={`
+      hidden lg:flex
+      items-center
+      gap-2
+      rounded-full
+      border
+      px-4
+      py-2
+      transition-all
+      duration-500
+      ${
+        scrolled
+          ? "border-[#2F6B3D]/20 bg-[#F4FBF5]"
+          : "border-white/20 bg-white/10 backdrop-blur-md"
+      }
+    `}
+  >
+    <Leaf
+      className={`h-4 w-4 ${
+        scrolled ? "text-[#2F6B3D] veg-glow" : "text-[#8ED081] veg-glow"
+      }`}
+    />
+
+    <span
+      className={`veg-glow text-[11px] font-semibold uppercase tracking-[0.25em] whitespace-nowrap ${
+        scrolled ? "text-[#2F6B3D]" : "text-white"
+      }`}
+    >
+      Pure Veg Restaurant
+    </span>
+  </div>
+</motion.div>
 
           {/* Desktop Navigation */}
           <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-9 lg:flex">
@@ -173,17 +216,48 @@ setActiveSection(current);
   }}
   className="hidden lg:flex"
 >
+{/* Desktop CTA */}
+<motion.div
+  initial={{ opacity: 0, x: 30 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{
+    duration: 0.7,
+    delay: 0.7,
+    ease: "easeOut",
+  }}
+  className="hidden items-center gap-3 lg:flex"
+>
+  {/* Google Maps */}
   <a
-    href="tel:7204488774"
-    className={`group relative overflow-hidden rounded-full border px-7 py-3 text-[15px] font-semibold transition-all duration-500 hover:-translate-y-1 hover:scale-[1.03] ${
+    href="https://maps.app.goo.gl/atMDsDsLRYFA8QYS8"
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`group inline-flex items-center gap-2 rounded-full border px-6 py-3 text-[15px] font-semibold transition-all duration-500 hover:-translate-y-1 ${
       scrolled
-        ? "border-[#2F6B3D] bg-[#2F6B3D] text-white shadow-[0_8px_24px_rgba(47,107,61,0.22)] hover:bg-[#255632] hover:shadow-[0_18px_40px_rgba(47,107,61,0.35)]"
-        : "border-white/40 bg-white/10 text-white backdrop-blur-md hover:border-[#C8A44D] hover:bg-[#C8A44D] hover:text-black hover:shadow-[0_18px_40px_rgba(200,164,77,0.35)]"
+        ? "border-[#2F6B3D] bg-white text-[#2F6B3D] hover:bg-[#F4FBF5] hover:shadow-[0_14px_35px_rgba(47,107,61,0.18)]"
+        : "border-white/40 bg-white/10 text-white backdrop-blur-md hover:border-[#C8A44D] hover:bg-white/20"
     }`}
   >
-    Call Now
+    📍
+    <span>Find Us</span>
+  </a>
+
+  {/* Call Button */}
+  <a
+    href="tel:7204488774"
+    className={`group inline-flex items-center rounded-full px-7 py-3 text-[15px] font-semibold transition-all duration-500 hover:-translate-y-1 hover:scale-[1.03] ${
+      scrolled
+        ? "bg-[#2F6B3D] text-white shadow-[0_8px_24px_rgba(47,107,61,0.22)] hover:bg-[#255632] hover:shadow-[0_18px_40px_rgba(47,107,61,0.35)]"
+        : "bg-[#2F6B3D] text-white shadow-[0_8px_24px_rgba(47,107,61,0.30)] hover:bg-[#255632]"
+    }`}
+  >
+    📞 Call Now
   </a>
 </motion.div>
+
+  
+</motion.div>
+
           {/* Mobile Menu */}
           <div className="relative z-10 lg:hidden">
             <MobileMenu scrolled={scrolled} />

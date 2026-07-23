@@ -12,6 +12,8 @@ import {
   UtensilsCrossed,
   Images,
   Phone,
+  MapPin,
+  ExternalLink,
 } from "lucide-react";
 
 const menuItems = [
@@ -158,8 +160,8 @@ className="flex h-12 w-12 items-center justify-center rounded-full border border
         </div>
 
         {/* Navigation */}
-        <nav className="relative z-10 flex flex-1 flex-col justify-center px-6">
-          <div className="flex flex-col gap-1">
+        <nav className="relative z-10 flex-1 overflow-y-auto px-6 py-4">
+          <div className="flex flex-col">
 
             {menuItems.map((item, index) => {
               const Icon = item.icon;
@@ -175,28 +177,28 @@ className="flex h-12 w-12 items-center justify-center rounded-full border border
     ease: "easeOut",
   }}
 >
-    <Link
-      href={item.href}
-      onClick={() => setOpen(false)}
-                  className={`
-                    group
-                    flex items-center
-                    gap-5
-                    border-b border-[#C8A44D]/20
-                    px-4 py-5
-                    transition-all duration-500
-                  `}
-                >
+<Link
+  href={item.href}
+  onClick={() => setOpen(false)}
+  className={`
+    group
+    flex items-center
+    gap-4
+    border-b border-[#C8A44D]/20
+    px-4 py-3.5
+    transition-all duration-500
+  `}
+>
                   {/* Icon */}
                   <div
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#C8A44D]/30 bg-[#C8A44D]/5 text-[#B88A2B] transition-all duration-300 group-hover:border-[#C8A44D] group-hover:bg-[#153F2B] group-hover:text-[#E2B955]"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#C8A44D]/30 bg-[#C8A44D]/5 text-[#B88A2B] transition-all duration-300 group-hover:border-[#C8A44D] group-hover:bg-[#153F2B] group-hover:text-[#E2B955]"
                   >
                     <Icon size={21} strokeWidth={1.6} />
                   </div>
 
                   {/* Name */}
                   <span
-            className="font-serif text-[30px] font-semibold tracking-tight text-[#20201D] transition-all duration-300 group-hover:translate-x-1 group-hover:text-[#174D32]"
+            className="font-serif text-[27px] font-semibold tracking-tight text-[#20201D] transition-all duration-300 group-hover:translate-x-1 group-hover:text-[#174D32]"
                   >
                     {item.name}
                   </span>
@@ -211,11 +213,70 @@ className="flex h-12 w-12 items-center justify-center rounded-full border border
             })}
 
           </div>
+{/* Visit Us */}
 
+<div className="mt-5 rounded-2xl border border-[#C8A44D]/20 bg-white/60 p-4 shadow-sm backdrop-blur-sm">
+
+  <div className="flex items-start gap-4">
+
+    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#153F2B] text-[#E2B955]">
+      <MapPin size={20} />
+    </div>
+
+    <div className="flex-1">
+
+      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#B88A2B]">
+        Visit Us
+      </p>
+
+      <h3 className="mt-1 text-lg font-serif font-semibold text-[#153F2B]">
+        Dakshina Paaka
+      </h3>
+
+      <p className="mt-1 text-sm leading-6 text-[#5B5B5B]">
+      Residency road, Near Mini Vidhana soudha, Nazarbad-570010
+        <br />
+        Mysuru
+      </p>
+
+    </div>
+
+  </div>
+
+  <a
+    href="https://maps.app.goo.gl/atMDsDsLRYFA8QYS8"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="
+      mt-5
+      flex
+      items-center
+      justify-center
+      gap-2
+      rounded-2xl
+      border
+      border-[#C8A44D]
+      bg-[#FBF6EC]
+      py-3
+      text-sm
+      font-semibold
+      text-[#153F2B]
+      transition-all
+      duration-300
+      hover:-translate-y-0.5
+      hover:bg-[#153F2B]
+      hover:text-white
+    "
+  >
+    <ExternalLink size={17} />
+    Open in Google Maps
+  </a>
+
+</div>
           {/* Call Now */}
           <a
             href="tel:7204488774"
-className="mt-8 flex items-center justify-center gap-3 rounded-full border border-[#C8A44D] bg-[#153F2B] px-8 py-4 font-semibold tracking-wide text-white shadow-[0_12px_30px_rgba(21,63,43,0.25)] transition-all duration-300 active:scale-95"
+className="mt-5 flex items-center justify-center gap-3 rounded-full border border-[#C8A44D] bg-[#153F2B] px-8 py-4 font-semibold tracking-wide text-white shadow-[0_12px_30px_rgba(21,63,43,0.25)] transition-all duration-300 active:scale-95"
           >
             <Phone
               size={19}

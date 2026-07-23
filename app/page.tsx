@@ -3,6 +3,7 @@ import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
 import SignatureDishes from "@/components/sections/SignatureDishes";
 import Menu from "@/components/sections/Menu";
+import FloatingMenuButton from "@/components/ui/FloatingMenuButton";
 // import WhyChooseUs from "@/components/sections/WhyChooseUs";
 // import Testimonials from "@/components/sections/Testimonials";
 // import Gallery from "@/components/sections/Gallery";
@@ -19,6 +20,7 @@ export default function Home() {
   <About />
   <SignatureDishes />
   <Menu />
+  <FloatingMenuButton />
 </main>
       {/* <Footer /> */}
     </>
