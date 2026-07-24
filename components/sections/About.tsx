@@ -1,11 +1,16 @@
+"use client";
+
 import Image from "next/image";
 import FadeIn from "@/components/ui/FadeIn";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CookingPot,
   Leaf,
   Users,
   UtensilsCrossed,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const features = [
   {
@@ -31,6 +36,75 @@ const features = [
 ];
 
 export default function About() {
+
+  const [currentImage, setCurrentImage] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [direction, setDirection] = useState(1);
+
+const interiorImages = [
+  "/images/hero/interior1.jpeg",
+  "/images/hero/interior2.png",
+  "/images/hero/interior3.png",
+];
+
+const nextImage = () => {
+  setDirection(1);
+
+  setCurrentImage((prev) =>
+    prev === interiorImages.length - 1 ? 0 : prev + 1
+  );
+};
+
+const prevImage = () => {
+  setDirection(-1);
+
+  setCurrentImage((prev) =>
+    prev === 0 ? interiorImages.length - 1 : prev - 1
+  );
+};
+
+const handleDragEnd = (
+  _: MouseEvent | TouchEvent | PointerEvent,
+  info: { offset: { x: number } }
+) => {
+  if (info.offset.x < -100) {
+    nextImage();
+  }
+
+  if (info.offset.x > 100) {
+    prevImage();
+  }
+};
+
+useEffect(() => {
+  if (isHovered) return;
+
+  const interval = setInterval(() => {
+    nextImage();
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, [isHovered]);
+
+const variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 300 : -300,
+    opacity: 0,
+    scale: 0.97,
+  }),
+
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+  },
+
+  exit: (direction: number) => ({
+    x: direction > 0 ? -300 : 300,
+    opacity: 0,
+    scale: 0.97,
+  }),
+};
   return (
    <section
   id="about"
@@ -174,13 +248,92 @@ export default function About() {
 
             {/* Image */}
             <div className="relative h-[420px] overflow-hidden rounded-[30px] shadow-[0_30px_80px_rgba(46,35,20,0.22)] sm:h-[520px] lg:h-[690px]">
-              <Image
-                src="/images/hero/interior.jpeg"
-                alt="Dakshinapaaka Restaurant Interior"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover transition-transform duration-1000 hover:scale-[1.03]"
-              />
+             <div className="relative h-full w-full overflow-hidden rounded-[2rem]"
+               onMouseEnter={() => setIsHovered(true)}
+               onMouseLeave={() => setIsHovered(false)}
+             >
+<AnimatePresence
+  initial={false}
+  custom={direction}
+  mode="wait"
+>
+ <motion.div
+  key={currentImage}
+  custom={direction}
+  variants={variants}
+  initial="enter"
+  animate="center"
+  exit="exit"
+
+  transition={{
+    x: {
+      type: "spring",
+      stiffness: 300,
+      damping: 30,
+    },
+    opacity: {
+      duration: 0.25,
+    },
+    scale: {
+      duration: 0.25,
+    },
+  }}
+
+  drag="x"
+  dragConstraints={{ left: 0, right: 0 }}
+  dragElastic={0.25}
+  onDragEnd={handleDragEnd}
+
+  className="absolute inset-0 cursor-grab active:cursor-grabbing"
+>
+  <Image
+    src={interiorImages[currentImage]}
+    alt="Dakshinapaaka Interior"
+    fill
+    priority
+    className="object-cover scale-105 transition-transform duration-[7000ms]"
+  />
+</motion.div>
+</AnimatePresence>
+  {/* Previous */}
+<button
+  onClick={prevImage}
+  className="absolute left-5 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-[#174D32] hover:text-white"
+>
+  <ChevronLeft className="h-6 w-6" />
+</button>
+
+{/* Next */}
+<button
+  onClick={nextImage}
+  className="absolute right-5 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-[#174D32] hover:text-white"
+>
+  <ChevronRight className="h-6 w-6" />
+</button>
+
+  {/* Image Counter */}
+  <div className="absolute right-5 top-5 z-20 rounded-full bg-black/40 px-4 py-2 text-sm font-semibold tracking-[0.18em] text-white backdrop-blur-md">
+    {String(currentImage + 1).padStart(2, "0")} /
+    {" "}
+    {String(interiorImages.length).padStart(2, "0")}
+  </div>
+
+{/* Indicators */}
+<div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+  {interiorImages.map((_, index) => (
+    <button
+      key={index}
+      onClick={() => setCurrentImage(index)}
+      className={`transition-all duration-300 ${
+        currentImage === index
+          ? "h-2.5 w-8 rounded-full bg-[#C8A44D]"
+          : "h-2.5 w-2.5 rounded-full bg-white/70 hover:bg-white"
+      }`}
+    />
+  ))}
+</div>
+
+</div>
 
               {/* Image gradient */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />

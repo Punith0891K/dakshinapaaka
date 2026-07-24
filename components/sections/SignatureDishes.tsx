@@ -1,32 +1,46 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { signatureDishes } from "@/data/signatureDishes";
+import { motion } from "framer-motion";
+import {
+  fadeUp,
+  staggerContainer,
+  cardVariant,
+} from "@/lib/animations";
 
 export default function SignatureDishes() {
   return (
-    <section
-      id="signature-dishes"
-      className="
-        relative
-        overflow-hidden
-        bg-[#F8F3E9]
-        bg-[url('/images/hero/signature-bg.png')]
-        bg-cover
-        bg-center
-        bg-no-repeat
-       pt-10
-pb-20
-sm:pt-14
-sm:pb-24
-lg:pt-16
-lg:pb-28
-      "
-    >
+ <section
+  id="signature-dishes"
+  className="
+    relative
+    overflow-hidden
+    bg-[#F8F3E9]
+    bg-[url('/images/hero/signature-bg.png')]
+    bg-cover
+    bg-center
+    bg-no-repeat
+    py-16
+    lg:py-20
+  "
+>
       {/* Soft overlay */}
       <div className="pointer-events-none absolute inset-0 bg-[#FFF9EE]/20" />
 
       {/* Decorative Mandala */}
-<div className="pointer-events-none absolute inset-x-0 top-8 flex justify-center opacity-[0.06]">
+<motion.div
+  className="pointer-events-none absolute inset-x-0 top-8 flex justify-center opacity-[0.06]"
+  initial={{ rotate: -8, scale: 1.15 }}
+  whileInView={{ rotate: 0, scale: 1 }}
+  transition={{
+    duration: 2,
+    ease: [0.22, 1, 0.36, 1],
+  }}
+  viewport={{ once: true }}
+>
+
   <Image
     src="/images/design/mandala.png"
     alt=""
@@ -34,7 +48,7 @@ lg:pb-28
     height={420}
     className="select-none"
   />
-</div>
+</motion.div>
 
       {/* Decorative side text */}
       <div className="pointer-events-none absolute left-6 top-1/2 z-[1] hidden -translate-y-1/2 -rotate-90 lg:block">
@@ -46,11 +60,18 @@ lg:pb-28
       {/* Main Content */}
       <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
 
+        
         {/* Heading */}
-        {/* Heading */}
-        <div className="mx-auto mb-12 max-w-2xl text-center lg:mb-16">
+        <motion.div
+  className="mx-auto mb-12 max-w-2xl text-center lg:mb-16"
+  variants={fadeUp}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.4 }}
+>
+  
 {/* Premium Decorative Divider */}
-<div className="mb-12 flex items-center justify-center">
+<div className="mb-8 flex items-center justify-center">
   <div className="flex items-center gap-5">
     <span className="h-px w-20 bg-gradient-to-r from-transparent via-[#C8A44D]/60 to-[#C8A44D]" />
 
@@ -63,7 +84,7 @@ lg:pb-28
     <span className="h-px w-20 bg-gradient-to-l from-transparent via-[#C8A44D]/60 to-[#C8A44D]" />
   </div>
 </div>
-      <div className="mb-5 flex items-center justify-center gap-4">
+      <div className="mb-3 flex items-center justify-center gap-3">
   <span className="h-px w-10 bg-[#C8A44D]/60" />
 
   <span className="text-[#C8A44D]">✦</span>
@@ -95,7 +116,7 @@ lg:pb-28
 </h2>
 
           {/* Ornament */}
-          <div className="mt-6 flex items-center justify-center gap-4">
+          <div className="mt-4 flex items-center justify-center gap-3">
             <span className="h-px w-14 bg-gradient-to-r from-transparent to-[#C8A44D]" />
 
             <span className="text-lg text-[#C8A44D]">
@@ -105,40 +126,52 @@ lg:pb-28
             <span className="h-px w-14 bg-gradient-to-l from-transparent to-[#C8A44D]" />
           </div>
 
-      <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-[#6B5B45] md:text-xl">
+      <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#6B5B45] md:text-xl">
   Experience a handpicked selection of our finest dishes, where authentic
   recipes, fresh ingredients, and timeless South Indian flavours come
   together to create an unforgettable dining experience.
 </p>
 
-        </div>
+        </motion.div>
+<div className="mb-10 flex items-center justify-center">
+  <div className="h-px w-24 bg-[#C8A44D]/25" />
+  <div className="mx-4 h-2 w-2 rounded-full bg-[#C8A44D]" />
+  <div className="h-px w-24 bg-[#C8A44D]/25" />
+</div>
 
         {/* Dish Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:gap-8">
+        <motion.div
+  className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2"
+  variants={staggerContainer}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+>
 
           {signatureDishes.map((dish) => (
 
-            <article
-              key={dish.name}
-              className="
-                group
-                relative
-                h-[440px]
-                overflow-hidden
-                rounded-[30px]
-                border
-                border-[#C8A44D]/25
-                bg-black
-                shadow-[0_18px_50px_rgba(49,39,22,0.12)]
-                transition-all
-                duration-500
-                hover:-translate-y-2
-                hover:border-[#C8A44D]/50
-                hover:shadow-[0_30px_80px_rgba(49,39,22,0.22)]
-                sm:h-[480px]
-                lg:h-[520px]
-              "
-            >
+           <motion.article
+  key={dish.name}
+  variants={cardVariant}
+  className="
+    group
+    relative
+    h-[440px]
+    overflow-hidden
+    rounded-[30px]
+    border
+    border-[#C8A44D]/25
+    bg-black
+    shadow-[0_18px_50px_rgba(49,39,22,0.12)]
+    transition-all
+    duration-500
+    hover:-translate-y-2
+    hover:border-[#C8A44D]/50
+    hover:shadow-[0_30px_80px_rgba(49,39,22,0.22)]
+    sm:h-[480px]
+    lg:h-[520px]
+  "
+>
 
               {/* Food Image */}
               <Image
@@ -293,14 +326,20 @@ lg:pb-28
                 "
               />
 
-            </article>
+            </motion.article>
 
           ))}
 
-        </div>
+        </motion.div>
 
         {/* Bottom CTA */}
-        <div className="mt-12 text-center lg:mt-16">
+        <motion.div
+  className="mt-12 text-center lg:mt-16"
+  variants={fadeUp}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.5 }}
+>
 
          <p
   className="
@@ -346,9 +385,10 @@ hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)]
 
           </Link>
 
-        </div>
+        </motion.div>
 
       </div>
+
     </section>
   );
 }
