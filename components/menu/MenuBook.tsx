@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
 
 import MenuCover from "./MenuCover";
@@ -13,40 +13,34 @@ interface Props {
 export default function MenuBook({ onOpen }: Props) {
   const [opening, setOpening] = useState(false);
 
-  const handleOpen = () => {
-    if (opening) return;
+const handleOpen = useCallback(() => {
+  if (opening) return;
 
-    setOpening(true);
+  setOpening(true);
 
-    setTimeout(() => {
-      onOpen();
-      setOpening(false);
-    }, 900);
-  };
+  const timer = window.setTimeout(() => {
+    onOpen();
+    setOpening(false);
+  }, 850);
+
+  return () => window.clearTimeout(timer);
+}, [opening, onOpen]);
 
   return (
-    <motion.div
-
+<motion.div
+  className="relative will-change-transform"
+  initial={{
+    opacity: 0,
+    y: 20,
+  }}
   animate={{
-    y: [0, -5, 0],
+    opacity: 1,
+    y: 0,
   }}
-whileHover={{
-  y: -10,
-  scale: 1.02,
-  rotateZ: -0.6,
-}}
   transition={{
-    y: {
-      repeat: Infinity,
-      repeatType: "loop",
-      duration: 4,
-      ease: "easeInOut",
-    },
-    type: "spring",
-    stiffness: 180,
-    damping: 18,
+    duration: 0.7,
+    ease: [0.22, 1, 0.36, 1],
   }}
-  className="relative"
 >
       {/* Floor Shadow */}
 
@@ -60,9 +54,9 @@ whileHover={{
         className="
           absolute
           left-1/2
-          bottom-[-38px]
+          bottom-[-25px]
           h-12
-          w-[420px]
+          w-[270px]
           -translate-x-1/2
           rounded-full
           bg-black
@@ -72,30 +66,48 @@ whileHover={{
 
 <motion.div
   animate={{
-    opacity: opening ? 0.45 : 0.15,
-    scale: opening ? 1.25 : 1,
+    opacity: opening ? 0.45 : 0.18,
+    scale: opening ? 1.15 : 1,
   }}
   transition={{
     duration: 0.8,
   }}
   className="
     absolute
-    inset-0
+    left-1/2
+    top-1/2
+    h-[180px]
+    w-[180px]
+    -translate-x-1/2
+    -translate-y-1/2
     rounded-full
-    bg-[#D6B15A]
-    blur-[140px]
+    bg-[#D6B15A]/35
+    blur-3xl
     -z-10
   "
 />
 
       {/* 3D Scene */}
+<div
+  className="
+    relative
 
-      <div
-        className="relative h-[700px] w-[470px]"
-        style={{
-          perspective: "2600px",
-        }}
-      >
+    h-[360px]
+    w-[240px]
+
+    sm:h-[420px]
+    sm:w-[280px]
+
+    lg:h-[480px]
+    lg:w-[320px]
+
+    xl:h-[520px]
+    xl:w-[350px]
+  "
+  style={{
+    perspective: "1800px",
+  }}
+>
         <motion.div
           onClick={handleOpen}
         whileHover={{
@@ -108,11 +120,10 @@ whileHover={{
           whileTap={{
             scale: 0.99,
           }}
-          transition={{
-            type: "spring",
-            stiffness: 160,
-            damping: 18,
-          }}
+         transition={{
+  duration: 0.45,
+  ease: [0.22, 1, 0.36, 1],
+}}
           className="relative h-full w-full cursor-pointer"
           style={{
             transformStyle: "preserve-3d",

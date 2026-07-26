@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { signatureDishes } from "@/data/signatureDishes";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import SignatureCollectionModal from "@/components/ui/SignatureCollectionModal";
 import {
   fadeUp,
   staggerContainer,
@@ -11,6 +13,11 @@ import {
 } from "@/lib/animations";
 
 export default function SignatureDishes() {
+
+const [openCollection, setOpenCollection] = useState(false);
+const homepageDishes = signatureDishes.filter((dish) =>
+  [1, 2, 5, 6].includes(dish.id)
+);
   return (
  <section
   id="signature-dishes"
@@ -148,7 +155,7 @@ export default function SignatureDishes() {
   viewport={{ once: true, amount: 0.2 }}
 >
 
-          {signatureDishes.map((dish) => (
+          {homepageDishes.map((dish) => (
 
            <motion.article
   key={dish.name}
@@ -354,9 +361,10 @@ export default function SignatureDishes() {
   Discover more signature dishes crafted with authentic flavours.
 </p>
 
-          <Link
-            href="#contact"
-            className="
+         <button
+  onClick={() => setOpenCollection(true)}
+  className="
+
 group
 inline-flex
 items-center
@@ -383,11 +391,16 @@ hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)]
               →
             </span>
 
-          </Link>
+          </button>
 
         </motion.div>
 
-      </div>
+            </div>
+
+      <SignatureCollectionModal
+        open={openCollection}
+        onClose={() => setOpenCollection(false)}
+      />
 
     </section>
   );

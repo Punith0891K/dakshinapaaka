@@ -17,7 +17,15 @@ export default function MenuShowcase({ onOpen }: Props) {
         duration: 0.8,
         ease: [0.22, 1, 0.36, 1],
       }}
-      className="relative flex items-center justify-center"
+      className="
+  relative
+  flex
+  items-center
+  justify-center
+
+  lg:-translate-x-10
+  xl:-translate-x-16
+"
     >
       {/* Main Ambient Glow */}
       <motion.div
@@ -52,7 +60,17 @@ export default function MenuShowcase({ onOpen }: Props) {
 
      {/* Book */}
 
-<div className="relative">
+<div
+  className="
+    relative
+
+    -ml-10
+
+    lg:-ml-16
+
+    xl:-ml-24
+  "
+>
 
   {/* Hover Glow */}
 
