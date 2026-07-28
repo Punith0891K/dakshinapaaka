@@ -177,504 +177,516 @@ export default function SignatureCollectionMobile({
               "
             >
 
-                  {/* ================= HERO ================= */}
+            {/* ================= HERO 2.0 ================= */}
 
-              <section className="px-5 pt-6">
+<section className="px-5 pt-5">
 
-                <motion.div
-                  initial={{
-                    opacity: 0,
-                    y: 30,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  transition={{
-                    duration: 0.6,
-                  }}
-                  className="
-                    overflow-hidden
-                    rounded-[30px]
-                    border
-                    border-[#E7DAB8]
-                    bg-white
-                    shadow-lg
-                  "
-                >
+<motion.div
+initial={{
+opacity:0,
+y:25,
+}}
+animate={{
+opacity:1,
+y:0,
+}}
+transition={{
+duration:.45,
+}}
+className="
+relative
+overflow-hidden
+rounded-[32px]
+"
+>
 
-                  {/* Image */}
+    <div
+className="
+relative
+h-[430px]
+"
+>
 
-                  <div className="relative h-[340px]">
+<Image
+fill
+priority
+quality={90}
+sizes="100vw"
+src={featuredDish.image}
+alt={featuredDish.name}
+className="object-cover"
+/>
 
-                    <Image
-                      src={featuredDish.image}
-                      alt={featuredDish.name}
-                      fill
-                      priority
-                      quality={85}
-                      sizes="100vw"
-                      className="object-cover"
-                    />
+<div
+className="
+absolute
+inset-0
+bg-gradient-to-t
+from-black/90
+via-black/20
+to-transparent
+"
+/>
 
-                    {/* Gradient */}
+<div
+className="
+absolute
+left-6
+top-6
+"
+>
 
-                    <div
-                      className="
-                        absolute
-                        inset-0
-                        bg-gradient-to-t
-                        from-black
-                        via-black/30
-                        to-transparent
-                      "
-                    />
+<span
+className="
+rounded-full
+bg-[#174D32]
+px-4
+py-2
+text-[11px]
+uppercase
+tracking-[0.25em]
+text-white
+"
+>
 
-                    {/* Badge */}
+Chef's Recommendation
 
-                    <div
-                      className="
-                        absolute
-                        left-5
-                        top-5
-                      "
-                    >
+</span>
 
-                      <span
-                        className="
-                          inline-flex
-                          rounded-full
-                          bg-[#174D32]/95
-                          px-4
-                          py-2
-                          text-[11px]
-                          uppercase
-                          tracking-[0.25em]
-                          text-white
-                          backdrop-blur-md
-                        "
-                      >
-                        Chef's Recommendation
-                      </span>
+</div>
 
-                    </div>
+                 <div
+className="
+absolute
+left-4
+right-4
+bottom-4
+rounded-[28px]
+border
+border-white/15
+bg-white/10
+backdrop-blur-xl
+p-6
+"
+>
 
-                    {/* Hero Content */}
+<p
+className="
+text-xs
+uppercase
+tracking-[0.25em]
+text-[#F3D57C]
+"
+>
 
-                    <div
-                      className="
-                        absolute
-                        inset-x-0
-                        bottom-0
-                        p-6
-                      "
-                    >
+{featuredDish.category}
 
-                      <p
-                        className="
-                          text-xs
-                          uppercase
-                          tracking-[0.25em]
-                          text-[#F4D98B]
-                        "
-                      >
-                        {featuredDish.badge}
-                      </p>
+</p>
 
-                      <h2
-                        className="
-                          mt-3
-                          font-serif
-                          text-[36px]
-                          leading-none
-                          text-white
-                        "
-                      >
-                        {featuredDish.name}
-                      </h2>
+<h2
+className="
+mt-3
+font-serif
+text-[38px]
+leading-none
+text-white
+"
+>
 
-                      <p
-                        className="
-                          mt-4
-                          line-clamp-3
-                          text-[15px]
-                          leading-7
-                          text-white/90
-                        "
-                      >
-                        {featuredDish.description}
-                      </p>
+{featuredDish.name}
 
-                      <div
-                        className="
-                          mt-6
-                          flex
-                          items-center
-                          justify-between
-                        "
-                      >
+</h2>
 
-                        <span
-                          className="
-                            rounded-full
-                            border
-                            border-white/20
-                            bg-white/10
-                            px-4
-                            py-2
-                            text-sm
-                            text-white
-                            backdrop-blur-md
-                          "
-                        >
-                          {featuredDish.category}
-                        </span>
+<p
+className="
+mt-4
+line-clamp-2
+text-[15px]
+leading-7
+text-white/90
+"
+>
 
-                        <button
-                          className="
-                            rounded-full
-                            bg-white
-                            px-5
-                            py-3
-                            text-sm
-                            font-medium
-                            text-[#174D32]
-                            transition-transform
-                            active:scale-95
-                          "
-                        >
-                          Explore →
-                        </button>
+{featuredDish.description}
 
-                      </div>
+</p>
 
-                    </div>
+<div
+className="
+mt-6
+flex
+items-center
+justify-between
+"
+>
 
-                  </div>
+<span
+className="
+text-sm
+text-white/70
+"
+>
 
-                </motion.div>
+{featuredDish.badge}
 
-              </section>
+</span>
+
+<button
+className="
+rounded-full
+bg-white
+px-5
+py-3
+font-medium
+text-[#174D32]
+active:scale-95
+"
+>
+
+Explore →
+
+</button>
+
+</div>
+</div>
+</div>
+
+</motion.div>
+
+</section>
 
               {/* ================= CATEGORIES ================= */}
 
-              <section className="mt-10">
+            {/* ================= MENU FILTER ================= */}
 
-                <div className="px-5">
+<section className="mt-8 px-5">
 
-                  <p
-                    className="
-                      text-xs
-                      uppercase
-                      tracking-[0.35em]
-                      text-[#C8A44D]
-                    "
-                  >
-                    Browse Menu
-                  </p>
+<div className="mb-5">
 
-                  <h3
-                    className="
-                      mt-3
-                      font-serif
-                      text-3xl
-                      text-[#1F1F1F]
-                    "
-                  >
-                    Our Specialities
-                  </h3>
+<p
+className="
+text-[11px]
+uppercase
+tracking-[0.35em]
+text-[#C8A44D]
+"
+>
+Browse Collection
+</p>
 
-                </div>
+<h3
+className="
+mt-2
+font-serif
+text-[32px]
+leading-none
+text-[#1E1E1E]
+"
+>
+Choose Your
+<br />
+Favourite
+</h3>
 
-                <div
-                  className="
-                    mt-6
-                    flex
-                    gap-3
-                    overflow-x-auto
-                    px-5
-                    pb-3
-                    [-ms-overflow-style:none]
-                    [scrollbar-width:none]
-                  "
-                >
+</div>
 
-                  {categories.map((category) => (
+<div
+className="
+rounded-full
+border
+border-[#E6DAB8]
+bg-white/70
+backdrop-blur-xl
+p-2
+shadow-lg
+overflow-hidden
+"
+>
 
-                    <button
-                      key={category}
-                      onClick={() => setActiveCategory(category)}
-                      className={`
-                        whitespace-nowrap
-                        rounded-full
-                        px-5
-                        py-3
-                        text-sm
-                        font-medium
-                        transition-all
-                        duration-300
+<div
+className="
+flex
+gap-2
+overflow-x-auto
+scroll-smooth
+[-ms-overflow-style:none]
+[scrollbar-width:none]
+"
+>
+{categories.map((category) => (
 
-                        ${
-                          activeCategory === category
-                            ? "bg-[#174D32] text-white shadow-lg"
-                            : "border border-[#E5D7B7] bg-white text-[#6B5B45]"
-                        }
-                      `}
-                    >
-                      {category}
-                    </button>
+<button
+key={category}
+onClick={() => setActiveCategory(category)}
+className={`
+relative
+flex-shrink-0
+rounded-full
+px-5
+py-3
+text-sm
+font-medium
+transition-all
+duration-300
 
-                  ))}
+${
+activeCategory===category
 
-                </div>
+?
 
-              </section>
+"bg-[#174D32] text-white shadow-md"
 
-              {/* ================= DISH GRID ================= */}
+:
 
-              <section className="mt-8 px-5 pb-10">
+"text-[#6B5B45]"
+}
+`}
+>
 
-                <motion.div
-                  key={activeCategory}
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    visible: {
-                      transition: {
-                        staggerChildren: 0.05,
-                      },
-                    },
-                  }}
-                  className="grid grid-cols-2 gap-4"
-                >
+{category}
 
-                  {filteredDishes.map((dish) => (
+</button>
 
-                    <motion.article
-                      key={dish.id}
-                      variants={{
-                        hidden: {
-                          opacity: 0,
-                          y: 20,
-                          scale: 0.96,
-                        },
-                        visible: {
-                          opacity: 1,
-                          y: 0,
-                          scale: 1,
-                        },
-                      }}
-                      transition={{
-                        duration: 0.45,
-                      }}
-                      className="
-                        group
-                        overflow-hidden
-                        rounded-[24px]
-                        border
-                        border-[#E6D9BA]
-                        bg-white
-                        shadow-sm
-                        transition-all
-                        duration-300
-                        active:scale-[0.98]
-                      "
-                    >
+))}
 
-                      {/* Image */}
+</div>
 
-                      <div className="relative aspect-[4/5] overflow-hidden">
+</div>
 
-                        <Image
-                          src={dish.image}
-                          alt={dish.name}
-                          fill
-                          loading="lazy"
-                          quality={75}
-                          sizes="50vw"
-                          className="
-                            object-cover
-                            transition-transform
-                            duration-500
-                            group-hover:scale-105
-                          "
-                        />
+</section>
 
-                        <div
-                          className="
-                            absolute
-                            inset-0
-                            bg-gradient-to-t
-                            from-black/70
-                            via-black/15
-                            to-transparent
-                          "
-                        />
+{/* ================= MENU GRID ================= */}
 
-                        {/* Category */}
+<section className="mt-10 px-5 pb-10">
 
-                        <span
-                          className="
-                            absolute
-                            left-3
-                            top-3
-                            rounded-full
-                            bg-[#174D32]/90
-                            px-3
-                            py-1.5
-                            text-[10px]
-                            uppercase
-                            tracking-[0.15em]
-                            text-white
-                            backdrop-blur-md
-                          "
-                        >
-                          {dish.category}
-                        </span>
+<motion.div
+key={activeCategory}
+initial="hidden"
+animate="visible"
+variants={{
+visible:{
+transition:{
+staggerChildren:.05,
+},
+},
+}}
+className="
+grid
+grid-cols-2
+gap-5
+"
+>
 
-                        {/* Badge */}
+{filteredDishes.map((dish)=>(
 
-                        <span
-                          className="
-                            absolute
-                            bottom-3
-                            left-3
-                            rounded-full
-                            bg-white/90
-                            px-3
-                            py-1.5
-                            text-[10px]
-                            font-medium
-                            text-[#174D32]
-                            backdrop-blur-md
-                          "
-                        >
-                          {dish.badge}
-                        </span>
+    <motion.article
+key={dish.id}
+variants={{
+hidden:{
+opacity:0,
+y:25,
+},
+visible:{
+opacity:1,
+y:0,
+},
+}}
+transition={{
+duration:.45,
+}}
+className="
+group
+overflow-hidden
+rounded-[28px]
+bg-white
+shadow-[0_8px_24px_rgba(0,0,0,.08)]
+"
+>
 
-                      </div>
+<div
+className="
+relative
+aspect-square
+overflow-hidden
+"
+>
+<Image
+fill
+loading="lazy"
+sizes="50vw"
+quality={80}
+src={dish.image}
+alt={dish.name}
+className="
+object-cover
+transition-transform
+duration-500
+group-hover:scale-105
+"
+/>
+<div
+className="
+absolute
+inset-0
+bg-gradient-to-t
+from-black/50
+to-transparent
+"
+/>
 
-                      {/* Content */}
+<div
+className="
+absolute
+left-3
+bottom-3
+"
+>
 
-                      <div className="p-4">
+<span
+className="
+rounded-full
+bg-white/90
+px-3
+py-2
+text-[10px]
+font-medium
+backdrop-blur-md
+"
+>
 
-                        <h3
-                          className="
-                            font-serif
-                            text-[22px]
-                            leading-6
-                            text-[#1F1F1F]
-                            line-clamp-2
-                          "
-                        >
-                          {dish.name}
-                        </h3>
+{dish.category}
 
-                        <p
-                          className="
-                            mt-3
-                            line-clamp-3
-                            text-[13px]
-                            leading-6
-                            text-[#6B5B45]
-                          "
-                        >
-                          {dish.description}
-                        </p>
+</span>
 
-                        <div
-                          className="
-                            mt-5
-                            flex
-                            items-center
-                            justify-between
-                          "
-                        >
+</div>
 
-                          <span
-                            className="
-                              text-xs
-                              uppercase
-                              tracking-[0.2em]
-                              text-[#C8A44D]
-                            "
-                          >
-                            Explore
-                          </span>
+</div>
 
-                          <div
-                            className="
-                              flex
-                              h-9
-                              w-9
-                              items-center
-                              justify-center
-                              rounded-full
-                              bg-[#174D32]
-                              text-white
-                              transition-transform
-                              duration-300
-                              group-hover:translate-x-1
-                            "
-                          >
-                            →
-                          </div>
+<div
+className="
+p-4
+"
+>
 
-                        </div>
+<h3
+className="
+font-serif
+text-[22px]
+leading-6
+text-[#1F1F1F]
+line-clamp-2
+"
+>
 
-                      </div>
+{dish.name}
 
-                    </motion.article>
+</h3>
 
-                  ))}
+<p
+className="
+mt-3
+line-clamp-2
+text-[13px]
+leading-6
+text-[#6B5B45]
+"
+>
 
-                  {filteredDishes.length === 0 && (
+{dish.description}
 
-                    <motion.div
-                      initial={{
-                        opacity: 0,
-                        y: 20,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                      }}
-                      className="
-                        col-span-2
-                        py-20
-                        text-center
-                      "
-                    >
+</p>
 
-                      <h3
-                        className="
-                          font-serif
-                          text-3xl
-                          text-[#174D32]
-                        "
-                      >
-                        Nothing Here Yet
-                      </h3>
+<div
+className="
+mt-5
+flex
+items-center
+justify-between
+"
+>
+<span
+className="
+text-xs
+uppercase
+tracking-[0.2em]
+text-[#C8A44D]
+"
+>
 
-                      <p
-                        className="
-                          mt-4
-                          text-[#6B5B45]
-                        "
-                      >
-                        Our chefs are preparing something delicious.
-                      </p>
+{dish.badge}
 
-                    </motion.div>
+</span>
 
-                  )}
+<div
+className="
+flex
+h-10
+w-10
+items-center
+justify-center
+rounded-full
+bg-[#174D32]
+text-white
+transition-transform
+duration-300
+group-hover:translate-x-1
+"
+>
 
-                </motion.div>
+→
 
-              </section>
+</div>
 
-                        </div>
-          </motion.div>
+</div>
+
+</div>
+
+</motion.article>
+
+))}
+    
+  {filteredDishes.length===0&&(
+
+<div
+className="
+col-span-2
+py-24
+text-center
+"
+>
+
+<h3
+className="
+font-serif
+text-3xl
+text-[#174D32]
+"
+>
+
+Coming Soon
+
+</h3>
+
+<p
+className="
+mt-3
+text-[#6B5B45]
+"
+>
+
+Our chefs are preparing something special.
+
+</p>
+
+</div>
+
+)}
+
+</motion.div>
+
+</section>
+            </div> {/* Scroll Area */}
+          </motion.div> {/* Mobile Sheet */}
         </>
       )}
     </AnimatePresence>
