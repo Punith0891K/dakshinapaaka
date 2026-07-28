@@ -18,19 +18,24 @@ export default function SignatureCollectionModal({
 
   const featuredDish = signatureDishes[0];
   const [activeCategory, setActiveCategory] = useState("All");
-
+const [compactHeader, setCompactHeader] = useState(false);
   const filteredDishes =
   activeCategory === "All"
     ? signatureDishes.slice(1)
     : signatureDishes
         .slice(1)
         .filter((dish) => dish.category === activeCategory);
+const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const compact = e.currentTarget.scrollTop > 80;
 
+  setCompactHeader(prev =>
+    prev !== compact ? compact : prev
+  );
+};
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-         layout
           className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-xl p-4 md:p-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -45,7 +50,7 @@ export default function SignatureCollectionModal({
 
           {/* Main Window */}
           <motion.div
-           layout
+           
             initial={{
               opacity: 0,
               y: 60,
@@ -78,27 +83,98 @@ export default function SignatureCollectionModal({
               rounded-[34px]
               border
               border-[#D6C9A8]
-              bg-[#F8F3E9]
-              shadow-[0_40px_120px_rgba(0,0,0,0.45)]
+              bg-[radial-gradient(circle_at_top,#FFFDF8_0%,#FBF6ED_40%,#F5EBDD_100%)]
+              shadow-[0_24px_60px_rgba(0,0,0,0.28)]
             "
           >
             {/* Decorative Top Glow */}
             <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#FFF5D7]/70 to-transparent pointer-events-none" />
 
+{/* Ambient Golden Glow */}
+<div
+  className="
+    pointer-events-none
+    absolute
+    left-1/2
+    top-1/2
+    -translate-x-1/2
+    -translate-y-1/2
+    h-[900px]
+    w-[900px]
+    rounded-full
+    bg-[#C8A44D]/[0.035]
+    blur-[120px]
+  "
+/>
             {/* HEADER */}
-            <header className="relative flex items-center justify-between border-b border-[#E5D7B7] px-8 py-7 md:px-12">
+            <header
+  className={`
+    relative
+    flex
+    items-center
+    transform-gpu
+    justify-between
+    border-b
+    border-[#E5D7B7]
+    px-8
+    md:px-12
+    transition-all
+    duration-500
+    ${compactHeader ? "py-2" : "py-7"}
+  `}
+>
 
               <div>
 
-                <p className="text-xs uppercase tracking-[0.45em] text-[#2F6B3D]">
+               <p
+  className={`
+    uppercase
+    tracking-[0.45em]
+    text-[#2F6B3D]
+    transition-all
+    duration-500
+    ${
+      compactHeader
+        ? "text-[10px]"
+        : "text-xs"
+    }
+  `}
+>
                   Dakshinapaaka
                 </p>
 
-                <h2 className="mt-3 font-serif text-4xl text-[#1F1F1F] md:text-5xl">
+                <h2
+  className={`
+    mt-2
+    font-serif
+    text-[#1F1F1F]
+    transition-all
+    duration-500
+    ${
+      compactHeader
+        ? "text-3xl md:text-4xl"
+        : "text-4xl md:text-5xl"
+    }
+  `}
+>
                   Signature Collection
                 </h2>
 
-                <p className="mt-3 max-w-xl text-[#6B5B45]">
+                <p
+  className={`
+    mt-3
+    max-w-xl
+    text-[#6B5B45]
+transition-[opacity,transform] duration-300
+    overflow-hidden
+
+    ${
+      compactHeader
+        ? "opacity-0 -translate-y-3 max-h-0 mt-0"
+        : "opacity-100 translate-y-0 max-h-20"
+    }
+  `}
+>
                   Discover our chef's handpicked creations,
                   prepared with authentic South Indian flavours.
                 </p>
@@ -107,31 +183,35 @@ export default function SignatureCollectionModal({
 
               <button
                 onClick={onClose}
-                className="
-                  flex
-                  h-14
-                  w-14
-                  items-center
-                  justify-center
-                  rounded-full
-                  border
-                  border-[#D6C9A8]
-                  bg-white
-                  text-[#174D32]
-                  transition-all
-                  duration-300
-                  hover:rotate-90
-                  hover:bg-[#174D32]
-                  hover:text-white
-                "
-              >
+        className={`
+flex
+items-center
+justify-center
+rounded-full
+border
+border-[#D6C9A8]
+bg-white
+text-[#174D32]
+transition-all
+duration-500
+
+${
+compactHeader
+? "h-11 w-11"
+: "h-14 w-14"
+}
+`}
+>
                 <X size={22} />
               </button>
 
             </header>
 
        {/* BODY */}
-<div className="flex-1 overflow-y-auto px-8 py-10 md:px-12">
+<div
+  onScroll={handleScroll}
+  className="flex-1 overflow-y-auto px-8 py-10 md:px-12"
+>
 
 <div className="mb-12">
 
@@ -155,55 +235,82 @@ export default function SignatureCollectionModal({
 
   </div>
 
-  <div className="mt-10 flex flex-wrap justify-center gap-3">
+<div className="mt-12 flex justify-center">
+  <div
+    className="
+      inline-flex
+      items-center
+      gap-8
+      border-b
+      border-[#E7DDBB]
+      pb-4
+    "
+  >
+    {[
+      "All",
+      "Breakfast",
+      "Meals",
+      "Starters",
+      "Beverages",
+      "Desserts",
+    ].map((item) => (
+      <button
+        key={item}
+        onClick={() => setActiveCategory(item)}
+        className="
+          relative
+          pb-3
+          text-[15px]
+          font-medium
+          transition-colors
+          duration-200
+        "
+      >
+        <span
+          className={
+            activeCategory === item
+              ? "text-[#184B35]"
+              : "text-[#7A6B55] hover:text-[#184B35]"
+          }
+        >
+          {item}
+        </span>
 
-{[
-  "All",
-  "Breakfast",
-  "Meals",
-  "Starters",
-  "Beverages",
-  "Desserts",
-].map((item) => (
-
-<button
-  key={item}
-  onClick={() => setActiveCategory(item)}
-className={`
-  rounded-full
-  border
-  px-6
-  py-3
-  text-sm
-  font-medium
-  transition-all
-  duration-500
-  hover:-translate-y-1
-  hover:scale-105
-
-  ${
-    activeCategory === item
-      ? "bg-[#174D32] text-white border-[#174D32] shadow-[0_12px_35px_rgba(23,77,50,0.25)]"
-      : "bg-white text-[#174D32] border-[#D8C8A0] hover:bg-[#174D32] hover:text-white hover:shadow-[0_10px_30px_rgba(23,77,50,0.15)]"
-  }
-`}
->
-  {item}
-</button>
-
+        {activeCategory === item && (
+          <motion.div
+            layoutId="category-indicator"
+            className="
+              absolute
+              bottom-0
+              left-0
+              right-0
+              mx-auto
+              h-[2px]
+              w-full
+              rounded-full
+              bg-[#C8A44D]
+            "
+            transition={{
+              type: "spring",
+              stiffness: 350,
+              damping: 30,
+            }}
+          />
+        )}
+      </button>
     ))}
-
   </div>
-
+</div>
 </div>
 
 {/* ================= FEATURED DISH ================= */}
 
-<AnimatePresence mode="wait">
+
 
   {activeCategory === "All" && (
 
     <motion.div
+  style={{ willChange: "transform" }}
       key="featured-dish"
       initial={{
         opacity: 0,
@@ -239,14 +346,15 @@ className={`
     -translate-x-1/2
     rounded-full
     bg-[#E8C46A]/20
-    blur-[130px]
+    blur-[80px]
+opacity-60
   "
 />
       <div className="grid lg:grid-cols-2">
 
         {/* Left Image */}
 
-        <div className="relative h-[420px]">
+        <div className="relative h-[520px] lg:h-[560px]">
           <div
   className="
     absolute
@@ -259,12 +367,20 @@ className={`
   "
 />
 
-          <Image
-            src={featuredDish.image}
-            alt={featuredDish.name}
-            fill
-            className="object-cover"
-          />
+      <Image
+  src={featuredDish.image}
+  alt={featuredDish.name}
+  fill
+  priority
+  quality={80}
+  sizes="(max-width: 1024px) 100vw, 50vw"
+  className="
+    object-cover
+    transition-transform
+    duration-700
+    group-hover:scale-105
+  "
+/>
 
           <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
 
@@ -272,7 +388,7 @@ className={`
 
         {/* Right Content */}
 
-        <div className="flex flex-col justify-center p-10 lg:p-14">
+        <div className="flex flex-col justify-center p-12 lg:p-16">
 
           <div className="flex items-center gap-3">
 
@@ -286,20 +402,20 @@ className={`
 
           </div>
 
-          <h2 className="mt-6 font-serif text-5xl text-[#1E1E1E]">
+          <h2 className="mt-6 font-serif text-5xl lg:text-6xl leading-tight text-[#1E1E1E]">
             {featuredDish.name}
           </h2>
 
           <p className="mt-6 text-lg leading-8 text-[#6B5B45]">
             {featuredDish.description}
           </p>
-
+<div className="my-8 h-px w-20 bg-[#D9C89D]" />
           <div className="mt-8 flex items-center gap-4">
 
             <span className="text-[#C8A44D] font-medium">
               {featuredDish.badge}
             </span>
-
+<div className="mt-4 h-px w-12 bg-[#D9C89D]" />
           </div>
 
         </div>
@@ -310,23 +426,22 @@ className={`
 
   )}
 
-</AnimatePresence>
 
 
 {/* ================= DISH GRID ================= */}
 
-<AnimatePresence mode="wait">
+
 
   <motion.div
+  style={{ willChange: "transform" }}
     key={activeCategory}
-    layout
     initial="hidden"
     animate="visible"
     exit="hidden"
     variants={{
       visible: {
         transition: {
-          staggerChildren: 0.12,
+          staggerChildren: 0.04,
         },
       },
     }}
@@ -336,7 +451,6 @@ className={`
     {filteredDishes.map((dish, index) => (
 
       <motion.div
-       layout
         key={dish.name}
        variants={{
   hidden: {
@@ -363,11 +477,10 @@ className={`
           border
           border-[#E3D5B3]
           bg-white
-          shadow-lg
-          hover:-translate-y-3
-          hover:rotate-[0.3deg]
-          hover:border-[#C8A44D]
-          hover:shadow-[0_35px_80px_rgba(18,18,18,0.18)]
+hover:-translate-y-1
+hover:border-[#C8A44D]
+shadow-md
+hover:shadow-lg
         "
       >
 
@@ -375,36 +488,38 @@ className={`
 
         <div className="relative h-64 overflow-hidden">
 
-          <div
+          
+<div
   className="
     absolute
     inset-0
-    -translate-x-full
-    bg-gradient-to-r
-    from-transparent
-    via-white/20
-    to-transparent
-    transition-transform
-    duration-1000
-    group-hover:translate-x-full
+    bg-white/5
+    opacity-0
+    transition-opacity
+    duration-300
+    group-hover:opacity-100
     z-20
   "
 />
 
-          <Image
-            src={dish.image}
-            alt={dish.name}
-            fill
-            className="
-              object-cover
-              transition-transform
-              duration-700
-              group-hover:scale-110
-              group-hover:rotate-1
-              hover:-translate-y-3
-              hover:shadow-[0_30px_70px_rgba(23,77,50,0.18)]
-            "
-          />
+         <Image
+  src={dish.image}
+  alt={dish.name}
+  fill
+  loading="lazy"
+  quality={75}
+  sizes="
+    (max-width: 768px) 100vw,
+    (max-width: 1280px) 50vw,
+    33vw
+  "
+  className="
+    object-cover
+    transition-transform
+    duration-500
+    group-hover:scale-[1.03]
+  "
+/>
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
@@ -478,7 +593,7 @@ className={`
 
   </motion.div>
 
-</AnimatePresence>
+
 </div>
           </motion.div>
         </motion.div>

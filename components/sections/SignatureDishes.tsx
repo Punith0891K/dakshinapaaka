@@ -6,6 +6,7 @@ import { signatureDishes } from "@/data/signatureDishes";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import SignatureCollectionModal from "@/components/ui/SignatureCollectionModal";
+import SignatureCollectionMobile from "@/components/ui/SignatureCollectionMobile";
 import {
   fadeUp,
   staggerContainer,
@@ -397,10 +398,21 @@ hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)]
 
             </div>
 
-      <SignatureCollectionModal
-        open={openCollection}
-        onClose={() => setOpenCollection(false)}
-      />
+   {/* Desktop */}
+<div className="hidden md:block">
+  <SignatureCollectionModal
+    open={openCollection}
+    onClose={() => setOpenCollection(false)}
+  />
+</div>
+
+{/* Mobile */}
+<div className="block md:hidden">
+  <SignatureCollectionMobile
+    open={openCollection}
+    onClose={() => setOpenCollection(false)}
+  />
+</div>
 
     </section>
   );
