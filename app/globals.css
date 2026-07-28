@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+
+:root {
+  --primary: #2f6b3d;
+  --gold: #c8a44d;
+  --ivory: #faf7f2;
+  --dark: #181818;
+  --gray: #666666;
+
+  --font-heading: "Playfair Display", serif;
+  --font-body: "Poppins", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--ivory);
+  color: var(--dark);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--font-heading);
+}
+
+/* ==========================================
+   Pure Veg Glow Animation
+========================================== */
+
+@keyframes vegGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: drop-shadow(0 0 0 rgba(47,107,61,0));
+  }
+
+  50% {
+    transform: scale(1.04);
+    opacity: 0.92;
+    filter: drop-shadow(0 0 12px rgba(47,107,61,0.35));
+  }
+}
+
+.veg-glow {
+  animation: vegGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes floatGlow {
+  0%,
+  100% {
+    box-shadow: 0 18px 45px rgba(23, 77, 50, 0.28);
+  }
+
+  50% {
+    box-shadow: 0 24px 55px rgba(23, 77, 50, 0.42);
+  }
+}
+
+.float-pulse {
+  animation: floatGlow 2.8s ease-in-out infinite;
+}
