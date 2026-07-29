@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { signatureDishes } from "@/data/signatureDishes";
-
+import heroThali from "@/public/images/food/hero-thali.png";
 interface SignatureCollectionModalProps {
   open: boolean;
   onClose: () => void;
@@ -18,19 +18,36 @@ export default function SignatureCollectionModal({
 
   const featuredDish = signatureDishes[0];
   const [activeCategory, setActiveCategory] = useState("All");
+  const showHero = activeCategory === "All";
 const [compactHeader, setCompactHeader] = useState(false);
-  const filteredDishes =
-  activeCategory === "All"
-    ? signatureDishes.slice(1)
-    : signatureDishes
-        .slice(1)
-        .filter((dish) => dish.category === activeCategory);
-const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-  const compact = e.currentTarget.scrollTop > 80;
+const ticking = useRef(false);
+const filteredDishes = useMemo(() => {
+  const dishes = signatureDishes.slice(1);
 
-  setCompactHeader(prev =>
-    prev !== compact ? compact : prev
+  if (activeCategory === "All")
+    return dishes;
+
+  return dishes.filter(
+    dish => dish.category === activeCategory
   );
+}, [activeCategory]);
+
+const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  if (ticking.current) return;
+
+  const target = e.currentTarget;
+
+  ticking.current = true;
+
+  requestAnimationFrame(() => {
+    const compact = target.scrollTop > 80;
+
+    setCompactHeader((prev) =>
+      prev !== compact ? compact : prev
+    );
+
+    ticking.current = false;
+  });
 };
   return (
     <AnimatePresence>
@@ -84,7 +101,7 @@ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
               border
               border-[#D6C9A8]
               bg-[radial-gradient(circle_at_top,#FFFDF8_0%,#FBF6ED_40%,#F5EBDD_100%)]
-              shadow-[0_24px_60px_rgba(0,0,0,0.28)]
+              shadow-[0_18px_40px_rgba(0,0,0,0.18)]
             "
           >
             {/* Decorative Top Glow */}
@@ -99,11 +116,11 @@ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     top-1/2
     -translate-x-1/2
     -translate-y-1/2
-    h-[900px]
-    w-[900px]
+    h-[700px]
+    w-[700px]
     rounded-full
-    bg-[#C8A44D]/[0.035]
-    blur-[120px]
+    bg-[#C8A44D]/[0.03]
+    blur-[70px]
   "
 />
             {/* HEADER */}
@@ -118,7 +135,7 @@ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     border-[#E5D7B7]
     px-8
     md:px-12
-    transition-all
+    transition-[padding]
     duration-500
     ${compactHeader ? "py-2" : "py-7"}
   `}
@@ -140,7 +157,7 @@ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     }
   `}
 >
-                  Dakshinapaaka
+                  Dakshina Paaka
                 </p>
 
                 <h2
@@ -213,238 +230,373 @@ compactHeader
   className="flex-1 overflow-y-auto px-8 py-10 md:px-12"
 >
 
-<div className="mb-12">
+{/* ================= OPENING STORY ================= */}
+
+<section className="mx-auto max-w-5xl py-10">
 
   <div className="text-center">
 
-    <p className="text-sm uppercase tracking-[0.35em] text-[#C8A44D]">
-      Curated Collection
+    <p
+      className="
+        text-xs
+        uppercase
+        tracking-[0.55em]
+        text-[#B88B2C]
+        font-medium
+      "
+    >
+      Welcome to Dakshinapaaka
     </p>
 
-    <h3 className="mt-3 font-serif text-5xl text-[#1E1E1E]">
-      Every Dish Tells
-      <span className="block italic text-[#2F6B3D]">
-        A Story
+    <h2
+      className="
+        mt-8
+        font-serif
+        text-[56px]
+md:text-[64px]
+        leading-[1.05]
+        text-[#1C1C1C]
+      "
+    >
+      Where Tradition
+      <span className="block italic text-[#174D32]">
+        Meets Every Plate
       </span>
-    </h3>
+    </h2>
 
-    <p className="mx-auto mt-5 max-w-3xl text-lg text-[#6B5B45]">
-      Every recipe is prepared using traditional techniques,
-      premium ingredients and authentic South Indian flavours.
+    <p
+      className="
+        mx-auto
+        mt-10
+        max-w-3xl
+        text-[20px]
+        leading-9
+        text-[#6B5B45]
+      "
+    >
+      Every recipe tells the story of South India —
+      prepared with time-honoured techniques,
+      fresh ingredients and the warmth of
+      authentic hospitality.
     </p>
 
   </div>
 
-<div className="mt-12 flex justify-center">
+</section>
+
+<div className="mb-10 flex items-center justify-center gap-6">
+
+  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#D8C89F]" />
+
   <div
     className="
-      inline-flex
-      items-center
-      gap-8
-      border-b
-      border-[#E7DDBB]
-      pb-4
+      h-3
+      w-3
+      rotate-45
+      border
+      border-[#C8A44D]
+      bg-[#FFF9ED]
     "
-  >
-    {[
-      "All",
-      "Breakfast",
-      "Meals",
-      "Starters",
-      "Beverages",
-      "Desserts",
-    ].map((item) => (
-      <button
-        key={item}
-        onClick={() => setActiveCategory(item)}
-        className="
-          relative
-          pb-3
-          text-[15px]
-          font-medium
-          transition-colors
-          duration-200
-        "
-      >
-        <span
-          className={
-            activeCategory === item
-              ? "text-[#184B35]"
-              : "text-[#7A6B55] hover:text-[#184B35]"
-          }
-        >
-          {item}
-        </span>
+  />
 
-        {activeCategory === item && (
-          <motion.div
-            layoutId="category-indicator"
-            className="
-              absolute
-              bottom-0
-              left-0
-              right-0
-              mx-auto
-              h-[2px]
-              w-full
-              rounded-full
-              bg-[#C8A44D]
-            "
-            transition={{
-              type: "spring",
-              stiffness: 350,
-              damping: 30,
-            }}
-          />
-        )}
-      </button>
-    ))}
-  </div>
-</div>
+  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#D8C89F]" />
+
 </div>
 
-{/* ================= FEATURED DISH ================= */}
+{/* ================= MENU NAVIGATION ================= */}
 
+<section className="mt-16 mb-16">
 
+  <div className="text-center mb-8">
 
-  {activeCategory === "All" && (
-
-    <motion.div
-  style={{ willChange: "transform" }}
-      key="featured-dish"
-      initial={{
-        opacity: 0,
-        y: 40,
-        scale: 0.98,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        scale: 1,
-      }}
-      exit={{
-        opacity: 0,
-        y: -30,
-        scale: 0.97,
-      }}
-      transition={{
-        duration: 0.55,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className="mb-16 overflow-hidden rounded-[32px] border border-[#D8C8A0] bg-white shadow-xl"
+    <p
+      className="
+        text-xs
+        uppercase
+        tracking-[0.45em]
+        text-[#B88B2C]
+      "
     >
-{/* Ambient Glow */}
+      EXPLORE OUR MENU
+    </p>
 
+    <h3
+      className="
+        mt-4
+        font-serif
+        text-[36px]
+        text-[#1F1F1F]
+      "
+    >
+      Discover Every Flavour
+    </h3>
+
+  </div>
+
+  <div className="flex justify-center">
+
+    <div
+      className="
+        flex
+        items-center
+        rounded-[999px]
+        border
+        border-[#E7DDC5]
+        bg-[#FFFDF8]/80
+        backdrop-blur-xl
+        px-10
+        py-4
+        shadow-[0_10px_35px_rgba(0,0,0,0.08)]
+        backdrop-saturate-150
+      "
+    >
+
+  {[
+  "All",
+  "Breakfast",
+  "Meals",
+  "Starters",
+  "Beverages",
+  "Desserts",
+].map((item, index, array) => (
+  <div
+    key={item}
+    className="flex items-center"
+  >
+    <button
+      onClick={() => setActiveCategory(item)}
+      className="
+        relative
+        px-5
+        py-2
+        font-serif
+        text-[18px]
+        transition-colors
+        duration-300
+      "
+    >
+      <span
+        className={
+          activeCategory === item
+            ? "text-[#174D32]"
+            : "text-[#7A6B55] hover:text-[#174D32]"
+        }
+      >
+        {item}
+      </span>
+
+      {activeCategory === item && (
+        <motion.div
+          layoutId="menu-indicator"
+          className="
+            absolute
+            left-0
+            right-0
+            bottom-[-10px]
+            mx-auto
+            h-[2px]
+            w-8
+            rounded-full
+            bg-[#C8A44D]
+          "
+          transition={{
+            type: "spring",
+            stiffness: 320,
+            damping: 30,
+          }}
+        />
+      )}
+    </button>
+
+    {index !== array.length - 1 && (
+      <div
+        className="
+          mx-2
+          h-5
+          w-px
+          bg-[#E7DDC5]
+        "
+      />
+    )}
+  </div>
+))}
+
+    </div>   {/* Navigation pill */}
+  </div>     {/* justify-center */}
+</section>   {/* MENU NAVIGATION */}
+{/* ================= CINEMATIC HERO ================= */}
+
+<AnimatePresence mode="wait">
+  {showHero && (
+    <motion.section
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.35 }}
+      className="mb-16"
+    >
 <div
-  className="
-    pointer-events-none
-    absolute
-    -top-24
-    left-1/2
-    h-[420px]
-    w-[420px]
-    -translate-x-1/2
-    rounded-full
-    bg-[#E8C46A]/20
-    blur-[80px]
-opacity-60
-  "
-/>
-      <div className="grid lg:grid-cols-2">
+className="
+group
+relative
+overflow-hidden
+rounded-[38px]
+border
+border-[#E7DDC5]
+bg-[#151515]
+shadow-[0_30px_80px_rgba(0,0,0,0.18)]
+"
+>
 
-        {/* Left Image */}
-
-        <div className="relative h-[520px] lg:h-[560px]">
-          <div
-  className="
-    absolute
-    inset-0
-    bg-gradient-to-br
-    from-[#FFF7DA]/20
-    via-transparent
-    to-transparent
-    z-10
-  "
-/>
-
-      <Image
-  src={featuredDish.image}
-  alt={featuredDish.name}
+<div className="relative h-[430px] overflow-hidden rounded-[38px]">
+<Image
+  src={heroThali}
+  alt="Dakshinapaaka Signature Thali"
   fill
   priority
-  quality={80}
-  sizes="(max-width: 1024px) 100vw, 50vw"
+  quality={100}
+  sizes="100vw"
   className="
     object-cover
+    object-[35%_55%]
     transition-transform
-    duration-700
-    group-hover:scale-105
+    duration-[12000ms]
+    ease-out
+    group-hover:scale-[1.03]
   "
 />
 
-          <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
+  {/* Right side gradient for card */}
+  <div
+    className="
+      absolute
+      inset-0
+      bg-gradient-to-r
+      from-black/5
+      via-transparent
+      to-black/55
+    "
+  />
+</div>
 
-        </div>
 
-        {/* Right Content */}
+<div className="absolute left-10 bottom-10">
 
-        <div className="flex flex-col justify-center p-12 lg:p-16">
+  <div
+  className="
+    absolute
+    left-10
+    bottom-10
+  "
+>
 
-          <div className="flex items-center gap-3">
+<p
+className="
+uppercase
+tracking-[0.45em]
+text-white/90
+text-xs
+font-medium
+"
+>
+THE DAKSHINAPAAKA EXPERIENCE
+</p>
 
-            <span className="inline-flex rounded-full bg-[#174D32] px-4 py-2 text-xs uppercase tracking-[0.25em] text-white">
-              Chef's Recommendation
-            </span>
+<div
+className="
+mt-5
+h-px
+w-44
+bg-[#C8A44D]
+"
+/>
 
-            <span className="rounded-full bg-[#F4E8C8] px-4 py-2 text-sm font-medium text-[#174D32]">
-              {featuredDish.category}
-            </span>
+</div>
 
-          </div>
+</div>
 
-          <h2 className="mt-6 font-serif text-5xl lg:text-6xl leading-tight text-[#1E1E1E]">
-            {featuredDish.name}
-          </h2>
+<div
+className="
+absolute
+right-6
+bottom-6
 
-          <p className="mt-6 text-lg leading-8 text-[#6B5B45]">
-            {featuredDish.description}
-          </p>
-<div className="my-8 h-px w-20 bg-[#D9C89D]" />
-          <div className="mt-8 flex items-center gap-4">
+w-[420px]
 
-            <span className="text-[#C8A44D] font-medium">
-              {featuredDish.badge}
-            </span>
-<div className="mt-4 h-px w-12 bg-[#D9C89D]" />
-          </div>
+rounded-[30px]
 
-        </div>
+border
+border-white/15
 
-      </div>
+bg-black/25
 
-    </motion.div>
+backdrop-blur-2xl
 
+p-3
+
+shadow-[0_20px_50px_rgba(0,0,0,.45)]
+"
+>
+<p
+className="
+uppercase
+tracking-[0.35em]
+text-[#D9B15F]
+text-xs
+"
+>
+OUR PHILOSOPHY
+</p>
+<h3
+className="
+mt-8
+font-serif
+text-[30px]
+leading-[1.45]
+text-white
+"
+>
+Every meal begins
+with tradition
+and ends with
+memories.
+</h3>
+
+<div className="my-8 h-px bg-[#B8892D]/60" />
+<p
+className="
+leading-8
+text-white/80
+"
+>
+Prepared fresh every day using
+authentic South Indian recipes
+and premium ingredients.
+</p>
+</div>
+
+</div>
+
+    </motion.section>
   )}
-
-
-
-{/* ================= DISH GRID ================= */}
-
-
-
+</AnimatePresence>
   <motion.div
   style={{ willChange: "transform" }}
     key={activeCategory}
-    initial="hidden"
-    animate="visible"
     exit="hidden"
-    variants={{
-      visible: {
-        transition: {
-          staggerChildren: 0.04,
-        },
-      },
-    }}
+initial={{
+  opacity: 0,
+  y: 20,
+}}
+
+animate={{
+  opacity: 1,
+  y: 0,
+}}
+
+transition={{
+  duration: 0.35,
+}}
     className="grid gap-8 md:grid-cols-2 xl:grid-cols-3"
   >
 
@@ -479,8 +631,8 @@ opacity-60
           bg-white
 hover:-translate-y-1
 hover:border-[#C8A44D]
-shadow-md
-hover:shadow-lg
+shadow-sm
+hover:shadow-md
         "
       >
 
@@ -507,7 +659,7 @@ hover:shadow-lg
   alt={dish.name}
   fill
   loading="lazy"
-  quality={75}
+  quality={70}
   sizes="
     (max-width: 768px) 100vw,
     (max-width: 1280px) 50vw,
@@ -517,7 +669,7 @@ hover:shadow-lg
     object-cover
     transition-transform
     duration-500
-    group-hover:scale-[1.03]
+    group-hover:scale-[1.015]
   "
 />
 
@@ -592,7 +744,6 @@ hover:shadow-lg
   )}
 
   </motion.div>
-
 
 </div>
           </motion.div>
