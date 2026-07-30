@@ -59,7 +59,7 @@ export const signatureDishes: SignatureDish[] = [
     category: "Starters",
     badge: "Chef's Choice",
     description:
-      "Crispy vegetable lollipops seasoned with aromatic herbs and spices, served with our signature dipping sauce for a deliciously crunchy experience.",
+      "Crispy mixture of vegetable lollipops seasoned with aromatic herbs and spices, served with our signature dipping sauce for a deliciously crunchy experience.",
     image: "/images/food/food6.jpg",
   },
   {

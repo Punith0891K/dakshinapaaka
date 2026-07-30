@@ -84,6 +84,7 @@ setActiveSection(current);
 >
           {/* Logo */}
     {/* Logo + Pure Veg Badge */}
+{/* Logo */}
 <motion.div
   initial={{ opacity: 0, scale: 0.9, y: -12 }}
   animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -92,37 +93,69 @@ setActiveSection(current);
     delay: 0.15,
     ease: "easeOut",
   }}
-  className="flex items-center gap-4"
+  className="flex items-center gap-3"
 >
   <Link
     href="/"
     aria-label="Dakshinapaaka Home"
-    className="relative z-10 flex shrink-0 items-center transition-transform duration-500 hover:scale-[1.06]"
+    className="relative z-10 flex shrink-0 items-center"
   >
-  <Image
-  src="/images/logo/dakshinapaaka.png"
-  alt="Dakshinapaaka"
-  width={100}
-  height={100}
-  priority
-  className={`
-    h-auto
-    object-contain
-    transition-all
-    duration-500
-    ${
-      scrolled
-        ? "w-[72px] lg:w-[82px] brightness-[0.9] contrast-125 saturate-125 drop-shadow-[0_2px_6px_rgba(0,0,0,0.18)]"
-        : "w-[82px] lg:w-[96px] brightness-110 contrast-110 drop-shadow-[0_3px_8px_rgba(0,0,0,0.35)]"
-    }
-  `}
-/>
+    <Image
+      src="/images/logo/dakshinapaaka.png"
+      alt="Dakshinapaaka"
+      width={100}
+      height={100}
+      priority
+      className={`
+        h-auto
+        object-contain
+        transition-all
+        duration-500
+        ${
+          scrolled
+            ? "w-[68px] lg:w-[82px] brightness-[0.9] contrast-125 saturate-125 drop-shadow-[0_2px_6px_rgba(0,0,0,0.18)]"
+            : "w-[76px] lg:w-[96px] brightness-110 contrast-110 drop-shadow-[0_3px_8px_rgba(0,0,0,0.35)]"
+        }
+      `}
+    />
   </Link>
 
-  {/* Pure Veg Badge */}
+  {/* Mobile Brand Text */}
+<div className="flex items-center gap-1.5 lg:hidden">
+  <Leaf
+    className={`h-3.5 w-3.5 ${
+      scrolled
+        ? "text-[#2F6B3D]"
+        : "text-[#8ED081]"
+    }`}
+  />
+
+  <span
+    className={`
+      -ml-0.5
+      text-[10px]
+      font-medium
+      uppercase
+      tracking-[0.22em]
+      whitespace-nowrap
+      transition-colors
+      duration-500
+      ${
+        scrolled
+          ? "text-[#2F6B3D]"
+          : "text-white"
+      }
+    `}
+  >
+    PURE VEG
+  </span>
+</div>
+
+  {/* Desktop Badge */}
   <div
     className={`
-      hidden lg:flex
+      hidden
+      lg:flex
       items-center
       gap-2
       rounded-full
@@ -140,13 +173,17 @@ setActiveSection(current);
   >
     <Leaf
       className={`h-4 w-4 ${
-        scrolled ? "text-[#2F6B3D] veg-glow" : "text-[#8ED081] veg-glow"
+        scrolled
+          ? "text-[#2F6B3D]"
+          : "text-[#8ED081]"
       }`}
     />
 
     <span
-      className={`veg-glow text-[11px] font-semibold uppercase tracking-[0.25em] whitespace-nowrap ${
-        scrolled ? "text-[#2F6B3D]" : "text-white"
+      className={`text-[11px] font-semibold uppercase tracking-[0.25em] whitespace-nowrap ${
+        scrolled
+          ? "text-[#2F6B3D]"
+          : "text-white"
       }`}
     >
       Pure Veg Restaurant

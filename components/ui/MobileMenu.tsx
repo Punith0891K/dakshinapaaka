@@ -230,7 +230,7 @@ className="flex h-12 w-12 items-center justify-center rounded-full border border
       </p>
 
       <h3 className="mt-1 text-lg font-serif font-semibold text-[#153F2B]">
-        Dakshina Paaka
+        Dakshina Paaka Restaurant
       </h3>
 
       <p className="mt-1 text-sm leading-6 text-[#5B5B5B]">

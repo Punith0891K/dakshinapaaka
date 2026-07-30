@@ -117,9 +117,9 @@ const homepageDishes = signatureDishes.filter((dish) =>
     lg:text-6xl
   "
 >
-  Chef's Signature
+  Dakshina Paaka's Signature
   <span className="block italic text-[#2F6B3D]">
-    Collection
+    Dishes
   </span>
 </h2>
 
@@ -386,7 +386,7 @@ hover:bg-[#1E5C3A]
 hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)]
 "
           >
-            Explore Signature Dishes
+            Explore More Signature Dishes
 
             <span className="text-lg transition-transform duration-300 group-hover:translate-x-1">
               →
