@@ -1,11 +1,12 @@
 "use client";
-
+import { LayoutGroup } from "framer-motion";
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { signatureDishes } from "@/data/signatureDishes";
-
+import { ArrowUpRight } from "lucide-react";
+import DishDetailSheet from "@/components/ui/DishDetailSheet";
 interface SignatureCollectionMobileProps {
   open: boolean;
   onClose: () => void;
@@ -16,7 +17,6 @@ export default function SignatureCollectionMobile({
   onClose,
 }: SignatureCollectionMobileProps) {
   const [activeCategory, setActiveCategory] = useState("All");
-
   const categories = [
     "All",
     "Breakfast",
@@ -37,8 +37,14 @@ export default function SignatureCollectionMobile({
       (dish) => dish.category === activeCategory
     );
   }, [activeCategory]);
+type SignatureDish = (typeof signatureDishes)[number];
 
+const [selectedDish, setSelectedDish] =
+  useState<SignatureDish | null>(null);
+const featuredCard = filteredDishes[0];
+const remainingCards = filteredDishes.slice(1);
   return (
+    <LayoutGroup>
     <AnimatePresence>
       {open && (
         <>
@@ -104,68 +110,72 @@ export default function SignatureCollectionMobile({
             />
 
             {/* Header */}
+<header
+  className="
+    sticky
+    top-0
+    z-30
+    border-b
+    border-[#E8DDBF]
+    bg-[#FFFDF8]/85
+    backdrop-blur-2xl
+  "
+>
+  <div className="flex items-start justify-between px-6 pt-4 pb-4">
 
-            <header
-              className="
-                sticky
-                top-0
-                z-20
-                flex
-                items-start
-                justify-between
-                border-b
-                border-[#E8DDBF]
-                bg-white/65
-                px-5
-                py-4
-                backdrop-blur-xl
-              "
-            >
-              <div>
-                <p
-                  className="
-                    text-[10px]
-                    uppercase
-                    tracking-[0.35em]
-                    text-[#2F6B3D]
-                  "
-                >
-                  Dakshinapaaka
-                </p>
+    <div>
 
-                <h1
-                  className="
-                    mt-2
-                    font-serif
-                    text-[34px]
-                    leading-none
-                    text-[#1E1E1E]
-                  "
-                >
-                  Signature
-                  <br />
-                  Collection
-                </h1>
-              </div>
+      <p
+        className="
+          text-[11px]
+          uppercase
+          tracking-[0.45em]
+          text-[#2F6B3D]
+        "
+      >
+        Dakshinapaaka
+      </p>
 
-              <button
-                onClick={onClose}
-                className="
-                  flex
-                  h-11
-                  w-11
-                  items-center
-                  justify-center
-                  rounded-full
-                  border
-                  border-[#D7C9A0]
-                  bg-white/80
-                  backdrop-blur-xl
-                "
-              >
-                <X size={20} />
-              </button>
-            </header>
+   <h1
+  className="
+    mt-2
+    font-serif
+    text-[42px]
+    leading-[0.82]
+    tracking-[-0.03em]
+    text-[#1C1C1C]
+    md:text-[60px]
+  "
+>
+  Signature
+  <br />
+  Collection
+</h1>
+
+    </div>
+
+    <button
+      onClick={onClose}
+      className="
+        flex
+        h-14
+        w-14
+        items-center
+        justify-center
+        rounded-full
+        border
+        border-[#D9CCAA]
+        bg-white/70
+        backdrop-blur-xl
+        transition-all
+        active:scale-95
+      "
+    >
+      <X size={26} strokeWidth={1.8} />
+    </button>
+
+  </div>
+</header>
 
             {/* Scroll Area */}
 
@@ -176,182 +186,276 @@ export default function SignatureCollectionMobile({
                 pb-10
               "
             >
+{/* ================= EDITORIAL STORY ================= */}
 
+<section className="px-6 pt-8 pb-10">
+
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    className="text-center"
+  >
+
+    <p
+      className="
+        text-[11px]
+        uppercase
+        tracking-[0.5em]
+        text-[#C8A44D]
+      "
+    >
+      WELCOME TO DAKSHINAPAAKA
+    </p>
+
+    <h2
+      className="
+        mt-6
+        font-serif
+        text-[44px]
+        leading-[0.95]
+        text-[#1E1E1E]
+      "
+    >
+      Where Tradition
+      <span className="block italic text-[#174D32]">
+        Meets Every Plate
+      </span>
+    </h2>
+
+    <p
+      className="
+        mx-auto
+        mt-6
+        max-w-sm
+        text-[16px]
+        leading-8
+        text-[#6B5B45]
+      "
+    >
+      Every recipe tells the story of South India—
+      prepared with time-honoured techniques,
+      fresh ingredients and the warmth of
+      authentic hospitality.
+    </p>
+
+  </motion.div>
+
+</section>
+
+<div className="px-6">
+
+  <div className="flex items-center gap-4">
+
+    <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#D8C89F]" />
+
+    <div
+      className="
+        h-2.5
+        w-2.5
+        rotate-45
+        border
+        border-[#C8A44D]
+        bg-[#FFF8EA]
+      "
+    />
+
+    <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#D8C89F]" />
+
+  </div>
+
+</div>
             {/* ================= HERO 2.0 ================= */}
 
 <section className="px-5 pt-5">
 
-<motion.div
-initial={{
-opacity:0,
-y:25,
-}}
-animate={{
-opacity:1,
-y:0,
-}}
-transition={{
-duration:.45,
-}}
-className="
-relative
-overflow-hidden
-rounded-[32px]
-"
->
+  {/* Hero Image */}
 
-    <div
-className="
-relative
-h-[430px]
-"
->
+  <motion.div
+    initial={{ opacity: 0, y: 25 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.45 }}
+    className="
+      relative
+      h-[430px]
+      overflow-hidden
+      rounded-[34px]
+    "
+  >
 
+    {/* Image */}
 <Image
-fill
-priority
-quality={90}
-sizes="100vw"
-src={featuredDish.image}
-alt={featuredDish.name}
-className="object-cover"
-/>
-
-<div
+  fill
+  priority
+  quality={100}
+  src="/images/food/hero-thalimobile.png"
+  alt="Dakshinapaaka Signature Collection"
+  sizes="100vw"
 className="
-absolute
-inset-0
-bg-gradient-to-t
-from-black/90
-via-black/20
-to-transparent
+  object-cover
+  object-[center_40%]
+  scale-[1.1]
 "
 />
 
 <div
-className="
-absolute
-left-6
-top-6
-"
->
+  className="
+    absolute
+    inset-0
+    bg-gradient-to-t
+    from-black/35
+    via-black/5
+    to-transparent
+  "
+/>
+    {/* Overlay */}
 
-<span
-className="
-rounded-full
-bg-[#174D32]
-px-4
-py-2
-text-[11px]
-uppercase
-tracking-[0.25em]
-text-white
-"
->
+    {/* Experience Label */}
+<div className="absolute left-6 top-10">
 
-Chef's Recommendation
+  <p
+    className="
+      text-[11px]
+      uppercase
+      tracking-[0.45em]
+      text-white
+    "
+  >
+    THE DAKSHINAPAAKA
+    <br />
+    EXPERIENCE
+  </p>
 
-</span>
+  <div className="mt-5 flex items-center gap-2">
+
+    <div className="h-px w-12 bg-[#D8B15A]" />
+
+    <div className="h-2 w-2 rotate-45 bg-[#D8B15A]" />
+
+    <div className="h-px w-12 bg-[#D8B15A]" />
+
+  </div>
 
 </div>
+  </motion.div>
 
-                 <div
+  {/* Floating Card */}
+
+  <motion.div
+    initial={{ opacity: 0, y: 40 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{
+      delay: 0.2,
+      duration: 0.5,
+    }}
+    className="
+      relative
+      z-10
+      mx-4
+      -mt-20
+    "
+  >
+
+    {/* Philosophy Card */}
+<div
 className="
 absolute
-left-4
-right-4
-bottom-4
+top-[55%]
+right-0
+translate-y-[-69%]
+z-20
+w-[210px]
 rounded-[28px]
-border
-border-white/15
-bg-white/10
+bg-[rgba(40,24,10,0.82)]
 backdrop-blur-xl
-p-6
+border border-[#C8A44D]/20
+shadow-[0_20px_60px_rgba(0,0,0,0.35)]
+
 "
 >
+  <div className="px-6 pt-6 pb-5">
 
-<p
-className="
-text-xs
-uppercase
-tracking-[0.25em]
-text-[#F3D57C]
-"
->
+    {/* Label */}
 
-{featuredDish.category}
+    <p
+      className="
+        text-[8px]
+        uppercase
+        tracking-[0.35em]
+        text-[#D8B15A]
+      "
+    >
+      OUR PHILOSOPHY
+    </p>
 
-</p>
+    {/* Heading */}
 
-<h2
-className="
-mt-3
-font-serif
-text-[38px]
-leading-none
-text-white
-"
->
+    <h3
+      className="
+        mt-4
+        font-serif
+        text-[15px]
+        leading-[1.2]
+        text-white
+      "
+    >
+      Every meal begins
+      <br />
+      with tradition
+      <br />
+      and ends with
+      <br />
+      memories.
+    </h3>
 
-{featuredDish.name}
+    {/* Divider */}
 
-</h2>
+    <div className="my-5 flex items-center gap-3">
 
-<p
-className="
-mt-4
-line-clamp-2
-text-[15px]
-leading-7
-text-white/90
-"
->
+      <div className="h-px flex-1 bg-[#C8A44D]/40" />
 
-{featuredDish.description}
+      <div className="h-2 w-2 rotate-45 bg-[#D8B15A]" />
 
-</p>
+      <div className="h-px flex-1 bg-[#C8A44D]/40" />
 
-<div
-className="
-mt-6
-flex
-items-center
-justify-between
-"
->
+    </div>
 
-<span
-className="
-text-sm
-text-white/70
-"
->
+    {/* Features */}
 
-{featuredDish.badge}
+    <div className="grid grid-cols-3 gap-3">
 
-</span>
+      <div className="text-center">
+        <p className="text-[8px] uppercase tracking-[0.2em] text-[#D8B15A]">
+          AUTHENTIC
+        </p>
+        <p className="mt-1 text-[8px] leading-4 text-white/80">
+          Recipes
+        </p>
+      </div>
 
-<button
-className="
-rounded-full
-bg-white
-px-5
-py-3
-font-medium
-text-[#174D32]
-active:scale-95
-"
->
+      <div className="text-center">
+        <p className="text-[8px] uppercase tracking-[0.2em] text-[#D8B15A]">
+          FRESH
+        </p>
+        <p className="mt-1 text-[8px] leading-4 text-white/80">
+          Ingredients
+        </p>
+      </div>
 
-Explore →
+      <div className="text-center">
+        <p className="text-[8px] uppercase tracking-[0.2em] text-[#D8B15A]">
+          TIMELESS
+        </p>
+        <p className="mt-1 text-[8px] leading-4 text-white/80">
+          Hospitality
+        </p>
+      </div>
 
-</button>
+    </div>
 
+  </div>
 </div>
-</div>
-</div>
-
-</motion.div>
+  </motion.div>
 
 </section>
 
@@ -364,35 +468,47 @@ Explore →
 <div className="mb-5">
 
 <p
-className="
-text-[11px]
-uppercase
-tracking-[0.35em]
-text-[#C8A44D]
-"
+  className="
+    text-[11px]
+    uppercase
+    tracking-[0.45em]
+    text-[#C8A44D]
+    text-center
+  "
 >
-Browse Collection
+  EXPLORE OUR MENU
 </p>
+<div className="mx-auto mt-6 mb-6 flex w-40 items-center gap-3">
 
+  <div className="h-px flex-1 bg-[#D8C89F]" />
+
+  <div className="h-2 w-2 rotate-45 border border-[#C8A44D]" />
+
+  <div className="h-px flex-1 bg-[#D8C89F]" />
+
+</div>
 <h3
-className="
-mt-2
-font-serif
-text-[32px]
-leading-none
-text-[#1E1E1E]
-"
+  className="
+    mt-4
+    font-serif
+    text-[36px]
+    leading-[1]
+    text-[#1E1E1E]
+    text-center
+  "
 >
-Choose Your
-<br />
-Favourite
+  Discover Every
+  <br />
+  Flavour
 </h3>
+
+
 
 </div>
 
 <div
 className="
-rounded-full
+rounded-[18px]
 border
 border-[#E6DAB8]
 bg-white/70
@@ -421,24 +537,20 @@ onClick={() => setActiveCategory(category)}
 className={`
 relative
 flex-shrink-0
-rounded-full
+rounded-[18px]
 px-5
 py-3
-text-sm
+text-[14px]
 font-medium
 transition-all
 duration-300
 
 ${
 activeCategory===category
-
 ?
-
-"bg-[#174D32] text-white shadow-md"
-
+"bg-[#174D32] text-white shadow-lg"
 :
-
-"text-[#6B5B45]"
+"bg-transparent text-[#6B5B45] hover:bg-[#F7F1E6]"
 }
 `}
 >
@@ -456,231 +568,302 @@ activeCategory===category
 </section>
 
 {/* ================= MENU GRID ================= */}
+<section className="mt-10 px-5">
 
-<section className="mt-10 px-5 pb-10">
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4 }}
+  >
+
+    <p className="text-[11px] uppercase tracking-[0.4em] text-[#C8A44D]">
+      CHEF'S FEATURED
+    </p>
+
+    <h2
+      className="
+        mt-3
+        font-serif
+        text-[34px]
+        leading-none
+        text-[#1E1E1E]
+      "
+    >
+      {featuredCard.name}
+    </h2>
+<div
+  className="
+    mt-6
+    overflow-hidden
+    rounded-[30px]
+    bg-white
+    shadow-[0_14px_40px_rgba(0,0,0,0.08)]
+  "
+>
+  {/* Image */}
+
+  <div className="relative h-[240px] overflow-hidden">
+
+    <Image
+      fill
+      src={featuredCard.image}
+      alt={featuredCard.name}
+      sizes="100vw"
+      className="object-cover object-[center_25%]"
+      quality={90}
+    />
+<div
+  className="
+    pointer-events-none
+    absolute
+    inset-x-0
+    bottom-0
+    h-24
+    bg-gradient-to-t
+    from-[#FFFDF9]
+    via-[#FFFDF9]/60
+    to-transparent
+  "
+/>
+
+    <div
+      className="
+        absolute
+        inset-0
+        bg-gradient-to-t
+        from-black/55
+        via-black/5
+        to-transparent
+      "
+    />
+
+    <div className="absolute left-5 bottom-5">
+
+      <span
+        className="
+          rounded-full
+          bg-white/90
+          px-4
+          py-2
+          text-[11px]
+          uppercase
+          tracking-[0.25em]
+          text-[#174D32]
+          backdrop-blur-md
+        "
+      >
+        {featuredCard.category}
+      </span>
+
+    </div>
+
+  </div>
+
+  {/* Content */}
+
+  <div className="p-6">
+
+    <h3
+      className="
+        font-serif
+        text-[24px]
+        leading-none
+        text-[#1E1E1E]
+      "
+    >
+      {featuredCard.name}
+    </h3>
+
+    <p
+      className="
+        mt-5
+        text-[15px]
+        leading-7
+        text-[#6B5B45]
+      "
+    >
+      {featuredCard.description}
+    </p>
+
+    <div className="mt-6">
+
+      <span
+        className="
+          inline-flex
+          rounded-full
+          bg-[#FFF5DF]
+          px-4
+          py-2
+          text-[11px]
+          uppercase
+          tracking-[0.25em]
+          text-[#B8892D]
+        "
+      >
+        {featuredCard.badge}
+      </span>
+
+    </div>
+
+  </div>
+
+</div>
+  </motion.div>
+
+</section>
+<section className="mt-12 px-5 pb-10">
+
+  <div className="mb-6">
+
+    <p
+      className="
+        text-[11px]
+        uppercase
+        tracking-[0.4em]
+        text-[#C8A44D]
+      "
+    >
+      MORE TO EXPLORE
+    </p>
+
+    <h3
+      className="
+        mt-3
+        font-serif
+        text-[30px]
+        leading-none
+        text-[#1E1E1E]
+      "
+    >
+      Explore More
+      <br />
+      Signature Dishes
+    </h3>
+
+  </div>
+
+  <motion.div
+  key={activeCategory}
+  initial="hidden"
+  animate="visible"
+  variants={{
+    visible: {
+      transition: {
+        staggerChildren: 0.06,
+      },
+    },
+  }}
+  className="grid grid-cols-2 gap-5"
+>
+
+{remainingCards.map((dish) => (
+
+<motion.article
+  key={dish.id}
+  layoutId={`dish-card-${dish.id}`}
+  onClick={() => setSelectedDish(dish)}
+  variants={{
+    hidden: {
+      opacity: 0,
+      y: 20,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+    },
+  }}
+  whileTap={{ scale: 0.98 }}
+  whileHover={{ y: -4 }}
+  transition={{
+    type: "spring",
+    stiffness: 250,
+    damping: 30,
+  }}
+  className="
+    cursor-pointer
+    overflow-hidden
+    rounded-[24px]
+    bg-white
+    shadow-[0_8px_22px_rgba(0,0,0,0.07)]
+  "
+>
 
 <motion.div
-key={activeCategory}
-initial="hidden"
-animate="visible"
-variants={{
-visible:{
-transition:{
-staggerChildren:.05,
-},
-},
-}}
-className="
-grid
-grid-cols-2
-gap-5
-"
+  layoutId={`dish-image-${dish.id}`}
+  transition={{
+    type: "spring",
+    stiffness: 220,
+    damping: 28,
+  }}
+  className="relative h-[170px] overflow-hidden"
 >
+  <Image
+    fill
+    src={dish.image}
+    alt={dish.name}
+    className="object-cover transition-transform duration-500 hover:scale-105"
+  />
+</motion.div>
 
-{filteredDishes.map((dish)=>(
+<div className="p-5">
 
-    <motion.article
-key={dish.id}
-variants={{
-hidden:{
-opacity:0,
-y:25,
-},
-visible:{
-opacity:1,
-y:0,
-},
-}}
-transition={{
-duration:.45,
-}}
-className="
-group
-overflow-hidden
-rounded-[28px]
-bg-white
-shadow-[0_8px_24px_rgba(0,0,0,.08)]
-"
+  <div className="flex items-start justify-between">
+
+    <p
+      className="
+        text-[10px]
+        uppercase
+        tracking-[0.3em]
+        text-[#C8A44D]
+      "
+    >
+      {dish.category}
+    </p>
+
+    <motion.button
+      whileTap={{ scale: 0.92 }}
+      whileHover={{ scale: 1.05 }}
+      className="
+        flex
+        h-9
+        w-9
+        items-center
+        justify-center
+        rounded-full
+        border
+        border-[#E5D3A8]
+        bg-[#FFF9EF]
+        text-[#174D32]
+      "
+    >
+      <ArrowUpRight size={16} />
+    </motion.button>
+
+  </div>
+
+<motion.h4
+  layoutId={`dish-title-${dish.id}`}
+  transition={{
+    type: "spring",
+    stiffness: 220,
+    damping: 28,
+  }}
+  className="
+    mt-4
+    font-serif
+    text-[24px]
+    leading-[1.05]
+    text-[#1E1E1E]
+  "
 >
-
-<div
-className="
-relative
-aspect-square
-overflow-hidden
-"
->
-<Image
-fill
-loading="lazy"
-sizes="50vw"
-quality={80}
-src={dish.image}
-alt={dish.name}
-className="
-object-cover
-transition-transform
-duration-500
-group-hover:scale-105
-"
-/>
-<div
-className="
-absolute
-inset-0
-bg-gradient-to-t
-from-black/50
-to-transparent
-"
-/>
-
-<div
-className="
-absolute
-left-3
-bottom-3
-"
->
-
-<span
-className="
-rounded-full
-bg-white/90
-px-3
-py-2
-text-[10px]
-font-medium
-backdrop-blur-md
-"
->
-
-{dish.category}
-
-</span>
-
-</div>
-
-</div>
-
-<div
-className="
-p-4
-"
->
-
-<h3
-className="
-font-serif
-text-[22px]
-leading-6
-text-[#1F1F1F]
-line-clamp-2
-"
->
-
-{dish.name}
-
-</h3>
-
-<p
-className="
-mt-3
-line-clamp-2
-text-[13px]
-leading-6
-text-[#6B5B45]
-"
->
-
-{dish.description}
-
-</p>
-
-<div
-className="
-mt-5
-flex
-items-center
-justify-between
-"
->
-<span
-className="
-text-xs
-uppercase
-tracking-[0.2em]
-text-[#C8A44D]
-"
->
-
-{dish.badge}
-
-</span>
-
-<div
-className="
-flex
-h-10
-w-10
-items-center
-justify-center
-rounded-full
-bg-[#174D32]
-text-white
-transition-transform
-duration-300
-group-hover:translate-x-1
-"
->
-
-→
-
-</div>
-
-</div>
+  {dish.name}
+</motion.h4>
 
 </div>
 
 </motion.article>
 
 ))}
-    
-  {filteredDishes.length===0&&(
-
-<div
-className="
-col-span-2
-py-24
-text-center
-"
->
-
-<h3
-className="
-font-serif
-text-3xl
-text-[#174D32]
-"
->
-
-Coming Soon
-
-</h3>
-
-<p
-className="
-mt-3
-text-[#6B5B45]
-"
->
-
-Our chefs are preparing something special.
-
-</p>
-
-</div>
-
-)}
 
 </motion.div>
 
@@ -689,6 +872,14 @@ Our chefs are preparing something special.
           </motion.div> {/* Mobile Sheet */}
         </>
       )}
+
+{selectedDish && (
+  <DishDetailSheet
+    dish={selectedDish}
+    onClose={() => setSelectedDish(null)}
+  />
+)}
     </AnimatePresence>
+    </LayoutGroup>
   );
 }

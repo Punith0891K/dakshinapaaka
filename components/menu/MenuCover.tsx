@@ -255,20 +255,21 @@ drop-shadow-[0_2px_4px_rgba(0,0,0,.4)]
 
     <div className="mx-auto mt-6 h-px w-20 bg-[#D6B15A]/50" />
 
-    <p className="mt-6 text-sm text-[#D9CFBD]">
-      Crafted with Tradition
-      <br />
-      Served with Love
-      <div className="mt-8 flex justify-center">
+<div className="mt-6 text-center">
 
-<span className="text-3xl text-[#D6B15A]">
+  <p className="text-sm text-[#D9CFBD] leading-7">
+    Crafted with Tradition
+    <br />
+    Served with Love
+  </p>
 
-♡
-
-</span>
+<div className="mt-8 flex justify-center">
+  <span className="text-[28px] text-[#D6B15A]">
+    ❦
+  </span>
+</div>
 
 </div>
-    </p>
 
   </div>
 
