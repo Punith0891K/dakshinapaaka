@@ -55,8 +55,13 @@ const handleOpen = useCallback(() => {
           absolute
           left-1/2
           bottom-[-25px]
-          h-12
-          w-[270px]
+          h-10
+          w-[220px]
+          sm:h-12
+          sm:w-[270px]
+          lg:h-14
+          lg:w-[380px]
+          xl:w-[440px]
           -translate-x-1/2
           rounded-full
           bg-black
@@ -76,8 +81,12 @@ const handleOpen = useCallback(() => {
     absolute
     left-1/2
     top-1/2
-    h-[180px]
-    w-[180px]
+    h-[150px]
+    w-[150px]
+    sm:h-[180px]
+    sm:w-[180px]
+    lg:h-[240px]
+    lg:w-[240px]
     -translate-x-1/2
     -translate-y-1/2
     rounded-full
@@ -92,17 +101,17 @@ const handleOpen = useCallback(() => {
   className="
     relative
 
-    h-[360px]
-    w-[240px]
+    h-[390px]
+    w-[260px]
 
     sm:h-[420px]
     sm:w-[280px]
 
-    lg:h-[480px]
-    lg:w-[320px]
+    lg:h-[620px]
+    lg:w-[420px]
 
-    xl:h-[520px]
-    xl:w-[350px]
+    xl:h-[700px]
+    xl:w-[470px]
   "
   style={{
     perspective: "1800px",

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { signatureDishes } from "@/data/signatureDishes";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -20,22 +19,25 @@ const homepageDishes = signatureDishes.filter((dish) =>
   [1, 2, 5, 6].includes(dish.id)
 );
   return (
- <section
+<section
   id="signature-dishes"
-  className="
-    relative
-    overflow-hidden
-    bg-[#F8F3E9]
-    bg-[url('/images/hero/signature-bg.png')]
-    bg-cover
-    bg-center
-    bg-no-repeat
-    py-16
-    lg:py-20
-  "
+  className="relative overflow-hidden bg-[#F8F3E9]"
+>
+
+<div
+  className="signature-dishes-canvas relative overflow-hidden pt-16 pb-24 lg:pt-20 lg:pb-32"
+style={{
+  backgroundImage:
+    "url('/images/hero/signature_bg1.png'), url('/images/hero/signature_scene2.png')",
+  backgroundSize: "100% auto, 100% auto",
+  backgroundPosition: "top center, center 66.667vw",
+  backgroundRepeat: "no-repeat, no-repeat",
+}}
 >
       {/* Soft overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-[#FFF9EE]/20" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#FFF9EE]/3 via-transparent to-[#FFF9EE]/10" />
+      <div className="mobile-signature-canvas-fade pointer-events-none absolute inset-x-0 z-[1] lg:hidden" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-40 bg-gradient-to-b from-transparent to-[#F8F3E9] sm:h-56 lg:h-72" />
 
       {/* Decorative Mandala */}
 <motion.div
@@ -117,7 +119,7 @@ const homepageDishes = signatureDishes.filter((dish) =>
     lg:text-6xl
   "
 >
-  Dakshina Paaka's Signature
+  Dakshina Paaka&apos;s Signature
   <span className="block italic text-[#2F6B3D]">
     Dishes
   </span>
@@ -145,7 +147,7 @@ const homepageDishes = signatureDishes.filter((dish) =>
   <div className="h-px w-24 bg-[#C8A44D]/25" />
   <div className="mx-4 h-2 w-2 rounded-full bg-[#C8A44D]" />
   <div className="h-px w-24 bg-[#C8A44D]/25" />
-</div>
+  </div>
 
         {/* Dish Grid */}
         <motion.div
@@ -398,6 +400,7 @@ hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)]
 
             </div>
 
+
    {/* Desktop */}
 <div className="hidden md:block">
   <SignatureCollectionModal
@@ -414,6 +417,7 @@ hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)]
   />
 </div>
 
+    </div>
     </section>
   );
 }

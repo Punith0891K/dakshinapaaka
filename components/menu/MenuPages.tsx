@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export default function MenuPages() {
   return (
-    <div className="relative h-[700px] w-[470px]">
+    <div className="relative h-full w-full">
 
       {/* Page Stack */}
 

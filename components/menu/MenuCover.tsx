@@ -15,8 +15,20 @@ export default function MenuCover() {
     <div
       className="
         relative
-     h-[700px]
-     w-[470px]
+        h-full
+        w-full
+      "
+    >
+      <div
+        className="
+        absolute
+        left-1/2
+        top-1/2
+        h-[700px]
+        w-[470px]
+        -translate-x-1/2
+        -translate-y-1/2
+        scale-[0.553]
         overflow-hidden
         rounded-[32px]
         bg-gradient-to-br
@@ -24,8 +36,11 @@ export default function MenuCover() {
         via-[#0F5B43]
         to-[#08382C]
         shadow-[0_40px_80px_rgba(0,0,0,.45)]
+        sm:scale-[0.596]
+        lg:scale-[0.886]
+        xl:scale-100
       "
-    >
+      >
         {/* Book Spine */}
 <div
   className="
@@ -354,6 +369,7 @@ drop-shadow-[0_2px_4px_rgba(0,0,0,.4)]
     opacity-90
   "
 />
+      </div>
     </div>
   );
   

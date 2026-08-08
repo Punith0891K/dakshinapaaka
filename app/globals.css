@@ -66,3 +66,26 @@ h5 {
 .float-pulse {
   animation: floatGlow 2.8s ease-in-out infinite;
 }
+
+/* The desktop Signature section uses two full-width illustrations. On smaller
+   screens, one illustration creates a calmer hero before fading into the
+   reading area, avoiding a visible seam between desktop-scale scenes. */
+@media (max-width: 1023px) {
+  .signature-dishes-canvas {
+    background-image: url('/images/hero/signature_bg1.png') !important;
+    background-position: top center !important;
+    background-repeat: no-repeat !important;
+    background-size: 100% auto !important;
+  }
+
+  .mobile-signature-canvas-fade {
+    top: calc(66.667vw - 4rem);
+    height: 7rem;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(248, 243, 233, 0.74) 45%,
+      #f8f3e9 100%
+    );
+  }
+}
