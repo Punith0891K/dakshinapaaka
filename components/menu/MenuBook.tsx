@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import MenuCover from "./MenuCover";
@@ -12,23 +12,27 @@ interface Props {
 
 export default function MenuBook({ onOpen }: Props) {
   const [opening, setOpening] = useState(false);
+  const openTimer = useRef<number | null>(null);
 
-const handleOpen = useCallback(() => {
-  if (opening) return;
+  useEffect(() => () => {
+    if (openTimer.current) window.clearTimeout(openTimer.current);
+  }, []);
 
-  setOpening(true);
+  const handleOpen = useCallback(() => {
+    if (opening) return;
 
-  const timer = window.setTimeout(() => {
-    onOpen();
-    setOpening(false);
-  }, 850);
-
-  return () => window.clearTimeout(timer);
-}, [opening, onOpen]);
+    setOpening(true);
+    // Keep the scene visible until the cover has fully cleared the pages.
+    // The previous 850ms timeout interrupted the 950ms cover animation.
+    openTimer.current = window.setTimeout(() => {
+      onOpen();
+      setOpening(false);
+    }, 1100);
+  }, [opening, onOpen]);
 
   return (
 <motion.div
-  className="relative will-change-transform"
+  className="menu-book relative will-change-transform"
   initial={{
     opacity: 0,
     y: 20,
@@ -113,9 +117,7 @@ const handleOpen = useCallback(() => {
     xl:h-[700px]
     xl:w-[470px]
   "
-  style={{
-    perspective: "1800px",
-  }}
+  style={{ perspective: "1800px" }}
 >
         <motion.div
           onClick={handleOpen}
@@ -133,9 +135,10 @@ const handleOpen = useCallback(() => {
   duration: 0.45,
   ease: [0.22, 1, 0.36, 1],
 }}
-          className="relative h-full w-full cursor-pointer"
+          className="relative h-full w-full cursor-pointer touch-manipulation"
           style={{
             transformStyle: "preserve-3d",
+            backfaceVisibility: "hidden",
           }}
         >
           {/* Back Cover */}
@@ -237,6 +240,7 @@ const handleOpen = useCallback(() => {
             style={{
               transformOrigin: "left center",
               transformStyle: "preserve-3d",
+              backfaceVisibility: "hidden",
               z: 8,
             }}
             className="absolute inset-0 z-30"

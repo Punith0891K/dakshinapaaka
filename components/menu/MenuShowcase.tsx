@@ -89,13 +89,7 @@ export default function MenuShowcase({ onOpen }: Props) {
         Menu Preview
       </span>
 
-<div
-  className="
-    relative
-
-    lg:ml-0
-  "
->
+<div className="relative lg:ml-0">
 
   {/* Hover Glow */}
 
@@ -126,7 +120,7 @@ export default function MenuShowcase({ onOpen }: Props) {
 
       <div className="relative z-10 mt-4 flex flex-col items-center lg:hidden">
         <p className="text-xs font-medium tracking-[0.03em] text-[#6B5B45]">
-          Tap the cover to explore every dish
+          Tap the cover to browse every dish
         </p>
 
         <button
@@ -138,7 +132,7 @@ export default function MenuShowcase({ onOpen }: Props) {
         </button>
       </div>
       {/* Floor Shadow */}
-      <div className="absolute bottom-20 h-10 w-[220px] rounded-full bg-black/10 blur-3xl sm:w-[260px] lg:bottom-0 lg:h-14 lg:w-[440px] xl:w-[500px]" />
+      <div className="absolute bottom-20 hidden h-10 w-[220px] rounded-full bg-black/10 blur-3xl sm:w-[260px] lg:block lg:bottom-0 lg:h-14 lg:w-[440px] xl:w-[500px]" />
     </motion.div>
   );
 }

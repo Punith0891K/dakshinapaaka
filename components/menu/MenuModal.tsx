@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { menuPages } from "@/data/menu";
 import MenuViewer from "./MenuViewer";
 import ThumbnailBar from "./ThumbnailBar";
@@ -20,13 +20,13 @@ export default function MenuModal({
   const [showControls, setShowControls] = useState(true);
   
 
-  const nextPage = () => {
+  const nextPage = useCallback(() => {
     setPage((p) => Math.min(p + 1, menuPages.length - 1));
-  };
+  }, []);
 
-  const prevPage = () => {
+  const prevPage = useCallback(() => {
     setPage((p) => Math.max(p - 1, 0));
-  };
+  }, []);
 
   // Lock body scroll + keyboard navigation
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function MenuModal({
       document.body.style.overflow = "";
       window.removeEventListener("keydown", handleKey);
     };
-  }, [open]);
+  }, [nextPage, onClose, open, prevPage]);
 
   // Auto hide controls
   useEffect(() => {

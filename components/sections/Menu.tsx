@@ -47,6 +47,8 @@ export default function Menu() {
 />
 
 <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_68%_50%,rgba(212,175,55,0.14),transparent_32%),linear-gradient(to_bottom,rgba(255,253,247,0.2),transparent_18%,rgba(68,49,20,0.08))]" />
+{/* Feather the menu artwork into the signature section's parchment base on phones. */}
+<div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-32 bg-gradient-to-b from-[#F8F3E9] via-[#F8F3E9]/72 to-transparent lg:hidden" />
 <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#C8A44D]/45 to-transparent" />
 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#6A532D]/10 to-transparent" />
 

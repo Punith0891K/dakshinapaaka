@@ -67,25 +67,54 @@ h5 {
   animation: floatGlow 2.8s ease-in-out infinite;
 }
 
-/* The desktop Signature section uses two full-width illustrations. On smaller
-   screens, one illustration creates a calmer hero before fading into the
-   reading area, avoiding a visible seam between desktop-scale scenes. */
+/* Keep the two signature scenes on one continuous parchment surface on
+   phones. The second scene intentionally begins where the opening artwork
+   ends, then dissolves into the same paper tone used by the cards and CTA. */
 @media (max-width: 1023px) {
   .signature-dishes-canvas {
-    background-image: url('/images/hero/signature_bg1.png') !important;
-    background-position: top center !important;
-    background-repeat: no-repeat !important;
-    background-size: 100% auto !important;
+    background-color: #fbf3e3;
+    background-image:
+      url('/images/hero/signature_bg1.png'),
+      url('/images/hero/signature_scene2.png'),
+      radial-gradient(circle at 82% 22%, rgba(200, 164, 77, 0.19), transparent 22rem),
+      radial-gradient(circle at 12% 74%, rgba(47, 107, 61, 0.09), transparent 26rem),
+      linear-gradient(180deg, #fbf3e3 0%, #f8f1e2 66%, #f8f3e9 100%) !important;
+    background-position:
+      top center,
+      center 66.667vw,
+      center,
+      center,
+      center !important;
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat !important;
+    background-size: 100% auto, 100% auto, 100% 100%, 100% 100%, 100% 100% !important;
   }
 
   .mobile-signature-canvas-fade {
-    top: calc(66.667vw - 4rem);
-    height: 7rem;
+    top: calc(133.334vw - 2rem);
+    height: 15rem;
     background: linear-gradient(
       to bottom,
-      transparent,
-      rgba(248, 243, 233, 0.74) 45%,
-      #f8f3e9 100%
+      rgba(251, 243, 227, 0),
+      rgba(251, 243, 227, 0.76) 58%,
+      rgba(248, 243, 233, 0.98) 100%
     );
+  }
+}
+
+.menu-book {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.menu-book [style*="preserve-3d"] {
+  -webkit-transform-style: preserve-3d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

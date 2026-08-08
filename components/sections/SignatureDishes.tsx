@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { signatureDishes } from "@/data/signatureDishes";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SignatureCollectionModal from "@/components/ui/SignatureCollectionModal";
 import SignatureCollectionMobile from "@/components/ui/SignatureCollectionMobile";
 import {
@@ -15,9 +15,20 @@ import {
 export default function SignatureDishes() {
 
 const [openCollection, setOpenCollection] = useState(false);
+const [isMobile, setIsMobile] = useState(false);
 const homepageDishes = signatureDishes.filter((dish) =>
   [1, 2, 5, 6].includes(dish.id)
 );
+
+useEffect(() => {
+  const mediaQuery = window.matchMedia("(max-width: 767px)");
+  const updateViewport = () => setIsMobile(mediaQuery.matches);
+
+  updateViewport();
+  mediaQuery.addEventListener("change", updateViewport);
+
+  return () => mediaQuery.removeEventListener("change", updateViewport);
+}, []);
   return (
 <section
   id="signature-dishes"
@@ -25,13 +36,13 @@ const homepageDishes = signatureDishes.filter((dish) =>
 >
 
 <div
-  className="signature-dishes-canvas relative overflow-hidden pt-16 pb-24 lg:pt-20 lg:pb-32"
+  className="signature-dishes-canvas relative overflow-hidden pt-14 pb-24 lg:pt-20 lg:pb-32"
 style={{
   backgroundImage:
-    "url('/images/hero/signature_bg1.png'), url('/images/hero/signature_scene2.png')",
-  backgroundSize: "100% auto, 100% auto",
-  backgroundPosition: "top center, center 66.667vw",
-  backgroundRepeat: "no-repeat, no-repeat",
+    "url('/images/hero/signature_bg1.png'), url('/images/hero/signature_scene2.png'), linear-gradient(180deg, #faf3e4 0%, #f8f3e9 100%)",
+  backgroundSize: "100% auto, 100% auto, 100% 100%",
+  backgroundPosition: "top center, center 66.667vw, center",
+  backgroundRepeat: "no-repeat, no-repeat, no-repeat",
 }}
 >
       {/* Soft overlay */}
@@ -81,9 +92,9 @@ style={{
 >
   
 {/* Premium Decorative Divider */}
-<div className="mb-8 flex items-center justify-center">
-  <div className="flex items-center gap-5">
-    <span className="h-px w-20 bg-gradient-to-r from-transparent via-[#C8A44D]/60 to-[#C8A44D]" />
+<div className="mb-7 flex items-center justify-center sm:mb-8">
+  <div className="flex items-center gap-3 sm:gap-5">
+    <span className="h-px w-12 bg-gradient-to-r from-transparent via-[#C8A44D]/60 to-[#C8A44D] sm:w-20" />
 
     <div className="relative flex items-center justify-center">
       <span className="text-[#C8A44D] text-2xl">❋</span>
@@ -91,37 +102,42 @@ style={{
       <div className="absolute h-10 w-10 rounded-full border border-[#C8A44D]/20" />
     </div>
 
-    <span className="h-px w-20 bg-gradient-to-l from-transparent via-[#C8A44D]/60 to-[#C8A44D]" />
+    <span className="h-px w-12 bg-gradient-to-l from-transparent via-[#C8A44D]/60 to-[#C8A44D] sm:w-20" />
   </div>
 </div>
-      <div className="mb-3 flex items-center justify-center gap-3">
-  <span className="h-px w-10 bg-[#C8A44D]/60" />
+      <div className="mb-3 flex items-center justify-center gap-2 sm:gap-3">
+  <span className="h-px w-6 bg-[#C8A44D]/60 sm:w-10" />
 
   <span className="text-[#C8A44D]">✦</span>
 
-  <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[#2F6B3D]">
+  <p className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.32em] text-[#2F6B3D] sm:text-xs sm:tracking-[0.4em]">
     A Taste of Tradition
   </p>
 
   <span className="text-[#C8A44D]">✦</span>
 
-  <span className="h-px w-10 bg-[#C8A44D]/60" />
+  <span className="h-px w-6 bg-[#C8A44D]/60 sm:w-10" />
 </div>
 
           <h2
   className="
     font-serif
-    text-4xl
+    mx-auto
+    max-w-[20rem]
+    text-balance
+    text-[clamp(2.25rem,9.5vw,2.85rem)]
     font-semibold
-    leading-[1.05]
+    leading-[0.96]
+    tracking-[-0.025em]
     text-[#1E1E1E]
+    sm:max-w-none
     sm:text-5xl
     lg:text-6xl
   "
 >
-  Dakshina Paaka&apos;s Signature
-  <span className="block italic text-[#2F6B3D]">
-    Dishes
+  <span className="block">Dakshina Paaka&apos;s</span>
+  <span className="block">
+    Signature <em className="font-normal italic text-[#2F6B3D]">Dishes</em>
   </span>
 </h2>
 
@@ -136,7 +152,7 @@ style={{
             <span className="h-px w-14 bg-gradient-to-l from-transparent to-[#C8A44D]" />
           </div>
 
-      <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#6B5B45] md:text-xl">
+      <p className="mx-auto mt-6 max-w-[22rem] text-pretty text-[16px] leading-8 text-[#6B5B45] sm:max-w-2xl sm:text-lg md:text-xl">
   Experience a handpicked selection of our finest dishes, where authentic
   recipes, fresh ingredients, and timeless South Indian flavours come
   together to create an unforgettable dining experience.
@@ -344,7 +360,7 @@ style={{
 
         {/* Bottom CTA */}
         <motion.div
-  className="mt-12 text-center lg:mt-16"
+  className="mt-10 text-center lg:mt-16"
   variants={fadeUp}
   initial="hidden"
   whileInView="visible"
@@ -353,9 +369,12 @@ style={{
 
          <p
   className="
+    mx-auto
+    max-w-[20rem]
     text-center
     font-serif
-    text-[28px]
+    text-[26px]
+    leading-tight
     italic
     text-[#7A6440]
     lg:text-[24px]
@@ -365,20 +384,27 @@ style={{
 </p>
 
          <button
+  type="button"
+  aria-haspopup="dialog"
   onClick={() => setOpenCollection(true)}
   className="
 
 group
-inline-flex
+flex
+mx-auto
+max-w-full
+justify-center
 items-center
 gap-3
 rounded-full
 bg-[#174D32]
-px-10
-py-5
+px-6
+py-4
+text-[11px]
 font-semibold
 uppercase
-tracking-[0.18em]
+tracking-[0.15em]
+whitespace-nowrap
 text-white
 shadow-[0_14px_35px_rgba(23,77,50,0.25)]
 transition-all
@@ -386,6 +412,11 @@ duration-500
 hover:-translate-y-1
 hover:bg-[#1E5C3A]
 hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)]
+sm:inline-flex
+sm:px-10
+sm:py-5
+sm:text-sm
+sm:tracking-[0.18em]
 "
           >
             Explore More Signature Dishes
@@ -401,21 +432,17 @@ hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)]
             </div>
 
 
-   {/* Desktop */}
-<div className="hidden md:block">
-  <SignatureCollectionModal
-    open={openCollection}
-    onClose={() => setOpenCollection(false)}
-  />
-</div>
-
-{/* Mobile */}
-<div className="block md:hidden">
+   {isMobile ? (
   <SignatureCollectionMobile
     open={openCollection}
     onClose={() => setOpenCollection(false)}
   />
-</div>
+) : (
+  <SignatureCollectionModal
+    open={openCollection}
+    onClose={() => setOpenCollection(false)}
+  />
+)}
 
     </div>
     </section>

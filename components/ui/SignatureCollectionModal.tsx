@@ -16,7 +16,6 @@ export default function SignatureCollectionModal({
   onClose,
 }: SignatureCollectionModalProps) {
 
-  const featuredDish = signatureDishes[0];
   const [activeCategory, setActiveCategory] = useState("All");
   const showHero = activeCategory === "All";
 const [compactHeader, setCompactHeader] = useState(false);
@@ -103,6 +102,9 @@ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
               bg-[radial-gradient(circle_at_top,#FFFDF8_0%,#FBF6ED_40%,#F5EBDD_100%)]
               shadow-[0_18px_40px_rgba(0,0,0,0.18)]
             "
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="signature-collection-desktop-title"
           >
             {/* Decorative Top Glow */}
             <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#FFF5D7]/70 to-transparent pointer-events-none" />
@@ -161,6 +163,7 @@ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
                 </p>
 
                 <h2
+  id="signature-collection-desktop-title"
   className={`
     mt-2
     font-serif
@@ -192,14 +195,16 @@ transition-[opacity,transform] duration-300
     }
   `}
 >
-                  Discover our chef's handpicked creations,
+                  Discover our chef&apos;s handpicked creations,
                   prepared with authentic South Indian flavours.
                 </p>
 
               </div>
 
               <button
+                type="button"
                 onClick={onClose}
+                aria-label="Close signature collection"
         className={`
 flex
 items-center
@@ -364,7 +369,9 @@ md:text-[64px]
     className="flex items-center"
   >
     <button
+      type="button"
       onClick={() => setActiveCategory(item)}
+      aria-pressed={activeCategory === item}
       className="
         relative
         px-5
@@ -454,7 +461,6 @@ shadow-[0_30px_80px_rgba(0,0,0,0.18)]
   alt="Dakshinapaaka Signature Thali"
   fill
   priority
-  quality={100}
   sizes="100vw"
   className="
     object-cover
@@ -659,7 +665,6 @@ hover:shadow-md
   alt={dish.name}
   fill
   loading="lazy"
-  quality={70}
   sizes="
     (max-width: 768px) 100vw,
     (max-width: 1280px) 50vw,

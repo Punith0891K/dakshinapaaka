@@ -10,7 +10,7 @@ import {
   Users,
   UtensilsCrossed,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 
 const features = [
   {
@@ -35,25 +35,25 @@ const features = [
   },
 ];
 
-export default function About() {
-
-  const [currentImage, setCurrentImage] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const [direction, setDirection] = useState(1);
-
 const interiorImages = [
   "/images/hero/interior1.jpeg",
   "/images/hero/interior2.png",
   "/images/hero/interior3.png",
 ];
 
-const nextImage = () => {
+export default function About() {
+
+  const [currentImage, setCurrentImage] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [direction, setDirection] = useState(1);
+
+const nextImage = useCallback(() => {
   setDirection(1);
 
   setCurrentImage((prev) =>
     prev === interiorImages.length - 1 ? 0 : prev + 1
   );
-};
+}, []);
 
 const prevImage = () => {
   setDirection(-1);
@@ -84,7 +84,7 @@ useEffect(() => {
   }, 5000);
 
   return () => clearInterval(interval);
-}, [isHovered]);
+}, [isHovered, nextImage]);
 
 const variants = {
   enter: (direction: number) => ({

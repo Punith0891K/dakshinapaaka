@@ -168,6 +168,7 @@ className="flex h-12 w-12 items-center justify-center rounded-full border border
 
           return (
 <motion.div
+  key={item.name}
   initial={{ opacity: 0, x: 16 }}
   animate={{ opacity: 1, x: 0 }}
   exit={{ opacity: 0, x: 16 }}

@@ -1,11 +1,10 @@
 "use client";
 import { LayoutGroup } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { ArrowUpRight, X } from "lucide-react";
 import { signatureDishes } from "@/data/signatureDishes";
-import { ArrowUpRight } from "lucide-react";
 import DishDetailSheet from "@/components/ui/DishDetailSheet";
 interface SignatureCollectionMobileProps {
   open: boolean;
@@ -26,8 +25,6 @@ export default function SignatureCollectionMobile({
     "Desserts",
   ];
 
-  const featuredDish = signatureDishes[0];
-
   const filteredDishes = useMemo(() => {
     const dishes = signatureDishes.slice(1);
 
@@ -43,6 +40,50 @@ const [selectedDish, setSelectedDish] =
   useState<SignatureDish | null>(null);
 const featuredCard = filteredDishes[0];
 const remainingCards = filteredDishes.slice(1);
+const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+const handleClose = () => {
+  setSelectedDish(null);
+  onClose();
+};
+
+useEffect(() => {
+  if (!open) return;
+
+  const previousOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+
+  return () => {
+    document.body.style.overflow = previousOverflow;
+  };
+}, [open]);
+
+useEffect(() => {
+  if (!open) return;
+
+  const focusFrame = window.requestAnimationFrame(() => {
+    if (!selectedDish) closeButtonRef.current?.focus();
+  });
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key !== "Escape") return;
+
+    if (selectedDish) {
+      setSelectedDish(null);
+      return;
+    }
+
+    onClose();
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    window.cancelAnimationFrame(focusFrame);
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [open, selectedDish, onClose]);
+
   return (
     <LayoutGroup>
     <AnimatePresence>
@@ -55,7 +96,7 @@ const remainingCards = filteredDishes.slice(1);
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            onClick={onClose}
+            onClick={handleClose}
             className="
               fixed
               inset-0
@@ -84,7 +125,9 @@ const remainingCards = filteredDishes.slice(1);
               flex
               h-[100dvh]
               flex-col
+              min-h-0
               overflow-hidden
+              overflow-x-hidden
               rounded-t-[32px]
               bg-[radial-gradient(circle_at_top,#FFFDF9_0%,#FBF6EE_45%,#F4E8D9_100%)]
               shadow-[0_-20px_60px_rgba(0,0,0,0.28)]
@@ -93,6 +136,9 @@ const remainingCards = filteredDishes.slice(1);
               paddingTop: "max(20px, env(safe-area-inset-top))",
               paddingBottom: "env(safe-area-inset-bottom)",
             }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="signature-collection-title"
           >
             {/* Decorative Glow */}
 
@@ -112,37 +158,41 @@ const remainingCards = filteredDishes.slice(1);
             {/* Header */}
 <header
   className="
-    sticky
-    top-0
+    relative
     z-30
+    shrink-0
     border-b
     border-[#E8DDBF]
-    bg-[#FFFDF8]/85
+    bg-[#FFFDF8]/95
     backdrop-blur-2xl
   "
 >
-  <div className="flex items-start justify-between px-6 pt-4 pb-4">
+  <div className="flex min-w-0 items-start justify-between gap-4 px-5 pb-4 pt-3">
 
-    <div>
+    <div className="min-w-0">
 
       <p
         className="
-          text-[11px]
+          text-[10px]
           uppercase
-          tracking-[0.45em]
+          tracking-[0.38em]
           text-[#2F6B3D]
+          sm:text-[11px]
+          sm:tracking-[0.45em]
         "
       >
         Dakshinapaaka
       </p>
 
    <h1
+  id="signature-collection-title"
   className="
-    mt-2
+    mt-1.5
     font-serif
-    text-[42px]
-    leading-[0.82]
+    text-[clamp(2.25rem,10.8vw,2.75rem)]
+    leading-[0.84]
     tracking-[-0.03em]
+    text-balance
     text-[#1C1C1C]
     md:text-[60px]
   "
@@ -155,11 +205,15 @@ const remainingCards = filteredDishes.slice(1);
     </div>
 
     <button
-      onClick={onClose}
+      ref={closeButtonRef}
+      type="button"
+      onClick={handleClose}
+      aria-label="Close signature collection"
       className="
         flex
-        h-14
-        w-14
+        h-12
+        w-12
+        shrink-0
         items-center
         justify-center
         rounded-full
@@ -181,14 +235,17 @@ const remainingCards = filteredDishes.slice(1);
 
             <div
               className="
-                flex-1
+              flex-1
+                min-h-0
+                overflow-x-hidden
                 overflow-y-auto
-                pb-10
+                overscroll-contain
+                pb-[calc(2.5rem+env(safe-area-inset-bottom))]
               "
             >
 {/* ================= EDITORIAL STORY ================= */}
 
-<section className="px-6 pt-8 pb-10">
+<section className="px-5 pb-8 pt-7">
 
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -199,9 +256,9 @@ const remainingCards = filteredDishes.slice(1);
 
     <p
       className="
-        text-[11px]
+        text-[10px]
         uppercase
-        tracking-[0.5em]
+        tracking-[0.42em]
         text-[#C8A44D]
       "
     >
@@ -210,10 +267,11 @@ const remainingCards = filteredDishes.slice(1);
 
     <h2
       className="
-        mt-6
+        mt-5
         font-serif
-        text-[44px]
+        text-[clamp(2.3rem,10.8vw,2.75rem)]
         leading-[0.95]
+        text-balance
         text-[#1E1E1E]
       "
     >
@@ -227,7 +285,8 @@ const remainingCards = filteredDishes.slice(1);
       className="
         mx-auto
         mt-6
-        max-w-sm
+        max-w-[20rem]
+        text-pretty
         text-[16px]
         leading-8
         text-[#6B5B45]
@@ -243,7 +302,7 @@ const remainingCards = filteredDishes.slice(1);
 
 </section>
 
-<div className="px-6">
+<div className="px-5">
 
   <div className="flex items-center gap-4">
 
@@ -277,9 +336,10 @@ const remainingCards = filteredDishes.slice(1);
     transition={{ duration: 0.45 }}
     className="
       relative
-      h-[430px]
+      h-[min(108vw,430px)]
+      min-h-[360px]
       overflow-hidden
-      rounded-[34px]
+      rounded-[30px]
     "
   >
 
@@ -287,14 +347,13 @@ const remainingCards = filteredDishes.slice(1);
 <Image
   fill
   priority
-  quality={100}
   src="/images/food/hero-thalimobile.png"
   alt="Dakshinapaaka Signature Collection"
   sizes="100vw"
 className="
   object-cover
-  object-[center_40%]
-  scale-[1.1]
+  object-[center_42%]
+  scale-[1.04]
 "
 />
 
@@ -303,19 +362,19 @@ className="
     absolute
     inset-0
     bg-gradient-to-t
-    from-black/35
-    via-black/5
+    from-black/55
+    via-black/10
     to-transparent
   "
 />
     {/* Overlay */}
 
     {/* Experience Label */}
-<div className="absolute left-6 top-10">
+<div className="absolute left-5 top-7 rounded-2xl bg-black/20 px-3 py-2 backdrop-blur-sm">
 
   <p
     className="
-      text-[11px]
+      text-[10px]
       uppercase
       tracking-[0.45em]
       text-white
@@ -326,7 +385,7 @@ className="
     EXPERIENCE
   </p>
 
-  <div className="mt-5 flex items-center gap-2">
+  <div className="mt-3 flex items-center gap-2">
 
     <div className="h-px w-12 bg-[#D8B15A]" />
 
@@ -351,29 +410,26 @@ className="
     className="
       relative
       z-10
-      mx-4
-      -mt-20
+      ml-auto
+      mr-2
+      -mt-24
+      w-[220px]
+      max-w-[calc(100%-1.5rem)]
     "
   >
 
     {/* Philosophy Card */}
 <div
 className="
-absolute
-top-[55%]
-right-0
-translate-y-[-69%]
-z-20
-w-[210px]
-rounded-[28px]
-bg-[rgba(40,24,10,0.82)]
+rounded-[24px]
+bg-[rgba(35,22,8,0.93)]
 backdrop-blur-xl
 border border-[#C8A44D]/20
 shadow-[0_20px_60px_rgba(0,0,0,0.35)]
 
 "
 >
-  <div className="px-6 pt-6 pb-5">
+  <div className="px-5 py-5">
 
     {/* Label */}
 
@@ -391,26 +447,14 @@ shadow-[0_20px_60px_rgba(0,0,0,0.35)]
     {/* Heading */}
 
     <h3
-      className="
-        mt-4
-        font-serif
-        text-[15px]
-        leading-[1.2]
-        text-white
-      "
+      className="mt-3 font-serif text-[20px] leading-[1.05] text-white"
     >
-      Every meal begins
-      <br />
-      with tradition
-      <br />
-      and ends with
-      <br />
-      memories.
+      Every meal begins with tradition and ends with memories.
     </h3>
 
     {/* Divider */}
 
-    <div className="my-5 flex items-center gap-3">
+    <div className="my-4 flex items-center gap-3">
 
       <div className="h-px flex-1 bg-[#C8A44D]/40" />
 
@@ -422,31 +466,31 @@ shadow-[0_20px_60px_rgba(0,0,0,0.35)]
 
     {/* Features */}
 
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-3 gap-1.5">
 
       <div className="text-center">
-        <p className="text-[8px] uppercase tracking-[0.2em] text-[#D8B15A]">
+        <p className="text-[7px] uppercase tracking-[0.14em] text-[#D8B15A]">
           AUTHENTIC
         </p>
-        <p className="mt-1 text-[8px] leading-4 text-white/80">
+        <p className="mt-1 text-[8px] leading-3 text-white/80">
           Recipes
         </p>
       </div>
 
       <div className="text-center">
-        <p className="text-[8px] uppercase tracking-[0.2em] text-[#D8B15A]">
+        <p className="text-[7px] uppercase tracking-[0.14em] text-[#D8B15A]">
           FRESH
         </p>
-        <p className="mt-1 text-[8px] leading-4 text-white/80">
+        <p className="mt-1 text-[8px] leading-3 text-white/80">
           Ingredients
         </p>
       </div>
 
       <div className="text-center">
-        <p className="text-[8px] uppercase tracking-[0.2em] text-[#D8B15A]">
+        <p className="text-[7px] uppercase tracking-[0.14em] text-[#D8B15A]">
           TIMELESS
         </p>
-        <p className="mt-1 text-[8px] leading-4 text-white/80">
+        <p className="mt-1 text-[8px] leading-3 text-white/80">
           Hospitality
         </p>
       </div>
@@ -463,13 +507,13 @@ shadow-[0_20px_60px_rgba(0,0,0,0.35)]
 
             {/* ================= MENU FILTER ================= */}
 
-<section className="mt-8 px-5">
+<section className="mt-10 px-5">
 
 <div className="mb-5">
 
 <p
   className="
-    text-[11px]
+    text-[10px]
     uppercase
     tracking-[0.45em]
     text-[#C8A44D]
@@ -491,8 +535,9 @@ shadow-[0_20px_60px_rgba(0,0,0,0.35)]
   className="
     mt-4
     font-serif
-    text-[36px]
+    text-[34px]
     leading-[1]
+    text-balance
     text-[#1E1E1E]
     text-center
   "
@@ -525,6 +570,8 @@ flex
 gap-2
 overflow-x-auto
 scroll-smooth
+snap-x
+snap-mandatory
 [-ms-overflow-style:none]
 [scrollbar-width:none]
 "
@@ -533,10 +580,13 @@ scroll-smooth
 
 <button
 key={category}
+type="button"
 onClick={() => setActiveCategory(category)}
+aria-pressed={activeCategory === category}
 className={`
 relative
 flex-shrink-0
+snap-start
 rounded-[18px]
 px-5
 py-3
@@ -577,15 +627,16 @@ activeCategory===category
   >
 
     <p className="text-[11px] uppercase tracking-[0.4em] text-[#C8A44D]">
-      CHEF'S FEATURED
+      CHEF&apos;S FEATURED
     </p>
 
     <h2
       className="
         mt-3
         font-serif
-        text-[34px]
+        text-[clamp(2rem,9vw,2.2rem)]
         leading-none
+        text-balance
         text-[#1E1E1E]
       "
     >
@@ -610,29 +661,15 @@ activeCategory===category
       alt={featuredCard.name}
       sizes="100vw"
       className="object-cover object-[center_25%]"
-      quality={90}
     />
-<div
-  className="
-    pointer-events-none
-    absolute
-    inset-x-0
-    bottom-0
-    h-24
-    bg-gradient-to-t
-    from-[#FFFDF9]
-    via-[#FFFDF9]/60
-    to-transparent
-  "
-/>
 
     <div
       className="
         absolute
         inset-0
         bg-gradient-to-t
-        from-black/55
-        via-black/5
+        from-black/40
+        via-black/0
         to-transparent
       "
     />
@@ -730,8 +767,9 @@ activeCategory===category
       className="
         mt-3
         font-serif
-        text-[30px]
-        leading-none
+      text-[clamp(1.85rem,8vw,2rem)]
+      leading-none
+      text-balance
         text-[#1E1E1E]
       "
     >
@@ -753,15 +791,17 @@ activeCategory===category
       },
     },
   }}
-  className="grid grid-cols-2 gap-5"
+  className="grid grid-cols-2 gap-4"
 >
 
 {remainingCards.map((dish) => (
 
-<motion.article
+<motion.button
+  type="button"
   key={dish.id}
   layoutId={`dish-card-${dish.id}`}
   onClick={() => setSelectedDish(dish)}
+  aria-label={`View details for ${dish.name}`}
   variants={{
     hidden: {
       opacity: 0,
@@ -780,10 +820,14 @@ activeCategory===category
     damping: 30,
   }}
   className="
+    block
+    min-w-0
+    w-full
     cursor-pointer
     overflow-hidden
     rounded-[24px]
     bg-white
+    text-left
     shadow-[0_8px_22px_rgba(0,0,0,0.07)]
   "
 >
@@ -795,7 +839,7 @@ activeCategory===category
     stiffness: 220,
     damping: 28,
   }}
-  className="relative h-[170px] overflow-hidden"
+  className="relative h-[43vw] min-h-[152px] max-h-[170px] overflow-hidden"
 >
   <Image
     fill
@@ -805,7 +849,7 @@ activeCategory===category
   />
 </motion.div>
 
-<div className="p-5">
+<div className="min-w-0 p-4">
 
   <div className="flex items-start justify-between">
 
@@ -820,7 +864,7 @@ activeCategory===category
       {dish.category}
     </p>
 
-    <motion.button
+    <motion.span
       whileTap={{ scale: 0.92 }}
       whileHover={{ scale: 1.05 }}
       className="
@@ -837,7 +881,7 @@ activeCategory===category
       "
     >
       <ArrowUpRight size={16} />
-    </motion.button>
+    </motion.span>
 
   </div>
 
@@ -849,9 +893,9 @@ activeCategory===category
     damping: 28,
   }}
   className="
-    mt-4
+    mt-3
     font-serif
-    text-[24px]
+    text-[clamp(1.35rem,6.3vw,1.5rem)]
     leading-[1.05]
     text-[#1E1E1E]
   "
@@ -861,7 +905,7 @@ activeCategory===category
 
 </div>
 
-</motion.article>
+</motion.button>
 
 ))}
 

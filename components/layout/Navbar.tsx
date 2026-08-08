@@ -66,7 +66,7 @@ setActiveSection(current);
     <header
       className={`fixed left-0 right-0 top-0 z-50 transition-all duration-500 ease-out ${
        scrolled
-          ? "border-b border-[#C8A44D]/20 bg-[#FAF7F2]/70 backdrop-blur-2xl shadow-[0_12px_45px_rgba(0,0,0,0.10)]"
+          ? "border-b border-[#C8A44D]/25 bg-[#FBF3E3]/85 backdrop-blur-2xl shadow-[0_12px_45px_rgba(66,49,20,0.10)]"
           : "bg-gradient-to-b from-black/45 to-transparent"
       }`}
     >

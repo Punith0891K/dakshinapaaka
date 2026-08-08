@@ -31,7 +31,6 @@ bg-[#080A08]
     alt="Dakshinapaaka Hero"
     fill
     priority
-    quality={100}
     sizes="(min-width:1024px) 100vw"
     className="object-cover object-center select-none pointer-events-none"
   />
@@ -52,7 +51,6 @@ bg-[#080A08]
     alt="Dakshinapaaka Hero"
     fill
     priority
-    quality={100}
     sizes="100vw"
     className="object-cover object-top select-none pointer-events-none"
   />
