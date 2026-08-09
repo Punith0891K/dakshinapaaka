@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import MenuCover from "./MenuCover";
+import MenuCoverInside from "./MenuCoverInside";
 import MenuPages from "./MenuPages";
 
 interface Props {
@@ -117,7 +118,18 @@ export default function MenuBook({ onOpen }: Props) {
     xl:h-[700px]
     xl:w-[470px]
   "
-  style={{ perspective: "1800px" }}
+  style={{
+    perspective: "1800px",
+    // NOTE: this used to be `contain: "paint"`. Paint containment forces
+    // the browser to hard-clip anything that visually overflows this
+    // box's edges — but the hover animation below (scale/y/rotate) is
+    // *designed* to lift the book slightly outside its resting bounds.
+    // That combination is what was slicing the cover's corner off on
+    // hover. `layout style` keeps the same perf isolation (this
+    // subtree's layout/counters can't leak out and affect the rest of
+    // the page) without forcing a clip on transformed content.
+    contain: "layout style",
+  }}
 >
         <motion.div
           onClick={handleOpen}
@@ -147,9 +159,11 @@ export default function MenuBook({ onOpen }: Props) {
             className="absolute inset-0"
             style={{
               transform: "translateZ(-16px)",
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
             }}
           >
-            <MenuCover />
+            <MenuCover animated={false} />
           </div>
 
           {/* Spine */}
@@ -219,10 +233,24 @@ export default function MenuBook({ onOpen }: Props) {
     duration: 0.8,
   }}
   style={{
-    transform: "translateZ(-8px)",
+    z: -8,
+    backfaceVisibility: "hidden",
+    WebkitBackfaceVisibility: "hidden",
+    willChange: "transform",
   }}
 >
   <MenuPages />
+
+  {/* Contact shadow cast by the lifting cover onto the page beneath it.
+      Fades in as the cover opens and hugs the spine edge — the one bit
+      of extra physicality that sells the flip as "premium" rather than
+      just a rotating rectangle. */}
+  <motion.div
+    aria-hidden
+    className="pointer-events-none absolute inset-y-0 left-0 w-2/3 rounded-[30px] bg-gradient-to-r from-black/25 via-black/5 to-transparent"
+    animate={{ opacity: opening ? 1 : 0 }}
+    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+  />
 </motion.div>
 
           {/* Front Cover */}
@@ -240,24 +268,42 @@ export default function MenuBook({ onOpen }: Props) {
             style={{
               transformOrigin: "left center",
               transformStyle: "preserve-3d",
-              backfaceVisibility: "hidden",
               z: 8,
+              willChange: "transform",
             }}
             className="absolute inset-0 z-30"
           >
-            <MenuCover />
+            {/* Outer face — the cover art visible while the book is closed
+                and for the first half of the flip. */}
+            <div
+              className="absolute inset-0"
+              style={{
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+              }}
+            >
+              <MenuCover />
+            </div>
+
+            {/* Inner face — the lining, revealed once the cover has swung
+                past 90deg. This is the fix for the cover "disappearing":
+                previously there was nothing here, so backface-visibility
+                had no second face to show and the cover just vanished
+                mid-swing instead of continuing to read as a solid object. */}
+            <div
+              className="absolute inset-0"
+              style={{
+                transform: "rotateY(180deg)",
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+              }}
+            >
+              <MenuCoverInside />
+            </div>
           </motion.div>
           {/* Light Reflection */}
 
-          <motion.div
-            animate={{
-              x: ["-140%", "180%"],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              repeatDelay: 4,
-            }}
+          <div
             className="
               pointer-events-none
               absolute
@@ -267,6 +313,13 @@ export default function MenuBook({ onOpen }: Props) {
               rounded-[32px]
             "
           >
+            <style>{`
+              @keyframes dp-book-shimmer {
+                0% { transform: translateX(-140%); }
+                27.27% { transform: translateX(180%); }
+                100% { transform: translateX(180%); }
+              }
+            `}</style>
             <div
               className="
                 h-full
@@ -277,8 +330,12 @@ export default function MenuBook({ onOpen }: Props) {
                 via-white/30
                 to-transparent
               "
+              style={{
+                animation: "dp-book-shimmer 5.5s ease-in-out infinite",
+                willChange: "transform",
+              }}
             />
-          </motion.div>
+          </div>
         </motion.div>
       </div>
     </motion.div>

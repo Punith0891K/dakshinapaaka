@@ -28,7 +28,6 @@ export default function MenuShowcase({ onOpen }: Props) {
   flex-col
   items-center
   justify-center
-  overflow-hidden
   rounded-[32px]
   border
   border-[#C8A44D]/20
@@ -41,7 +40,6 @@ export default function MenuShowcase({ onOpen }: Props) {
   lg:min-h-[700px]
   lg:max-w-none
   lg:translate-x-1
-  lg:overflow-visible
   lg:rounded-none
   lg:border-0
   lg:bg-transparent
@@ -52,42 +50,65 @@ export default function MenuShowcase({ onOpen }: Props) {
   xl:translate-x-3
 "
     >
-      {/* Main Ambient Glow */}
-      <motion.div
-  animate={{
-    scale: [1, 1.08, 1],
-    opacity: [0.25, 0.45, 0.25],
-  }}
-  transition={{
-    duration: 5,
-    repeat: Infinity,
-    ease: "easeInOut",
-  }}
-  className="absolute h-[420px] w-[420px] rounded-full bg-[#D4AF37]/15 blur-[130px] sm:h-[560px] sm:w-[560px] lg:h-[720px] lg:w-[720px] lg:blur-[170px] xl:h-[820px] xl:w-[820px]"
-/>
+      {/* Ambient Glow keyframes (CSS-driven so these infinite pulses run on
+          the compositor thread instead of competing with the 3D book's
+          transforms for main-thread time — same pulse, same timing) */}
+      <style>{`
+        @keyframes dp-glow-main {
+          0%, 100% { transform: scale(1); opacity: 0.25; }
+          50% { transform: scale(1.08); opacity: 0.45; }
+        }
+        @keyframes dp-glow-emerald {
+          0%, 100% { transform: scale(1); opacity: 0.2; }
+          50% { transform: scale(1.05); opacity: 0.35; }
+        }
+      `}</style>
 
-      {/* Emerald Glow */}
-      <motion.div
-  animate={{
-    scale: [1, 1.05, 1],
-    opacity: [0.2, 0.35, 0.2],
-  }}
-  transition={{
-    duration: 4,
-    repeat: Infinity,
-    ease: "easeInOut",
-  }}
-  className="absolute h-[300px] w-[300px] rounded-full bg-[#0F5B43]/18 blur-[90px] sm:h-[380px] sm:w-[380px] lg:h-[500px] lg:w-[500px] lg:blur-[120px] xl:h-[560px] xl:w-[560px]"
-/>
+      {/*
+        Decorative background layer (glows + ring). This is deliberately
+        the ONLY thing clipped to the card's rounded shape on mobile.
+        Previously that clipping (overflow-hidden + rounded-[32px]) lived
+        on the outer card itself, which meant the book got clipped too —
+        when its cover swings open on its spine it needs to sweep out past
+        its own resting box, and the card's overflow-hidden was slicing
+        that swing off mid-animation. Scoping the clip to just this layer
+        keeps the same soft "glow inside a frame" look at rest while
+        leaving the book free to open without being cut off. At lg+ this
+        was never clipped anyway (matches the untouched desktop look).
+      */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[32px] lg:overflow-visible lg:rounded-none">
+        {/* Main Ambient Glow */}
+        <div
+          className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#D4AF37]/15 blur-[130px] sm:h-[560px] sm:w-[560px] lg:h-[720px] lg:w-[720px] lg:blur-[170px] xl:h-[820px] xl:w-[820px]"
+          style={{
+            animation: "dp-glow-main 5s ease-in-out infinite",
+            willChange: "transform, opacity",
+          }}
+        />
 
-      {/* Decorative Ring */}
-      <div className="absolute h-[350px] w-[350px] rounded-full border border-[#D6B15A]/10 sm:h-[440px] sm:w-[440px] lg:h-[640px] lg:w-[640px] xl:h-[740px] xl:w-[740px]" />
+        {/* Emerald Glow */}
+        <div
+          className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0F5B43]/18 blur-[90px] sm:h-[380px] sm:w-[380px] lg:h-[500px] lg:w-[500px] lg:blur-[120px] xl:h-[560px] xl:w-[560px]"
+          style={{
+            animation: "dp-glow-emerald 4s ease-in-out infinite",
+            willChange: "transform, opacity",
+          }}
+        />
 
-      {/* Book */}
+        {/* Decorative Ring */}
+        <div className="absolute left-1/2 top-1/2 h-[350px] w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#D6B15A]/10 sm:h-[440px] sm:w-[440px] lg:h-[640px] lg:w-[640px] xl:h-[740px] xl:w-[740px]" />
+      </div>
 
-      <span className="pointer-events-none absolute top-5 z-10 rounded-full border border-[#C8A44D]/25 bg-white/75 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#8C6A2D] shadow-sm lg:hidden">
+      {/* Badge — now in normal document flow above the book instead of
+          being absolutely pinned near the top of the card. It used to sit
+          right on top of the cover's own "Since 2024" text on mobile,
+          hiding it; giving it real layout space guarantees it can never
+          overlap the cover regardless of book size. */}
+      <span className="relative z-10 mb-4 rounded-full border border-[#C8A44D]/25 bg-white/75 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#8C6A2D] shadow-sm lg:hidden">
         Menu Preview
       </span>
+
+      {/* Book */}
 
 <div className="relative lg:ml-0">
 
@@ -136,3 +157,4 @@ export default function MenuShowcase({ onOpen }: Props) {
     </motion.div>
   );
 }
+

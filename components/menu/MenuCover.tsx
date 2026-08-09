@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
 import {
   UtensilsCrossed,
   Leaf,
@@ -10,7 +9,16 @@ import {
   CupSoda,
 } from "lucide-react";
 
-export default function MenuCover() {
+interface MenuCoverProps {
+  // The book renders this component twice (front + back of the cover).
+  // Only the front is ever visible, so the back copy passes animated={false}
+  // to skip the shimmer loop instead of running two infinite animations
+  // for a layer nobody sees — that duplicate loop was doubling the GPU
+  // compositing work behind the flip and contributing to the mobile flicker.
+  animated?: boolean;
+}
+
+export default function MenuCover({ animated = true }: MenuCoverProps) {
   return (
     <div
       className="
@@ -40,6 +48,16 @@ export default function MenuCover() {
         lg:scale-[0.886]
         xl:scale-100
       "
+        style={{
+          // Locks this layer's GPU compositing so the browser can't
+          // randomly flatten/cull it mid-3D-transform, which is what was
+          // causing the cover to flash blank on mobile. Deliberately not
+          // setting `transform` here — that would clobber the scale-[...]
+          // classes above.
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+          willChange: "transform",
+        }}
       >
         {/* Book Spine */}
 <div
@@ -145,7 +163,6 @@ to-transparent
       border
       border-[#D6B15A]
       bg-black
-      backdrop-blur-sm
       shadow-[0_15px_50px_rgba(0,0,0,.45)]
     "
   >
@@ -330,28 +347,34 @@ drop-shadow-[0_2px_4px_rgba(0,0,0,.4)]
   "
 >
 
- <motion.div
-  animate={{
-    x: ["-180%", "220%"],
-  }}
-  transition={{
-    duration: 3.5,
-    repeat: Infinity,
-    repeatDelay: 2,
-    ease: "easeInOut",
-  }}
-  className="
-    absolute
-    top-0
-    h-full
-    w-36
-    rotate-12
-    bg-gradient-to-r
-    from-transparent
-    via-white/18
-    to-transparent
-  "
-/>
+ {animated && (
+   <>
+     <style>{`
+       @keyframes dp-cover-shimmer {
+         0% { transform: translateX(-180%); }
+         63.6% { transform: translateX(220%); }
+         100% { transform: translateX(220%); }
+       }
+     `}</style>
+     <div
+       className="
+         absolute
+         top-0
+         h-full
+         w-36
+         rotate-12
+         bg-gradient-to-r
+         from-transparent
+         via-white/18
+         to-transparent
+       "
+       style={{
+         animation: "dp-cover-shimmer 5.5s ease-in-out infinite",
+         willChange: "transform",
+       }}
+     />
+   </>
+ )}
 </div>
 
 <div
