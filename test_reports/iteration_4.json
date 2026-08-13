@@ -1,0 +1,28 @@
+{
+  "summary": "Full frontend verification of the new Testimonials section on the Dakshinapaaka Next.js site. All 17 requested scenarios PASSED on both desktop (1440x900) and mobile (390x844) viewports. Section renders after Gallery, header/eyebrow/h2/rating strip correct, featured card renders with 5 stars, dot & arrow navigation move to the expected testimonial ids (dot-2->id=3 Murali Ram; next×3 from id=1 -> [2,3,4]; mini-3 -> id=4 Surya V). Autoplay advances after ~7s and cleanly pauses on hover, resumes on mouse-out. Marquee has 10 mini-cards and animation-play-state toggles running<->paused on hover. Google CTA is an anchor with target=_blank rel='noopener noreferrer'. Mobile prev/next visible and functional. Regression: Menu modal opens on both desktop (explore-menu-btn) and mobile (open-full-menu-mobile-btn); Gallery section, counter and 10 gallery cards still render. Section anchor #testimonials works.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Hero (and many other sections) - not testimonials", "issues": ["React hydration mismatch warnings observed in console on initial load caused by className whitespace/newline differences between SSR and client (server rendered ' relative min-h-[115svh]... ' while client rendered a multiline template-literal version). Not related to Testimonials but should be cleaned up (likely tailwind-merge/cn producing different whitespace or a leading/trailing newline in a className template literal)."]}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/testimonials_desktop.png", "/app/test_reports/testimonials_mobile.png"],
+  "action_items": [
+    "Optional: fix hydration mismatch warnings across sections (Hero, SignatureDishes, Menu, FloatingMenuButton) by ensuring className strings use consistent whitespace between server & client (avoid multi-line template literals with leading newlines inside className). This does not break functionality but pollutes the console."
+  ],
+  "critical_code_review_comments": [
+    "Testimonials.tsx is ~590 lines and includes 4 sub-components + inline <style> for the marquee keyframes. Consider extracting Avatar, GoogleGlyph, CornerFlourish, MiniCard into their own files and moving the marquee keyframes to a global CSS module for cleanliness.",
+    "The mini-card list duplicates the testimonials array inline ([...testimonials, ...testimonials]) — fine for a 5-item list but document why (marquee seamless loop).",
+    "Autoplay useEffect depends on `featured` which restarts the interval every advance — intentional (also resets progress bar) but worth a comment.",
+    "Hydration warnings in console (see design_issues) — not blocking but should be addressed to keep dev signal clean."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped per request)", "frontend": "100% (17/17)"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Testimonials section is fully working on desktop and mobile. All data-testids used in the review request exist and behave as specified. Menu modal & Gallery regressions confirmed. Only observation is unrelated console hydration warnings in Hero/Signature/Menu/FloatingMenuButton components (className whitespace mismatch). Next.js app on localhost:3000 (no separate frontend/.env; REACT_APP_BACKEND_URL not used here — pure frontend Next app).",
+  "rca of the issue": "No functional issues found. Hydration warnings root cause: several sections use template-literal className strings like `className={`\\n  relative\\n  min-h-[115svh]\\n  ...`}` which after browser reflow gets normalized differently than server output. Fix: replace with single-line strings or use clsx/cn utility to normalize whitespace."
+}

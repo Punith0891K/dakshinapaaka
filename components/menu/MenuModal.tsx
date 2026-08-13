@@ -14,8 +14,14 @@ import {
   Soup,
   CupSoda,
   Check,
+  Maximize,
+  Minimize,
+  Play,
+  Pause,
+  Eye,
+  EyeOff,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { menuCategories, menuPages } from "@/data/menu";
 import { useIsTouchDevice } from "@/lib/useIsTouchDevice";
 import MenuViewer from "./MenuViewer";
@@ -35,11 +41,16 @@ const iconMap = {
   book: BookOpen,
 } as const;
 
+const AUTOPLAY_MS = 4500;
+
 export default function MenuModal({ open, onClose }: Props) {
   const [page, setPage] = useState(0);
-  const [showControls, setShowControls] = useState(true);
   const [shareState, setShareState] = useState<"idle" | "copied">("idle");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [autoplay, setAutoplay] = useState(false);
+  const [cinematic, setCinematic] = useState(false);
   const isTouch = useIsTouchDevice();
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const currentPage = useMemo(() => menuPages[page], [page]);
 
@@ -51,60 +62,91 @@ export default function MenuModal({ open, onClose }: Props) {
     setPage((p) => Math.max(p - 1, 0));
   }, []);
 
-  // Reset to cover whenever the modal is closed so it re-opens cleanly.
+  const progress = useMemo(
+    () => ((page + 1) / menuPages.length) * 100,
+    [page]
+  );
+
+  // Reset on close.
   useEffect(() => {
     if (!open) {
       setPage(0);
       setShareState("idle");
+      setAutoplay(false);
+      setCinematic(false);
     }
   }, [open]);
 
-  // Body scroll lock + keyboard nav
+  // Body scroll lock + keyboard shortcuts.
+  // Escape handling is intentionally split from the other shortcuts and
+  // registered in the *capture* phase so that portal-based children
+  // (like the lightbox) can never eat the event before we see it.
+  const cinematicRef = useRef(cinematic);
+  useEffect(() => {
+    cinematicRef.current = cinematic;
+  }, [cinematic]);
+
   useEffect(() => {
     if (!open) {
       document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
       return;
     }
-
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
 
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      else if (e.key === "ArrowRight") nextPage();
+      if (e.key === "Escape") {
+        // Read cinematic from ref so this handler always sees the latest value
+        // — the useEffect can be attached once and still Do The Right Thing.
+        if (cinematicRef.current) setCinematic(false);
+        else onClose();
+        return;
+      }
+      if (e.key === "ArrowRight") nextPage();
       else if (e.key === "ArrowLeft") prevPage();
+      else if (e.key.toLowerCase() === "f") toggleFullscreen();
+      else if (e.key === " ") {
+        e.preventDefault();
+        setAutoplay((a) => !a);
+      } else if (e.key.toLowerCase() === "c") setCinematic((c) => !c);
     };
-
-    window.addEventListener("keydown", handleKey);
+    // Capture phase so portal children can't swallow Escape first.
+    window.addEventListener("keydown", handleKey, true);
     return () => {
       document.body.style.overflow = "";
-      window.removeEventListener("keydown", handleKey);
+      document.documentElement.style.overflow = "";
+      window.removeEventListener("keydown", handleKey, true);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nextPage, onClose, open, prevPage]);
 
-  // Auto-hide controls on desktop only. On touch devices we keep controls
-  // pinned — auto-hide plus a random touchstart re-showing them created a
-  // visible flicker every time users swiped.
+  // Autoplay slideshow.
   useEffect(() => {
-    if (!open) return;
-    if (isTouch) {
-      setShowControls(true);
-      return;
+    if (!open || !autoplay) return;
+    const t = setTimeout(() => {
+      setPage((p) => (p >= menuPages.length - 1 ? 0 : p + 1));
+    }, AUTOPLAY_MS);
+    return () => clearTimeout(t);
+  }, [open, autoplay, page]);
+
+  // Track native fullscreen state changes (Esc, F11, etc).
+  useEffect(() => {
+    const sync = () =>
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen?.().catch(() => {});
+    } else {
+      document.exitFullscreen?.().catch(() => {});
     }
-
-    let timer: ReturnType<typeof setTimeout>;
-    const show = () => {
-      setShowControls(true);
-      clearTimeout(timer);
-      timer = setTimeout(() => setShowControls(false), 3200);
-    };
-    show();
-
-    window.addEventListener("mousemove", show);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("mousemove", show);
-    };
-  }, [open, isTouch]);
+  }, []);
 
   const handleShare = useCallback(async () => {
     const shareData = {
@@ -139,123 +181,137 @@ export default function MenuModal({ open, onClose }: Props) {
     document.body.removeChild(a);
   }, [currentPage]);
 
+  const chromeOpacity = cinematic ? 0 : 1;
+  const chromePointer = cinematic ? "pointer-events-none" : "pointer-events-auto";
+
   return (
     <AnimatePresence>
       {open && (
         <>
           {/* Backdrop */}
           <motion.div
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(18px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.45 }}
             onClick={onClose}
-            className="fixed inset-0 z-[9998] overflow-hidden bg-black/92 backdrop-blur-xl"
+            className="fixed inset-0 z-[9998] overflow-hidden bg-black/94 backdrop-blur-xl"
             data-testid="menu-modal-backdrop"
           >
-            <div className="absolute left-1/4 top-1/3 h-[420px] w-[420px] rounded-full bg-[#0F5B43]/30 blur-[170px]" />
-            <div className="absolute bottom-1/4 right-1/4 h-[360px] w-[360px] rounded-full bg-[#C8A44D]/25 blur-[150px]" />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 0.25, scale: 1 }}
-              transition={{ duration: 1.2 }}
-              className="absolute inset-0 bg-[radial-gradient(circle,#C8A44D22_0%,transparent_70%)]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" />
+            <div className="absolute left-1/4 top-1/3 h-[380px] w-[380px] rounded-full bg-[#0F5B43]/28 blur-[150px]" />
+            <div className="absolute bottom-1/4 right-1/4 h-[320px] w-[320px] rounded-full bg-[#C8A44D]/22 blur-[130px]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle,#C8A44D18_0%,transparent_65%)]" />
           </motion.div>
 
-          {/* Modal */}
+          {/* Modal shell — fixed to viewport, dvh-locked, no scroll */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto overscroll-contain px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center sm:p-5"
+            ref={rootRef}
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.04 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-[9999] flex flex-col overflow-hidden"
+            style={{
+              height: "100dvh",
+              paddingTop: "env(safe-area-inset-top)",
+              paddingBottom: "env(safe-area-inset-bottom)",
+              paddingLeft: "env(safe-area-inset-left)",
+              paddingRight: "env(safe-area-inset-right)",
+            }}
             data-testid="menu-modal"
+            onClick={(e) => {
+              // Tapping the empty side of the stage toggles cinematic on touch.
+              if (
+                isTouch &&
+                (e.target as HTMLElement).dataset.role === "stage-bg"
+              ) {
+                setCinematic((c) => !c);
+              }
+            }}
           >
-            {/* Top action bar (mobile-first, always visible) */}
-            <div className="pointer-events-none fixed inset-x-0 top-0 z-[10001] flex items-start justify-between px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
-              {/* Share + Download */}
-              <div className="pointer-events-auto flex items-center gap-2">
-                <button
+            {/* TOP BAR */}
+            <motion.div
+              animate={{ opacity: chromeOpacity, y: cinematic ? -20 : 0 }}
+              transition={{ duration: 0.3 }}
+              className={`${chromePointer} relative z-20 flex shrink-0 items-center justify-between gap-3 px-3 py-2.5 sm:px-6 sm:py-3.5`}
+            >
+              {/* Left cluster */}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <ActionBtn
                   onClick={handleShare}
-                  aria-label="Share menu"
-                  data-testid="share-menu-btn"
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-xl transition-all duration-300 hover:bg-[#C8A44D] hover:text-[#173F2D] sm:h-12 sm:w-12"
+                  ariaLabel="Share menu"
+                  testId="share-menu-btn"
                 >
                   {shareState === "copied" ? (
-                    <Check size={18} strokeWidth={2.4} />
+                    <Check size={17} strokeWidth={2.4} />
                   ) : (
-                    <Share2 size={18} />
+                    <Share2 size={17} />
                   )}
-                </button>
-                <button
+                </ActionBtn>
+                <ActionBtn
                   onClick={handleDownload}
-                  aria-label="Download current page"
-                  data-testid="download-menu-btn"
-                  className="hidden h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-xl transition-all duration-300 hover:bg-[#C8A44D] hover:text-[#173F2D] sm:inline-flex sm:h-12 sm:w-12"
+                  ariaLabel="Download current page"
+                  testId="download-menu-btn"
                 >
-                  <Download size={18} />
-                </button>
+                  <Download size={17} />
+                </ActionBtn>
               </div>
 
-              {/* Close */}
-              <motion.button
-                animate={{
-                  opacity: isTouch ? 1 : showControls ? 1 : 0.4,
-                  scale: showControls ? 1 : 0.94,
-                }}
-                transition={{ duration: 0.25 }}
-                onClick={onClose}
-                aria-label="Close menu"
-                data-testid="menu-close-btn"
-                className="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-xl transition-all duration-300 hover:rotate-90 hover:bg-[#C8A44D] hover:text-[#173F2D] sm:h-12 sm:w-12"
-              >
-                <X size={20} />
-              </motion.button>
-            </div>
-
-            {/* Left arrow — off-canvas on very narrow phones (bottom bar covers nav there) */}
-            <motion.button
-              animate={{
-                opacity: isTouch ? 0 : showControls ? 1 : 0,
-                x: showControls ? 0 : -20,
-              }}
-              transition={{ duration: 0.25 }}
-              onClick={prevPage}
-              disabled={page === 0}
-              aria-label="Previous page"
-              className="absolute left-4 top-1/2 z-[10000] hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:bg-[#C8A44D] hover:text-[#173F2D] disabled:cursor-not-allowed disabled:opacity-30 md:flex lg:left-8"
-            >
-              <ChevronLeft size={28} />
-            </motion.button>
-
-            {/* Content */}
-            <div className="relative flex w-full max-w-7xl flex-col items-center pt-14 sm:pt-4">
-              {/* Header */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.12 }}
-                className="mb-4 text-center sm:mb-8"
-              >
-                <p className="mb-1.5 text-[10px] uppercase tracking-[0.4em] text-[#D4AF37] sm:mb-3 sm:text-xs sm:tracking-[0.55em]">
+              {/* Center title */}
+              <div className="pointer-events-none flex min-w-0 flex-col items-center text-center">
+                <p className="hidden text-[9px] uppercase tracking-[0.4em] text-[#D4AF37] sm:block sm:text-[10px] sm:tracking-[0.55em]">
                   Dakshinapaaka
                 </p>
-                <h2 className="font-playfair text-2xl text-white sm:text-4xl lg:text-5xl">
+                <h2 className="font-playfair text-base leading-tight text-white sm:text-xl">
                   Digital Menu
                 </h2>
-                <div className="mx-auto mt-2.5 h-px w-24 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent sm:mt-5 sm:w-40" />
-              </motion.div>
+              </div>
 
-              {/* Category quick-jump chips */}
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.18 }}
-                className="dp-thumb-scroller mb-4 flex w-full max-w-3xl gap-2 overflow-x-auto px-1 pb-1 sm:mb-6 sm:justify-center sm:gap-2.5 sm:overflow-visible sm:px-0"
-                data-testid="category-quickjump"
-              >
+              {/* Right cluster */}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <ActionBtn
+                  onClick={() => setAutoplay((a) => !a)}
+                  ariaLabel={autoplay ? "Pause slideshow" : "Play slideshow"}
+                  testId="autoplay-btn"
+                  active={autoplay}
+                >
+                  {autoplay ? <Pause size={17} /> : <Play size={17} />}
+                </ActionBtn>
+                <ActionBtn
+                  onClick={() => setCinematic((c) => !c)}
+                  ariaLabel={cinematic ? "Exit cinematic mode" : "Cinematic mode"}
+                  testId="cinematic-btn"
+                  hideOnMobile
+                >
+                  {cinematic ? <EyeOff size={17} /> : <Eye size={17} />}
+                </ActionBtn>
+                <ActionBtn
+                  onClick={toggleFullscreen}
+                  ariaLabel={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                  testId="fullscreen-btn"
+                  hideOnMobile
+                >
+                  {isFullscreen ? <Minimize size={17} /> : <Maximize size={17} />}
+                </ActionBtn>
+                <ActionBtn
+                  onClick={onClose}
+                  ariaLabel="Close menu"
+                  testId="menu-close-btn"
+                  danger
+                >
+                  <X size={18} />
+                </ActionBtn>
+              </div>
+            </motion.div>
+
+            {/* CATEGORY CHIPS */}
+            <motion.div
+              animate={{ opacity: chromeOpacity, y: cinematic ? -12 : 0 }}
+              transition={{ duration: 0.3 }}
+              className={`${chromePointer} relative z-20 shrink-0`}
+              data-testid="category-quickjump"
+            >
+              <div className="dp-thumb-scroller flex gap-2 overflow-x-auto px-3 pb-1 sm:justify-center sm:overflow-visible sm:px-6 sm:pb-0">
                 {menuCategories.map((cat) => {
                   const Icon = iconMap[cat.icon];
                   const active = cat.page === page;
@@ -267,7 +323,7 @@ export default function MenuModal({ open, onClose }: Props) {
                       className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium tracking-wide transition-all duration-300 sm:gap-2 sm:px-4 sm:py-2 sm:text-xs ${
                         active
                           ? "border-[#C8A44D] bg-[#C8A44D]/20 text-[#F4D06F] shadow-[0_0_18px_rgba(200,164,77,.35)]"
-                          : "border-white/15 bg-white/5 text-white/70 hover:border-[#C8A44D]/60 hover:text-[#F4D06F]"
+                          : "border-white/12 bg-white/5 text-white/70 hover:border-[#C8A44D]/60 hover:text-[#F4D06F]"
                       }`}
                     >
                       <Icon size={13} strokeWidth={2} />
@@ -275,107 +331,190 @@ export default function MenuModal({ open, onClose }: Props) {
                     </button>
                   );
                 })}
-              </motion.div>
-
-              {/* Viewer */}
-              <motion.div
-                initial={{ opacity: 0, y: 25, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{
-                  delay: 0.18,
-                  duration: 0.6,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-              >
-                <MenuViewer
-                  page={page}
-                  nextPage={nextPage}
-                  prevPage={prevPage}
-                />
-              </motion.div>
-
-              {/* Counter */}
-              <div
-                className="mt-4 text-xs tracking-[0.35em] text-[#D4AF37] sm:mt-6 sm:text-sm sm:tracking-[0.45em]"
-                data-testid="page-counter"
-              >
-                {String(page + 1).padStart(2, "0")} /{" "}
-                {String(menuPages.length).padStart(2, "0")}
               </div>
+            </motion.div>
 
-              {/* Thumbnails */}
-              <motion.div
-                animate={{
-                  opacity: isTouch ? 1 : showControls ? 1 : 0.4,
-                  y: showControls ? 0 : 12,
-                }}
-                transition={{ duration: 0.25 }}
-                className="mt-5 w-full sm:mt-8"
+            {/* STAGE — flex-1 so it fills whatever is left. Arrows are
+                overlaid absolutely so they never affect the image height. */}
+            <div
+              data-role="stage-bg"
+              className="relative flex flex-1 min-h-0 items-center justify-center px-2 py-2 sm:px-6 sm:py-4"
+            >
+              {/* Left arrow */}
+              <motion.button
+                animate={{ opacity: chromeOpacity }}
+                onClick={prevPage}
+                disabled={page === 0}
+                aria-label="Previous page"
+                data-testid="viewer-prev-btn"
+                className={`${chromePointer} absolute left-1 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:bg-[#C8A44D] hover:text-[#173F2D] disabled:cursor-not-allowed disabled:opacity-25 sm:left-3 sm:h-14 sm:w-14 lg:left-6`}
               >
-                <ThumbnailBar page={page} setPage={setPage} />
-              </motion.div>
+                <ChevronLeft size={22} className="sm:hidden" />
+                <ChevronLeft size={28} className="hidden sm:block" />
+              </motion.button>
 
-              {/* Keyboard Hint — desktop only */}
-              {!isTouch && (
-                <motion.p
-                  animate={{ opacity: showControls ? 0.5 : 0 }}
-                  className="mt-6 hidden text-xs uppercase tracking-[0.35em] text-white/60 sm:block"
-                >
-                  ← Previous &nbsp;&nbsp; → Next &nbsp;&nbsp; Z Zoom &nbsp;&nbsp; Esc Close
-                </motion.p>
-              )}
+              <MenuViewer
+                page={page}
+                nextPage={nextPage}
+                prevPage={prevPage}
+                minimal={cinematic}
+              />
 
-              {/* Mobile sticky footer nav — big tap targets always visible */}
-              <div
-                className="sticky bottom-0 z-[10000] mt-6 flex w-full items-center justify-between gap-3 rounded-2xl border border-white/12 bg-black/70 px-3 py-2.5 shadow-[0_-8px_30px_rgba(0,0,0,.4)] backdrop-blur-xl sm:hidden"
-                style={{
-                  marginBottom: "env(safe-area-inset-bottom)",
-                }}
+              {/* Right arrow */}
+              <motion.button
+                animate={{ opacity: chromeOpacity }}
+                onClick={nextPage}
+                disabled={page === menuPages.length - 1}
+                aria-label="Next page"
+                data-testid="viewer-next-btn"
+                className={`${chromePointer} absolute right-1 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:bg-[#C8A44D] hover:text-[#173F2D] disabled:cursor-not-allowed disabled:opacity-25 sm:right-3 sm:h-14 sm:w-14 lg:right-6`}
               >
-                <button
-                  onClick={prevPage}
-                  disabled={page === 0}
-                  data-testid="mobile-prev-btn"
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-white/12 bg-white/5 py-3 text-sm font-medium text-white/90 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <ChevronLeft size={18} /> Prev
-                </button>
-                <button
-                  onClick={handleDownload}
-                  aria-label="Download"
-                  data-testid="mobile-download-btn"
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/12 bg-white/5 text-[#D4AF37] transition-all active:scale-95"
-                >
-                  <Download size={18} />
-                </button>
-                <button
-                  onClick={nextPage}
-                  disabled={page === menuPages.length - 1}
-                  data-testid="mobile-next-btn"
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#C8A44D]/40 bg-[#C8A44D]/15 py-3 text-sm font-semibold text-[#F4D06F] transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  Next <ChevronRight size={18} />
-                </button>
-              </div>
+                <ChevronRight size={22} className="sm:hidden" />
+                <ChevronRight size={28} className="hidden sm:block" />
+              </motion.button>
             </div>
 
-            {/* Right arrow */}
-            <motion.button
-              animate={{
-                opacity: isTouch ? 0 : showControls ? 1 : 0,
-                x: showControls ? 0 : 20,
-              }}
-              transition={{ duration: 0.25 }}
-              onClick={nextPage}
-              disabled={page === menuPages.length - 1}
-              aria-label="Next page"
-              className="absolute right-4 top-1/2 z-[10000] hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:bg-[#C8A44D] hover:text-[#173F2D] disabled:cursor-not-allowed disabled:opacity-30 md:flex lg:right-8"
+            {/* BOTTOM BAR — progress + title + thumbnails */}
+            <motion.div
+              animate={{ opacity: chromeOpacity, y: cinematic ? 24 : 0 }}
+              transition={{ duration: 0.3 }}
+              className={`${chromePointer} relative z-20 shrink-0 px-3 pb-2 pt-1 sm:px-6 sm:pb-3`}
             >
-              <ChevronRight size={28} />
-            </motion.button>
+              {/* Progress */}
+              <div className="mx-auto mb-2 flex max-w-4xl items-center gap-3">
+                <span
+                  className="shrink-0 font-mono text-[10px] tracking-[0.25em] text-[#D4AF37] sm:text-xs sm:tracking-[0.35em]"
+                  data-testid="page-counter"
+                >
+                  {String(page + 1).padStart(2, "0")}/
+                  {String(menuPages.length).padStart(2, "0")}
+                </span>
+                <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/10 sm:h-1.5">
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-[#C8A44D] via-[#E2C46E] to-[#0F5B43]"
+                    initial={false}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.35 }}
+                  />
+                </div>
+                <span className="hidden shrink-0 text-xs text-white/70 sm:inline">
+                  {currentPage.title}
+                </span>
+              </div>
+
+              <ThumbnailBar page={page} setPage={setPage} />
+
+              {/* Keyboard hint — desktop only */}
+              {!isTouch && !cinematic && (
+                <p className="mt-2 hidden text-center text-[10px] uppercase tracking-[0.35em] text-white/50 sm:block">
+                  ← → Nav &nbsp;·&nbsp; Space Play &nbsp;·&nbsp; F Fullscreen &nbsp;·&nbsp; C Cinematic &nbsp;·&nbsp; Z Zoom &nbsp;·&nbsp; Esc Close
+                </p>
+              )}
+            </motion.div>
+
+            {/* Autoplay progress ring — small floater on the top-right when playing */}
+            <AnimatePresence>
+              {autoplay && !cinematic && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  key="autoplay-bar"
+                  className="pointer-events-none absolute left-1/2 top-[64px] z-30 -translate-x-1/2 sm:top-[70px]"
+                >
+                  <div className="flex items-center gap-2 rounded-full border border-[#C8A44D]/40 bg-black/70 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.25em] text-[#F4D06F] backdrop-blur-xl">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#F4D06F] opacity-70" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#F4D06F]" />
+                    </span>
+                    Slideshow
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Cinematic exit-hint chip */}
+            <AnimatePresence>
+              {cinematic && (
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 0.9, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  onClick={() => setCinematic(false)}
+                  className="absolute bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-full border border-white/20 bg-black/70 px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-white/85 backdrop-blur-xl transition hover:opacity-100"
+                  data-testid="cinematic-exit-btn"
+                >
+                  Tap to show controls
+                </motion.button>
+              )}
+            </AnimatePresence>
           </motion.div>
         </>
       )}
     </AnimatePresence>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+interface ActionBtnProps {
+  onClick: () => void;
+  ariaLabel: string;
+  testId?: string;
+  children: React.ReactNode;
+  danger?: boolean;
+  active?: boolean;
+  hideOnMobile?: boolean;
+}
+
+function ActionBtn({
+  onClick,
+  ariaLabel,
+  testId,
+  children,
+  danger,
+  active,
+  hideOnMobile,
+}: ActionBtnProps) {
+  // We deliberately switch the base display class instead of relying on
+  // `hidden sm:inline-flex` alongside a base `inline-flex`. Tailwind emits
+  // `.inline-flex` after `.hidden`, so the two collide and the mobile-hide
+  // stops working — that's exactly what testing-agent v2 caught.
+  const displayClass = hideOnMobile
+    ? "hidden sm:inline-flex"
+    : "inline-flex";
+
+  return (
+    <button
+      onClick={onClick}
+      aria-label={ariaLabel}
+      data-testid={testId}
+      className={`
+        ${displayClass}
+        h-10
+        w-10
+        items-center
+        justify-center
+        rounded-full
+        border
+        border-white/15
+        bg-black/55
+        text-white
+        backdrop-blur-xl
+        transition-all
+        duration-300
+        hover:-translate-y-[1px]
+        hover:border-[#C8A44D]/60
+        hover:bg-[#C8A44D]
+        hover:text-[#173F2D]
+        active:scale-95
+        sm:h-11
+        sm:w-11
+        ${active ? "border-[#C8A44D] bg-[#C8A44D]/25 text-[#F4D06F]" : ""}
+        ${danger ? "hover:rotate-90" : ""}
+      `}
+    >
+      {children}
+    </button>
   );
 }

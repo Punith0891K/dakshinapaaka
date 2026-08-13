@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  images: {
+    // Next.js 16 requires explicit whitelist of quality values used via the
+    // `quality` prop. We use 20 (preload thumbs), 60 (small thumbnails),
+    // 78 (main menu images) and keep 75 (default).
+    qualities: [20, 60, 75, 78],
+  },
 };
 
 export default nextConfig;

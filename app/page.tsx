@@ -4,9 +4,9 @@ import About from "@/components/sections/About";
 import SignatureDishes from "@/components/sections/SignatureDishes";
 import Menu from "@/components/sections/Menu";
 import Gallery from "@/components/sections/Gallery";
+import Testimonials from "@/components/sections/Testimonials";
 import FloatingMenuButton from "@/components/ui/FloatingMenuButton";
 // import WhyChooseUs from "@/components/sections/WhyChooseUs";
-// import Testimonials from "@/components/sections/Testimonials";
 // import Contact from "@/components/sections/Contact";
 // import Footer from "@/components/layout/Footer";
 
@@ -21,6 +21,7 @@ export default function Home() {
   <SignatureDishes />
   <Menu />
   <Gallery />
+  <Testimonials />
   <FloatingMenuButton />
 </main>
       {/* <Footer /> */}

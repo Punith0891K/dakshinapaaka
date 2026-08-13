@@ -1,0 +1,37 @@
+{
+  "summary": "Frontend Playwright testing of Dakshinapaaka Menu modal (iteration 2). Tested all 4 bug fixes and 12 luxury features on both 1440x900 desktop and 390x844 mobile. Most features pass: layout stability is rock-solid (0px shift on both viewports across 3 next-page clicks), category chip jumps map correctly to expected pages, autoplay advances and shows the pulsing Slideshow badge, thumbnail navigation works, download fires (dakshinapaaka-juices-evening-specials.png), lightbox opens (yarl__portal), cinematic mode hides the quickjump chips (opacity 0) and shows the exit pill, keyboard shortcuts (Arrow/Space/C/F) work, modal state resets to 01/07 on close+reopen, arrows visible on mobile, and images fill the gold-emerald frame edge-to-edge (screenshots confirm). THREE issues found: (1) Fullscreen button IS present on the 390x844 mobile viewport (spec: must NOT exist on mobile), (2) Escape key does not close the modal on desktop (modal-thumbnail-bar still present after Escape; likely no keydown Escape handler for the modal-close path, or focus isn't inside the modal), (3) When modal is open on mobile, document.documentElement.scrollHeight (7921) > innerHeight (844) - body.overflow is correctly 'hidden' so page cannot actually scroll, but the strict spec assertion fails. Additionally, dev-mode React hydration mismatch warnings appear on initial load (Hero + several className whitespace differences), likely from a build-time className normalizer/tw-merge not applied consistently between SSR and CSR - non-blocking but noisy.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "MenuModal / fullscreen-btn", "issue": "Fullscreen button is still rendered on 390x844 mobile viewport. Spec requires it to be hidden/absent on mobile (touch device / small screen). getComputedStyle shows display!=none. Needs a `hidden sm:inline-flex` (or useIsTouchDevice() guard) around the button.", "selector": "[data-testid=\"fullscreen-btn\"]", "priority": "HIGH"},
+      {"component": "MenuModal / Escape key", "issue": "Pressing Escape (with modal open, no cinematic, no lightbox) does NOT close the modal. The [data-testid=\"menu-thumbnail-bar\"] remains in DOM after Escape. Users cannot dismiss the modal via keyboard.", "selector": "[data-testid=\"menu-close-btn\"] (keyboard handler missing)", "priority": "HIGH"},
+      {"component": "MenuModal / mobile layout", "issue": "document.documentElement.scrollHeight=7921 > innerHeight=844 when modal open on mobile. body.style.overflow='hidden' prevents actual scrolling, so functional impact is limited, but the underlying page still has full height. Consider also setting html { overflow: hidden } or position:fixed on body when modal is open, so scrollHeight assertion matches spec.", "selector": "body", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Menu modal (desktop screenshot)", "issues": ["Image fills gold-emerald frame edge-to-edge (looks correct). No obvious letterboxing. Chrome layout is stable across next-page clicks."]},
+      {"screen": "Root page (dev-mode)", "issues": ["React hydration mismatch warnings on Home/Hero and many child className props — appears to be whitespace/newline differences between SSR and CSR class strings (likely a template-literal className that resolves differently). Not visible to end users but should be cleaned before prod."]}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_2.json", "/app/test_reports/desktop_modal.png", "/app/test_reports/mobile_modal.png", "/app/test_reports/mobile_rapid_mid.png"],
+  "action_items": [
+    "Hide [data-testid=\"fullscreen-btn\"] on mobile (390px) — add responsive class `hidden md:inline-flex` or gate render behind !isTouchDevice / a min-width media query.",
+    "Add Escape-key handler that calls onClose when modal is open (and no lightbox/cinematic is active). Verify the modal container has tabIndex or a document-level keydown listener that isn't unregistered too early.",
+    "Optional: when modal is open, also lock html { overflow: hidden } or set body position:fixed so documentElement.scrollHeight <= innerHeight on mobile.",
+    "Investigate SSR/CSR className mismatch (looks like a shared `cx()`/template-literal helper producing different whitespace between server and client). Likely a whitespace-normalization difference — trim/replace multi-spaces consistently on both sides."
+  ],
+  "critical_code_review_comments": [
+    "MenuModal fullscreen-btn should respect viewport / touch capability. useIsTouchDevice hook exists — use it here.",
+    "Escape handling appears incomplete for the modal-close path (works for cinematic exit only).",
+    "Body scroll lock uses only body.overflow=hidden; iOS Safari and strict spec require also locking html or using position:fixed technique.",
+    "Dev-only: multiple hydration warnings from Hero / FloatingMenuButton className strings — indicates non-deterministic class stringification."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "~85% (14/17 checks pass)"},
+  "test_credentials": "N/A - no auth",
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Modal features fully instrumented. Detailed pass/fail per feature: layout_stability_desktop=PASS(0px), layout_stability_mobile=PASS(0px), no_scroll_desktop=partial (body overflow hidden but doc.scrollHeight>innerHeight), no_scroll_mobile=partial (same), chips(dosa->04/07, juices->05/07, mains->07/07, breakfast->02/07)=PASS, autoplay=PASS(04->05, badge present), fullscreen_btn_desktop=PASS present, fullscreen_hidden_mobile=FAIL (still present), cinematic=PASS (chip opacity 0, exit pill present; note thumb_op stayed 1 — verify by design if thumbnail bar should also fade), share=clicked ok, download=PASS (file named dakshinapaaka-juices-evening-specials.png), lightbox=PASS (.yarl__portal), keyboard nav Right/Left=PASS, modal_reset=PASS(07/07->01/07), escape_close=FAIL, mobile_arrows_visible=PASS. Cinematic thumbnail bar opacity stayed 1 — worth checking if that is intended (spec said 'chips row AND thumbnail bar become opacity 0').",
+  "rca of the issue": "1) Fullscreen button on mobile: likely rendered unconditionally in MenuModal.tsx toolbar. Fix: wrap with `!isTouchDevice && ...` or add `hidden md:inline-flex` tailwind classes. 2) Escape not closing modal: keydown handler likely only handles cinematic exit, not full modal dismiss. Add: if (e.key === 'Escape' && !cinematic && !lightboxOpen) onClose(). 3) Cinematic hides chips but not thumbnail bar — check the opacity animation target in MenuModal.tsx cinematic branch."
+}
