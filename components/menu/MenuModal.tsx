@@ -155,16 +155,18 @@ export default function MenuModal({ open, onClose }: Props) {
       url: typeof window !== "undefined" ? window.location.href : "",
     };
     try {
-      if (typeof navigator !== "undefined" && "share" in navigator) {
-        await (navigator as Navigator).share(shareData);
-      } else if (
-        typeof navigator !== "undefined" &&
-        navigator.clipboard
-      ) {
-        await navigator.clipboard.writeText(shareData.url);
-        setShareState("copied");
-        setTimeout(() => setShareState("idle"), 1800);
-      }
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+  await navigator.share(shareData);
+} else if (
+  typeof navigator !== "undefined" &&
+  "clipboard" in navigator
+) {
+  await (navigator as Navigator).clipboard.writeText(
+    shareData.url
+  );
+  setShareState("copied");
+  setTimeout(() => setShareState("idle"), 1800);
+}
     } catch {
       /* user cancelled */
     }
