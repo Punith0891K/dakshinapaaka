@@ -1,0 +1,30 @@
+{
+  "summary": "Frontend-only Playwright verification of SignatureDishes enhancement iteration. Tested on desktop (1440x900) and mobile (390x844). All 12 requirements pass: signature section renders with 4 cards, cards are clickable and open DishDetailSheet, sheet contains full meta strip (Prep Time / Serves / Spice), dietary chip (Veg), Made With ingredients (e.g. 'Basmati Rice'), Chef's Note, You Might Also Love related carousel, and both CTA anchors (View in Full Menu + Reserve a Table). Related-dish navigation swaps the sheet and updates aria-labelledby (dish-title-1 -> dish-title-2). Body scroll lock engages ('hidden') while sheet open and resets on close. Backdrop click closes the sheet. Keyboard access (Tab focus + Enter) opens the sheet. Explore More Signature Dishes button opens the collection dialog. Regressions pass: Testimonials section and stats visible; Menu modal opens on both desktop (explore-menu-btn) and mobile (open-full-menu-mobile-btn). Card visuals confirmed: 'SIGNATURE DISH' badge with sparkle, highlight chips (Traditional / Fresh Daily / Full Thali), 25 min prep chip, MEDIUM spice chip, and circular arrow 'View Details' button in bottom-right.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "DishDetailSheet", "issue": "Close button (data-testid=dish-sheet-close-*) is positioned absolute inside the scrollable body div (div.overflow-y-auto) so it scrolls away with content. When a user scrolls down inside the sheet, the close button leaves the viewport. Playwright's Locator.click even with force=True refused to click it after scroll ('Element is outside of the viewport'). Fix: move the close button out of the scrollable container (or make it position: fixed / sticky at top of the sheet).", "selector": "[data-testid^='dish-sheet-close-']", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Hero section (SSR)", "issues": ["Console shows React hydration mismatch warnings for many Hero/Menu classNames (server-rendered className has extra whitespace/newlines vs client). Likely caused by template literal classNames using \\n inside strings. Non-blocking but should be cleaned up (either use clsx/cn helper or single-line strings) to avoid extra client re-render cost."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Move DishDetailSheet close button outside the scrollable body (or make it sticky/fixed) so it remains reachable when the user scrolls the sheet content.",
+    "Optional: normalize multi-line template-literal classNames in Hero/Menu/FloatingMenuButton to eliminate SSR/CSR hydration whitespace mismatch warnings."
+  ],
+  "critical_code_review_comments": [
+    "DishDetailSheet.tsx line 76-124: The close button (data-testid dish-sheet-close-{id}) sits inside the scrollable container. Consider moving it above the overflow-y-auto div, or using position:sticky top-0, so it always stays accessible.",
+    "The 'Made With' section uses whileInView with initial opacity:0 — on very tall screens the section might already be past viewport when the sheet opens, resulting in invisible ingredients until scrolled. Content still renders and is present in DOM, but consider using animate instead of whileInView inside a scrollable modal, or set viewport root to the sheet's scroll container.",
+    "SignatureDishes cards work well; badge/highlights/arrow all render as expected."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100% (12/12 review requirements)"},
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Signature dish flows verified via /app/components/ui/DishDetailSheet.tsx and /app/components/sections/SignatureDishes.tsx. Note: when clicking related-dish or dish-sheet-close via Playwright, they may be scrolled outside the browser viewport (they live inside the sheet's own overflow-y-auto container). Use page.evaluate scrollIntoView + JS click as workaround; the buttons themselves work correctly for a real user. Menu modal testid is 'menu-modal' (not role=dialog). Testimonials testids: testimonials-section, testimonials-stats. All required testids present and functional.",
+  "rca of the issue": "N/A - no functional failures. The only minor concern is DishDetailSheet close button being inside the scrollable container, which is a positioning choice rather than a broken feature."
+}

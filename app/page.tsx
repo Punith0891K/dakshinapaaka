@@ -5,10 +5,10 @@ import SignatureDishes from "@/components/sections/SignatureDishes";
 import Menu from "@/components/sections/Menu";
 import Gallery from "@/components/sections/Gallery";
 import Testimonials from "@/components/sections/Testimonials";
+import Footer from "@/components/layout/Footer";
 import FloatingMenuButton from "@/components/ui/FloatingMenuButton";
 // import WhyChooseUs from "@/components/sections/WhyChooseUs";
 // import Contact from "@/components/sections/Contact";
-// import Footer from "@/components/layout/Footer";
 
 export default function Home() {
   return (
@@ -24,6 +24,7 @@ export default function Home() {
   <Testimonials />
   <FloatingMenuButton />
 </main>
+      <Footer />
       {/* <Footer /> */}
     </>
   );

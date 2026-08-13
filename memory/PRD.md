@@ -1,59 +1,51 @@
 # Dakshinapaaka — Product Requirements Document
 
 ## Latest Problem Statement
-"add a new section after gallery, Testimonials — beautiful bg matching website theme, beautifully created section using provided reviews, luxury features, optimized for pc and mobile, use creative mind and innovate"
+"add footer, beautiful bg matching website, contact info: email Vishnubhavan2023@gmail.com, phone 7204488774, google-maps location, instagram @dakshina_paaka"
 
 ## Stack
-Next.js 16.2.10 (Turbopack, React Compiler on), React 19, Tailwind CSS 4, Framer Motion 12, lucide-react. Static content site.
+Next.js 16.2.10 (Turbopack, React Compiler on), React 19, Tailwind CSS 4, Framer Motion 12, lucide-react.
 
-## Sections (order)
-Hero → About → SignatureDishes → Menu → Gallery → **Testimonials (NEW)** → FloatingMenuButton
+## Page structure (final)
+Navbar → Hero → About → SignatureDishes → Menu → Gallery → Testimonials → FloatingMenuButton → **Footer (NEW)**
 
-## What's Been Implemented — 2026-01-08 (iteration 3)
+## What's Been Implemented — 2026-01-08 (iteration 7)
 
-### Testimonials section — luxury Google-reviews showcase
-- Deep-emerald canvas (#0A1F16 → #071812) layered with two radial spotlights (emerald + gold), asymmetric concentric gold rings, vertical "temple pillar" seams and paper grain
-- Header: eyebrow "Voices of Our Guests" + big serif "Stories From / Our Table" (gold italic) + ornate divider + subtitle
-- **Rating strip**: Google logo + 5 stars + 5.0 rating + total guests + BadgeCheck "5-Star Experience". Pill on desktop, stacked card on mobile.
-- **Featured carousel card** with:
-  - Corner flourishes (SVG ornate ligature in 4 corners)
-  - Animated star row (staggered spring-in)
-  - Editorial serif blockquote with gold curly-quote marks
-  - Avatar with gradient accent + BadgeCheck ring
-  - Local Guide badge, review count, photo count
-  - Google 'G' logo pill on the right
-  - Autoplay progress bar (6.5s cadence) that pauses on hover
-  - Desktop pill arrows floating on either side
-  - Mobile compact prev/next + counter row
-  - Dots pagination
-- **Marquee band** — all 5 testimonials duplicated and continuously scrolling left in a 48s loop. Pauses on hover, respects `prefers-reduced-motion`. Each mini-card is clickable → jumps the featured to that testimonial.
-- **CTA footer**: "Review Us on Google" pill with Google glyph, opens Google search in new tab
-
-### Testimonials data (from user's screenshots)
-- Chandrika Dinni (Local Guide · 22 reviews · 16 photos · 2mo)
-- Savi Raj Shetty (1 review · 2 photos · 5mo)
-- Murali Ram (Local Guide · 14 reviews · 2 photos · 2mo)
-- Surya V (Local Guide · 10 reviews · 8 photos · 4mo)
-- Rahul Chiplunkar (Local Guide · 12 reviews · 18 photos · 5mo)
+### Footer — grand finale of the site
+- Deep emerald canvas (`#0B1F17` → `#050E0A` → `#020604`) blending seamlessly with Testimonials
+- Layered atmospherics: pulsing emerald spotlight, warm gold pools, gold rings, temple pillar seams, paper grain, a **hand-drawn SVG temple silhouette with 5 golden kalasha finials**, and a giant faint "Dakshina Paaka" watermark below
+- **"Come Dine With Us"** ornate pill with rotating gold ring at the top
+- **Brand block**: "Dakshina Paaka" 46px serif with italic gold "Paaka", eyebrow "Est. 2024 · Mysuru", tagline, and a "5.0 on Google" pill (opens Maps)
+- **Explore** quick links: Signature Dishes / Menu / Gallery / Testimonials — each with a lucide icon in a gold-ring chip
+- **Opening Hours** grid with dashed dividers + monospaced times, plus an "Open Now" chip with a pulsing green dot
+- **Get in Touch** contact cards (each an anchor):
+  - Location → `https://maps.app.goo.gl/Ti1EHVyQyUFZWZCM9`
+  - Reservations → `tel:+917204488774` (displayed as +91 72044 88774)
+  - Email → `mailto:Vishnubhavan2023@gmail.com`
+  - Instagram → `https://www.instagram.com/dakshina_paaka/?hl=en` (custom SVG icon since lucide-react in this repo doesn't export Instagram)
+- **Reserve a Table** primary gold CTA (calls the reservation number)
+- **Bottom bar**: © 2026 Dakshina Paaka + "Crafted with ❤ in Mysuru" + social icons (Instagram / Maps / Phone)
+- Fully responsive: 4-column grid on desktop (`lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]`), single-column stack on mobile with generous touch targets
 
 ### data-testids
-`testimonials-section`, `testimonials-eyebrow`, `testimonials-stats`, `featured-testimonial-{id}`, `testimonial-autoplay-progress`, `testimonial-prev-btn`, `testimonial-next-btn`, `testimonial-mobile-prev-btn`, `testimonial-mobile-next-btn`, `testimonial-dot-{i}`, `testimonial-marquee`, `testimonial-mini-{i}`, `review-us-google-btn`
+`footer`, `footer-google-rating`, `footer-link-signature-dishes`, `footer-link-menu`, `footer-link-gallery`, `footer-link-testimonials`, `footer-contact-location`, `footer-contact-phone`, `footer-contact-email`, `footer-contact-instagram`, `footer-reserve-btn`, `footer-social-instagram`, `footer-social-maps`, `footer-social-phone`
 
-## Files Added / Modified
-- **NEW** `components/sections/Testimonials.tsx`
-- **NEW** `data/testimonials.ts`
-- `app/page.tsx` — wired Testimonials after Gallery
+## Files Modified
+- **NEW / REWRITTEN** `components/layout/Footer.tsx`
+- `app/page.tsx` — wired Footer at the bottom (outside `<main>`)
 
-## Prior work (iteration 2 — Menu section)
-- Fixed layout shift, images fit landscape aspect, added autoplay slideshow, fullscreen, cinematic mode
-- html + body overflow lock, Escape key capture-phase listener, fullscreen hidden on mobile
+## Prior iterations still live
+- Testimonials (iteration 4)
+- Signature dishes + DishDetailSheet enhancement (iteration 5-6)
+- Menu modal fixes (iteration 3)
+- Next.js `allowedDevOrigins` config (iteration 6, restoring hydration in preview)
 
 ## Prioritized Backlog
-- P1: Optional landscape-lock prompt on mobile for menu
-- P1: Menu — real dish list view with search + filters
-- P2: Testimonials — Instagram embed row / video testimonials
-- P2: PDF export of menu
-- P2: Kannada / English language toggle
+- P1: Newsletter subscription capture
+- P1: Google Map embed thumbnail in Footer
+- P2: Instagram feed row (live embeds)
+- P2: Language toggle (English / Kannada)
+- P2: PDF export of the menu
 
 ## Testing Notes
-Frontend-only static Next.js app. Menu iteration 2 fixes previously verified. Testimonials to be verified by testing agent.
+Static Next.js frontend. Screenshot-verified on 1440x900 and 390x844. Full testing agent verification below.
