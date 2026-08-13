@@ -146,6 +146,7 @@ export default function MenuShowcase({ onOpen }: Props) {
 
         <button
           onClick={onOpen}
+          data-testid="open-full-menu-mobile-btn"
           className="group mt-3 inline-flex items-center gap-2 rounded-full border border-white/30 bg-[#276B3A] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(39,107,58,0.26)] transition active:scale-95"
         >
           Open Full Menu

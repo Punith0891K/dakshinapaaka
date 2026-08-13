@@ -161,6 +161,7 @@ export default function Menu() {
 
             <button
               onClick={() => setOpen(true)}
+              data-testid="explore-menu-btn"
               className="group mt-10 hidden rounded-full border border-white/25 bg-[#276B3A] px-8 py-4 text-white shadow-[0_14px_32px_rgba(39,107,58,0.28)] transition hover:scale-105 hover:bg-[#215C32] hover:shadow-[0_20px_42px_rgba(39,107,58,0.34)] lg:inline-flex"
             >
               Explore Menu

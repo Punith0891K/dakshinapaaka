@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 import MenuCover from "./MenuCover";
 import MenuCoverInside from "./MenuCoverInside";
@@ -14,6 +14,7 @@ interface Props {
 export default function MenuBook({ onOpen }: Props) {
   const [opening, setOpening] = useState(false);
   const openTimer = useRef<number | null>(null);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => () => {
     if (openTimer.current) window.clearTimeout(openTimer.current);
@@ -23,13 +24,15 @@ export default function MenuBook({ onOpen }: Props) {
     if (opening) return;
 
     setOpening(true);
-    // Keep the scene visible until the cover has fully cleared the pages.
-    // The previous 850ms timeout interrupted the 950ms cover animation.
+    // Users who prefer reduced motion (or older mobile GPUs that stutter on
+    // the 1.1s flip) get a faster hand-off so we don't leave them looking at
+    // a stuck animation.
+    const openDelay = reduceMotion ? 220 : 1100;
     openTimer.current = window.setTimeout(() => {
       onOpen();
       setOpening(false);
-    }, 1100);
-  }, [opening, onOpen]);
+    }, openDelay);
+  }, [opening, onOpen, reduceMotion]);
 
   return (
 <motion.div
@@ -133,6 +136,16 @@ export default function MenuBook({ onOpen }: Props) {
 >
         <motion.div
           onClick={handleOpen}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleOpen();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Open the full digital menu"
+          data-testid="menu-book-open"
         whileHover={{
   rotateY: -10,
   rotateX: 6,
@@ -147,7 +160,7 @@ export default function MenuBook({ onOpen }: Props) {
   duration: 0.45,
   ease: [0.22, 1, 0.36, 1],
 }}
-          className="relative h-full w-full cursor-pointer touch-manipulation"
+          className="relative h-full w-full cursor-pointer touch-manipulation outline-none focus-visible:ring-2 focus-visible:ring-[#D6B15A] focus-visible:ring-offset-4 focus-visible:ring-offset-transparent"
           style={{
             transformStyle: "preserve-3d",
             backfaceVisibility: "hidden",
