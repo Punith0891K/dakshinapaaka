@@ -7,7 +7,14 @@ import {
   useRef,
   useState,
 } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
 import { galleryImages, type GalleryCategory, type GalleryImage } from "@/data/gallery";
@@ -31,8 +38,27 @@ export default function Gallery() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [step, setStep] = useState(0);
 
+  const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const firstCardRef = useRef<HTMLDivElement>(null);
+
+  const reduceMotion = useReducedMotion();
+
+  // Both scenes drift *into* the section as it travels the viewport —
+  // never out of it — so the 64px bleed always covers the travel and no
+  // painted edge (lamp, leaves, lotus) is ever clipped by the overflow.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+  const sceneOneY = useSpring(
+    useTransform(scrollYProgress, [0, 1], [0, 48]),
+    { stiffness: 60, damping: 20 }
+  );
+  const sceneTwoY = useSpring(
+    useTransform(scrollYProgress, [0, 1], [0, -48]),
+    { stiffness: 60, damping: 20 }
+  );
 
   const items = useMemo(
     () =>
@@ -49,9 +75,8 @@ export default function Gallery() {
     setIndex(0);
   }, [active]);
 
-  // Measure the real rendered card width + gap so the track can be
-  // translated by exact pixels — this keeps the "peek" effect correct at
-  // every breakpoint without duplicating breakpoint widths in JS.
+  // Measure the real rendered card width + gap so the track translates by
+  // exact pixels — keeps the peek correct at every breakpoint.
   useEffect(() => {
     const measure = () => {
       if (!firstCardRef.current || !trackRef.current) return;
@@ -72,10 +97,8 @@ export default function Gallery() {
     setIndex((i) => (items.length ? (i - 1 + items.length) % items.length : 0));
   }, [items.length]);
 
-  // Autoplay — advances every 4s, pauses on hover, drag, or while the
-  // lightbox is open. Depending on `index` here means the timer restarts
-  // cleanly after every manual step too, so the cadence always feels
-  // consistent rather than double-firing right after a click/swipe.
+  // Autoplay — pauses on hover, drag, or open lightbox. Depending on `index`
+  // restarts the timer after every manual step so the cadence stays even.
   useEffect(() => {
     if (!canScroll || hovering || isDragging || lightboxIndex !== null) return;
     const t = setInterval(next, AUTOPLAY_MS);
@@ -85,97 +108,219 @@ export default function Gallery() {
   return (
     <section
       id="gallery"
-      className="relative overflow-hidden bg-[#FAF7F2] py-20 sm:py-24 lg:py-28"
+      ref={sectionRef}
+      data-testid="gallery-section"
+      className="relative overflow-hidden scroll-mt-24 bg-[#FAF6EE] pb-20 pt-28 sm:pb-24 sm:pt-32 lg:pb-28 lg:pt-36"
     >
-      {/* Ambient background, matching the Menu section's treatment */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_20%,rgba(200,164,77,0.10),transparent_38%),radial-gradient(circle_at_85%_75%,rgba(47,107,61,0.08),transparent_36%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#C8A44D]/40 to-transparent" />
+      {/* ============================================================
+         Background: Scene 1 → Scene 2, one continuous heritage canvas.
+         Both scenes render full-bleed at their natural aspect ratio (no
+         crop, no zoom) with long multi-stop dissolves, so the artwork is
+         fully present and its painted edges stay intentional. A soft
+         veil keeps type readable without dimming the scenes.
+         Layer order: base → scenes → veil → warmth → rings → grain.
+         Everything here is z-0 + pointer-events-none; content sits at z-10.
+         ============================================================ */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+      >
+        {/* Parchment base */}
+        <div className="absolute inset-0 bg-[#FAF6EE]" />
 
-      <div className="mx-auto max-w-[1450px] px-5 sm:px-8 lg:px-12">
-        {/* Header */}
+        {/* Scene 1 — temple by the water, full-bleed from the top.
+            Extra vertical bleed covers the parallax drift, so the artwork
+            itself never scales and its painted edges stay intentional. */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center"
+          style={reduceMotion ? undefined : { y: sceneOneY }}
+          className="absolute inset-x-0 -top-16 opacity-[0.9] sm:opacity-100"
         >
-          <span className="inline-block rounded-full border border-[#C89B3C]/30 bg-white/90 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-[#8C6A2D] sm:text-xs sm:tracking-[0.35em]">
-            Our Gallery
-          </span>
-
-          <h2 className="mt-5 font-serif text-[clamp(2.6rem,8vw,4.2rem)] leading-[1.02] tracking-[-0.02em] text-[#143C34]">
-            A Glimpse Into
-            <br />
-            <span className="text-[#0F5B43]">Dakshinapaaka</span>
-          </h2>
-
-          <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-[#5B5B5B] sm:text-lg sm:leading-8">
-            From our kitchen to our doorstep — a visual taste of the food,
-            the space and the people behind every plate.
-          </p>
+          <div
+            className="relative w-full"
+            style={{
+              aspectRatio: "1672 / 941",
+              maskImage:
+                "linear-gradient(to bottom, black 0%, black 46%, rgba(0,0,0,0.6) 68%, transparent 92%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, black 0%, black 46%, rgba(0,0,0,0.6) 68%, transparent 92%)",
+            }}
+          >
+            <Image
+              src="/images/gallery/bg_scene3.png"
+              alt=""
+              fill
+              sizes="100vw"
+              className="object-cover object-top"
+            />
+          </div>
         </motion.div>
 
-        {/* Filter tabs */}
+        {/* Scene 2 — courtyard pillar and lamp, full-bleed from the bottom */}
+        <motion.div
+          style={reduceMotion ? undefined : { y: sceneTwoY }}
+          className="absolute -bottom-16 inset-x-0 opacity-[0.9] sm:opacity-100"
+        >
+          <div
+            className="relative w-full"
+            style={{
+              aspectRatio: "1672 / 941",
+              maskImage:
+                "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.55) 18%, black 40%, black 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.55) 18%, black 40%, black 100%)",
+            }}
+          >
+            <Image
+              src="/images/gallery/bg_scene.png"
+              alt=""
+              fill
+              sizes="100vw"
+              className="object-cover object-bottom"
+            />
+          </div>
+        </motion.div>
+
+        {/* Soft ivory veil — only enough to keep type readable;
+            the artwork stays present right up to the content */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_68%_52%_at_50%_46%,rgba(250,246,238,0.42),rgba(250,246,238,0.12)_60%,transparent_82%)]" />
+
+        {/* Antique-gold warmth at the crown */}
+        <div className="absolute inset-x-0 top-0 h-[45vh] bg-[radial-gradient(ellipse_60%_100%_at_50%_0%,rgba(200,164,77,0.12),transparent_70%)]" />
+
+        {/* Heritage ring motifs — outer edges only, desktop only */}
+        <div className="absolute -right-28 top-16 hidden h-[26rem] w-[26rem] rounded-full border border-[#C8A44D]/15 sm:block" />
+        <div className="absolute -right-16 top-28 hidden h-72 w-72 rounded-full border border-[#C8A44D]/10 sm:block" />
+        <div className="absolute -left-28 bottom-16 hidden h-[26rem] w-[26rem] rounded-full border border-[#C8A44D]/15 sm:block" />
+        <div className="absolute -left-16 bottom-28 hidden h-72 w-72 rounded-full border border-[#C8A44D]/10 sm:block" />
+
+        {/* Fine paper grain over everything */}
+        <div className="absolute inset-0 opacity-[0.035] mix-blend-multiply [background-image:radial-gradient(circle_at_22%_25%,rgba(70,52,18,.55)_1px,transparent_1.5px),radial-gradient(circle_at_74%_46%,rgba(70,52,18,.4)_1px,transparent_1.5px),radial-gradient(circle_at_42%_82%,rgba(70,52,18,.45)_1px,transparent_1.5px)] [background-size:24px_24px]" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-[1450px] px-5 sm:px-8 lg:px-12">
+        {/* Header — eyebrow, masked line-by-line kinetic reveal, gold flourish */}
+        <div className="text-center">
+          <motion.span
+            data-testid="gallery-eyebrow"
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="inline-flex items-center gap-2.5 rounded-full border border-[#C8A44D]/35 bg-white/75 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#8C6A2D] backdrop-blur-sm sm:text-xs sm:tracking-[0.38em]"
+          >
+            <span className="h-1 w-1 rotate-45 bg-[#C8A44D]" />
+            Our Gallery
+            <span className="h-1 w-1 rotate-45 bg-[#C8A44D]" />
+          </motion.span>
+
+          <h2 className="mt-6 font-serif text-[clamp(2.4rem,7.5vw,4.4rem)] leading-[1.04] tracking-[-0.02em] text-[#143C34]">
+            <span className="-mb-[0.14em] block overflow-hidden pb-[0.14em]">
+              <motion.span
+                initial={{ y: "112%" }}
+                whileInView={{ y: 0 }}
+                viewport={{ once: true, amount: 0 }}
+                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                className="block"
+              >
+                A Glimpse Into
+              </motion.span>
+            </span>
+            <span className="-mb-[0.14em] block overflow-hidden pb-[0.14em] pr-[0.08em]">
+              <motion.span
+                initial={{ y: "112%" }}
+                whileInView={{ y: 0 }}
+                viewport={{ once: true, amount: 0 }}
+                transition={{ duration: 0.9, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+                className="block italic text-[#0F5B43]"
+              >
+                Dakshinapaaka
+              </motion.span>
+            </span>
+          </h2>
+
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            whileInView={{ opacity: 1, scaleX: 1 }}
+            viewport={{ once: true, amount: 0 }}
+            transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto mt-6 flex w-40 items-center justify-center gap-3"
+          >
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#C8A44D]/70" />
+            <span className="h-1.5 w-1.5 rotate-45 border border-[#C8A44D]" />
+            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#C8A44D]/70" />
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0 }}
+            transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto mt-5 max-w-xl text-[15px] leading-7 text-[#5B5B5B] sm:text-lg sm:leading-8"
+          >
+            From our kitchen to our doorstep — a visual taste of the food,
+            the space and the people behind every plate.
+          </motion.p>
+        </div>
+
+        {/* Filter tabs — compact scrollable strip on mobile, hugging pill on desktop */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mt-10 flex justify-center sm:mt-12"
+          transition={{ duration: 0.6, delay: 0.15 }}
+          className="mt-9 sm:mt-12"
         >
-          <div className="flex flex-wrap items-center justify-center gap-1 rounded-full border border-[#E7DDC5] bg-white/80 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl">
-            {FILTERS.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setActive(f)}
-                className="relative rounded-full px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] transition-colors duration-300 sm:px-6 sm:text-sm"
-              >
-                {active === f && (
-                  <motion.span
-                    layoutId="gallery-filter-pill"
-                    className="absolute inset-0 rounded-full bg-[#174D32]"
-                    transition={{ type: "spring", stiffness: 340, damping: 32 }}
-                  />
-                )}
-                <span
-                  className={`relative z-10 ${
-                    active === f
-                      ? "text-white"
-                      : "text-[#5B5B45] hover:text-[#174D32]"
-                  }`}
+          <div className="-mx-5 overflow-x-auto px-5 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:flex sm:justify-center sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+            <div className="flex w-max items-center gap-1 rounded-full border border-[#C8A44D]/30 bg-[#FFFDF8]/85 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_14px_36px_rgba(140,106,45,0.10)] backdrop-blur-md sm:flex-wrap sm:justify-center sm:p-1.5">
+              {FILTERS.map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  data-testid={`gallery-filter-${f.toLowerCase().replace(/[^a-z]+/g, "-")}`}
+                  onClick={() => setActive(f)}
+                  className="relative shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors duration-300 sm:px-6 sm:py-2.5 sm:text-sm"
                 >
-                  {f}
-                </span>
-              </button>
-            ))}
+                  {active === f && (
+                    <motion.span
+                      layoutId="gallery-filter-pill"
+                      className="absolute inset-0 rounded-full bg-[#174D32] shadow-[0_8px_22px_rgba(23,77,50,0.35)]"
+                      transition={{ type: "spring", stiffness: 340, damping: 32 }}
+                    />
+                  )}
+                  <span
+                    className={`relative z-10 ${
+                      active === f
+                        ? "text-[#F7EFD9]"
+                        : "text-[#5B5B45] hover:text-[#174D32]"
+                    }`}
+                  >
+                    {f}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </motion.div>
 
-        {/* Carousel */}
+        {/* Carousel — the peeking card dissolves through a soft mask */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0 }}
-          transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-12 sm:mt-14"
+          transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mt-10 sm:mt-14"
           onMouseEnter={() => setHovering(true)}
           onMouseLeave={() => setHovering(false)}
         >
-          {/* Edge fade masks so the "peek" card dissolves into the page
-              instead of ending in a hard crop */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-[#FAF7F2] to-transparent sm:w-16 lg:w-24" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-[#FAF7F2] to-transparent sm:w-16 lg:w-24" />
-
-          <div className="overflow-hidden">
+          <div className="overflow-hidden [mask-image:linear-gradient(to_right,black_0%,black_calc(100%_-_2.5rem),transparent_100%)] sm:[mask-image:linear-gradient(to_right,black_0%,black_calc(100%_-_5rem),transparent_100%)]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
                 ref={trackRef}
-                className="flex gap-5 sm:gap-6 lg:gap-7"
+                className="flex gap-4 will-change-transform sm:gap-6 lg:gap-7"
                 drag={canScroll ? "x" : false}
                 dragMomentum={false}
+                dragElastic={0.08}
                 onDragStart={() => setIsDragging(true)}
                 onDragEnd={(_event, info) => {
                   setIsDragging(false);
@@ -193,14 +338,11 @@ export default function Gallery() {
                     prev();
                   }
                 }}
-                // NOTE: `initial` sets opacity to 0 for the filter-change
-                // fade-in. `animate` is the *complete* target state — any
-                // property that's in `initial` but missing from `animate`
-                // never gets animated back, so it was previously stuck
-                // invisible forever. `opacity: 1` here is the fix.
+                // `animate` must restate every property set in `initial`,
+                // otherwise it never animates back — opacity: 1 is the fix.
                 animate={{ x: -index * step, opacity: 1 }}
                 transition={{
-                  x: { type: "spring", stiffness: 300, damping: 34 },
+                  x: { type: "spring", stiffness: 260, damping: 32 },
                   opacity: { duration: 0.3 },
                 }}
                 initial={{ opacity: 0 }}
@@ -210,26 +352,34 @@ export default function Gallery() {
                   <div
                     key={img.id}
                     ref={i === 0 ? firstCardRef : undefined}
-                    className="group relative w-[76vw] max-w-[300px] flex-shrink-0 cursor-pointer select-none sm:w-[46vw] sm:max-w-[360px] lg:w-[380px] xl:w-[400px]"
+                    data-testid={`gallery-card-${img.id}`}
+                    className="group relative w-[72vw] max-w-[320px] flex-shrink-0 cursor-pointer select-none sm:w-[46vw] sm:max-w-[360px] lg:w-[380px] xl:w-[400px]"
                     onClick={() => !isDragging && setLightboxIndex(i)}
                   >
-                    <div className="relative aspect-[4/5] overflow-hidden rounded-[26px] border border-[#E7DDC5] bg-[#151515] shadow-[0_20px_45px_rgba(0,0,0,0.14)] transition-all duration-500 group-hover:-translate-y-1.5 group-hover:shadow-[0_30px_60px_rgba(0,0,0,0.22)]">
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] border border-[#E7DDC5] bg-[#151515] shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_18px_44px_-14px_rgba(45,35,15,0.28)] transition-[transform,box-shadow,border-color] duration-500 ease-out group-hover:-translate-y-2 group-hover:border-[#C8A44D]/55 group-hover:shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_32px_70px_-18px_rgba(45,35,15,0.36)]">
                       <Image
                         src={img.src}
                         alt={img.alt}
                         fill
                         draggable={false}
-                        sizes="(max-width: 640px) 76vw, (max-width: 1024px) 46vw, 400px"
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                        sizes="(max-width: 640px) 72vw, (max-width: 1024px) 46vw, 400px"
+                        className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.07]"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0C120E]/85 via-[#0C120E]/15 to-transparent" />
 
-                      <span className="absolute left-5 top-5 rounded-full bg-white/90 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#174D32] backdrop-blur-sm">
+                      {/* Whisper of a gold frame on hover */}
+                      <div className="pointer-events-none absolute inset-3 rounded-[18px] border border-white/0 transition-colors duration-500 group-hover:border-[#E9D9A8]/35" />
+
+                      <span className="absolute left-4 top-4 rounded-full border border-[#C8A44D]/35 bg-[#FBF6E9]/90 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6E531F] backdrop-blur-sm sm:left-5 sm:top-5 sm:px-3.5">
                         {img.category}
                       </span>
 
-                      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-6">
-                        <h3 className="font-serif text-2xl text-white">
+                      <span className="absolute right-5 top-5 font-serif text-sm italic text-white/75">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+
+                      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 sm:p-6">
+                        <h3 className="font-serif text-[22px] leading-tight text-white sm:text-2xl">
                           {img.title}
                         </h3>
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white opacity-0 backdrop-blur-md transition-opacity duration-300 group-hover:opacity-100">
@@ -249,16 +399,18 @@ export default function Gallery() {
               <button
                 type="button"
                 aria-label="Previous image"
+                data-testid="gallery-prev-button"
                 onClick={prev}
-                className="absolute left-0 top-[calc(50%-24px)] z-20 hidden h-12 w-12 -translate-x-6 items-center justify-center rounded-full border border-[#E7DDC5] bg-white text-[#174D32] shadow-[0_12px_28px_rgba(0,0,0,0.12)] transition-all duration-300 hover:scale-110 hover:bg-[#174D32] hover:text-white md:flex"
+                className="absolute left-0 top-[calc(50%-24px)] z-20 hidden h-12 w-12 -translate-x-6 items-center justify-center rounded-full border border-[#E7DDC5] bg-white/95 text-[#174D32] shadow-[0_14px_30px_rgba(45,35,15,0.16)] backdrop-blur-sm transition-[transform,background-color,color,border-color] duration-300 hover:scale-110 hover:border-[#174D32] hover:bg-[#174D32] hover:text-[#F7EFD9] md:flex"
               >
                 <ChevronLeft size={22} />
               </button>
               <button
                 type="button"
                 aria-label="Next image"
+                data-testid="gallery-next-button"
                 onClick={next}
-                className="absolute right-0 top-[calc(50%-24px)] z-20 hidden h-12 w-12 translate-x-6 items-center justify-center rounded-full border border-[#E7DDC5] bg-white text-[#174D32] shadow-[0_12px_28px_rgba(0,0,0,0.12)] transition-all duration-300 hover:scale-110 hover:bg-[#174D32] hover:text-white md:flex"
+                className="absolute right-0 top-[calc(50%-24px)] z-20 hidden h-12 w-12 translate-x-6 items-center justify-center rounded-full border border-[#E7DDC5] bg-white/95 text-[#174D32] shadow-[0_14px_30px_rgba(45,35,15,0.16)] backdrop-blur-sm transition-[transform,background-color,color,border-color] duration-300 hover:scale-110 hover:border-[#174D32] hover:bg-[#174D32] hover:text-[#F7EFD9] md:flex"
               >
                 <ChevronRight size={22} />
               </button>
@@ -266,10 +418,19 @@ export default function Gallery() {
           )}
         </motion.div>
 
-        {/* Autoplay progress + dots */}
+        {/* Editorial counter, autoplay progress, dots */}
         {canScroll && (
-          <div className="mt-8 flex flex-col items-center gap-4">
-            <div className="h-[3px] w-40 overflow-hidden rounded-full bg-[#C8A44D]/20 sm:w-56">
+          <div className="mt-8 flex flex-col items-center gap-4 sm:mt-10">
+            <span
+              data-testid="gallery-counter"
+              className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#8C6A2D]"
+            >
+              {String(index + 1).padStart(2, "0")}
+              <span className="mx-2 text-[#C8A44D]/70">/</span>
+              {String(items.length).padStart(2, "0")}
+            </span>
+
+            <div className="h-[2px] w-36 overflow-hidden rounded-full bg-[#C8A44D]/20 sm:w-52">
               {!hovering && !isDragging && lightboxIndex === null && (
                 <motion.div
                   key={`${active}-${index}`}
@@ -287,11 +448,12 @@ export default function Gallery() {
                   key={i}
                   type="button"
                   aria-label={`Go to slide ${i + 1}`}
+                  data-testid={`gallery-dot-${i}`}
                   onClick={() => setIndex(i)}
                   className="group flex h-6 items-center"
                 >
                   <span
-                    className={`h-1.5 rounded-full transition-all duration-400 ${
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
                       i === index
                         ? "w-7 bg-[#174D32]"
                         : "w-1.5 bg-[#C8A44D]/40 group-hover:bg-[#C8A44D]/70"
@@ -362,7 +524,8 @@ function GalleryLightbox({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 p-5 backdrop-blur-xl"
+          data-testid="gallery-lightbox"
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-[#0B0F0C]/90 p-4 backdrop-blur-xl sm:p-6"
         >
           <div className="absolute inset-0" onClick={onClose} />
 
@@ -370,7 +533,8 @@ function GalleryLightbox({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="absolute right-6 top-6 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:rotate-90 hover:bg-[#C8A44D] hover:text-[#173F2D]"
+            data-testid="lightbox-close-button"
+            className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[transform,background-color,color] duration-300 hover:rotate-90 hover:bg-[#C8A44D] hover:text-[#173F2D] sm:right-6 sm:top-6 sm:h-12 sm:w-12"
           >
             <X size={22} />
           </button>
@@ -381,17 +545,19 @@ function GalleryLightbox({
                 type="button"
                 onClick={onPrev}
                 aria-label="Previous image"
-                className="absolute left-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-[#C8A44D] hover:text-[#173F2D] sm:left-8"
+                data-testid="lightbox-prev-button"
+                className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[transform,background-color,color] duration-300 hover:scale-110 hover:bg-[#C8A44D] hover:text-[#173F2D] sm:left-8 sm:h-12 sm:w-12"
               >
-                <ChevronLeft size={24} />
+                <ChevronLeft size={22} />
               </button>
               <button
                 type="button"
                 onClick={onNext}
                 aria-label="Next image"
-                className="absolute right-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-[#C8A44D] hover:text-[#173F2D] sm:right-8"
+                data-testid="lightbox-next-button"
+                className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[transform,background-color,color] duration-300 hover:scale-110 hover:bg-[#C8A44D] hover:text-[#173F2D] sm:right-8 sm:h-12 sm:w-12"
               >
-                <ChevronRight size={24} />
+                <ChevronRight size={22} />
               </button>
             </>
           )}
@@ -402,27 +568,32 @@ function GalleryLightbox({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-[1] flex max-h-[85vh] max-w-4xl flex-col items-center"
+            className="relative z-[1] flex max-h-[88vh] max-w-4xl flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative h-[65vh] w-[88vw] max-w-4xl overflow-hidden rounded-2xl border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.5)] sm:h-[70vh] sm:w-[80vw]">
+            <div className="relative h-[54vh] w-[92vw] max-w-4xl overflow-hidden rounded-2xl border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.5)] sm:h-[68vh] sm:w-[80vw]">
               <Image
                 src={active.src}
                 alt={active.alt}
                 fill
-                sizes="90vw"
+                sizes="(max-width: 640px) 92vw, 80vw"
                 className="object-contain"
                 priority
               />
             </div>
 
-            <div className="mt-5 text-center">
-              <p className="text-xs uppercase tracking-[0.35em] text-[#D4AF37]">
+            <div className="mt-5 flex flex-col items-center text-center">
+              <span className="mb-3 h-px w-12 bg-gradient-to-r from-transparent via-[#C8A44D]/80 to-transparent" />
+              <p className="text-[11px] uppercase tracking-[0.35em] text-[#D4AF37]">
                 {active.category}
               </p>
-              <h3 className="mt-2 font-serif text-2xl text-white sm:text-3xl">
+              <h3 className="mt-2 font-serif text-xl text-white sm:text-3xl">
                 {active.title}
               </h3>
+              <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/40">
+                {String((index ?? 0) + 1).padStart(2, "0")} /{" "}
+                {String(items.length).padStart(2, "0")}
+              </p>
             </div>
           </motion.div>
         </motion.div>
