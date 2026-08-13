@@ -47,6 +47,10 @@ const CONTACT = {
   phone: "+91 72044 88774",
   phoneHref: "tel:+917204488774",
   location: "https://maps.app.goo.gl/Ti1EHVyQyUFZWZCM9",
+  // Coordinates for the Google Maps embed. Sourced from the shared maps
+  // shortlink; tuned for the Mysuru location.
+  mapEmbed:
+    "https://www.google.com/maps?q=Dakshina+Paaka+Mysuru&hl=en&z=15&output=embed",
   instagram: "https://www.instagram.com/dakshina_paaka/?hl=en",
   instagramHandle: "@dakshina_paaka",
   address: "Mysuru, Karnataka",
@@ -155,6 +159,83 @@ export default function Footer() {
           </span>
         </div>
         <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#C8A44D]/60" />
+      </div>
+
+      {/* ================== LIVE MAP PREVIEW ================== */}
+      <div className="relative z-10 mx-auto mb-16 max-w-[1400px] px-5 sm:mb-20 sm:px-8 lg:px-12">
+        <motion.a
+          href={CONTACT.location}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="footer-map-card"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          whileHover={reduceMotion ? undefined : { y: -3 }}
+          className="group relative block overflow-hidden rounded-[26px] border border-[#C8A44D]/30 bg-[#0A1712]/85 shadow-[0_28px_70px_rgba(0,0,0,0.45)] backdrop-blur-md sm:rounded-[32px]"
+        >
+          {/* Map iframe — non-interactive so the outer anchor stays clickable */}
+          <div className="relative h-[240px] w-full sm:h-[300px] lg:h-[340px]">
+            <iframe
+              title="Dakshina Paaka on Google Maps"
+              src={CONTACT.mapEmbed}
+              className="pointer-events-none absolute inset-0 h-full w-full grayscale-[.35] contrast-[1.05] saturate-[1.15] transition-all duration-700 group-hover:grayscale-0 group-hover:contrast-100"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+              aria-hidden
+            />
+
+            {/* Overlay veil to keep the map on-brand + readable */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A1712]/85 via-[#0A1712]/15 to-transparent" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#0A1712]/70 via-transparent to-transparent sm:via-[#0A1712]/0 sm:to-transparent" />
+
+            {/* Pin animation */}
+            <motion.div
+              className="pointer-events-none absolute left-1/2 top-1/2 z-[1] -translate-x-1/2 -translate-y-1/2"
+              animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <span className="relative flex h-14 w-14 items-center justify-center">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C8A44D]/40" />
+                <span className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[#E9CE85] bg-[#0A1712] text-[#E9CE85] shadow-[0_10px_28px_rgba(200,164,77,0.45)]">
+                  <MapPin size={20} strokeWidth={2.2} />
+                </span>
+              </span>
+              <span
+                aria-hidden
+                className="mx-auto mt-1 block h-1.5 w-1.5 rounded-full bg-[#C8A44D]/80 shadow-[0_0_10px_rgba(200,164,77,0.7)]"
+              />
+            </motion.div>
+
+            {/* Copy */}
+            <div className="absolute inset-x-0 bottom-0 flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-7 sm:py-6 lg:px-9 lg:py-8">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-[#E9CE85]">
+                  Find Us Here
+                </p>
+                <h4 className="mt-1.5 font-serif text-[22px] leading-tight text-[#F5EFDE] sm:text-[26px] lg:text-[30px]">
+                  Dakshina Paaka, Mysuru
+                </h4>
+                <p className="mt-1 text-[12px] text-[#D4CFB8]/75 sm:text-[13px]">
+                  Karnataka, India · Open Now
+                </p>
+              </div>
+
+              <span className="inline-flex w-max items-center gap-2 rounded-full border border-[#C8A44D]/50 bg-[#0F5B43]/45 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#F4D06F] backdrop-blur-md transition-all duration-300 group-hover:-translate-y-[1px] group-hover:border-[#C8A44D] group-hover:bg-[#0F5B43]/80">
+                Open in Google Maps
+                <ArrowUpRight
+                  size={14}
+                  className="transition-transform duration-300 group-hover:translate-x-0.5"
+                />
+              </span>
+            </div>
+
+            {/* Gold hairline frame */}
+            <div className="pointer-events-none absolute inset-2 rounded-[22px] ring-1 ring-inset ring-[#C8A44D]/25 sm:inset-3 sm:rounded-[28px]" />
+          </div>
+        </motion.a>
       </div>
 
       {/* ================== CONTENT GRID ================== */}

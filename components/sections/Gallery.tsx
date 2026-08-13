@@ -311,6 +311,8 @@ export default function Gallery() {
           className="relative mt-10 sm:mt-14"
           onMouseEnter={() => setHovering(true)}
           onMouseLeave={() => setHovering(false)}
+          onTouchStart={() => setHovering(true)}
+          onTouchEnd={() => setHovering(false)}
         >
           <div className="overflow-hidden [mask-image:linear-gradient(to_right,black_0%,black_calc(100%_-_2.5rem),transparent_100%)] sm:[mask-image:linear-gradient(to_right,black_0%,black_calc(100%_-_5rem),transparent_100%)]">
             <AnimatePresence mode="wait">
@@ -393,7 +395,9 @@ export default function Gallery() {
             </AnimatePresence>
           </div>
 
-          {/* Arrows — desktop only; mobile relies on drag */}
+          {/* Arrows — desktop only; mobile relies on drag.
+              Positioned inside the container (inset positive) so they never
+              cause horizontal overflow on smaller desktop widths. */}
           {canScroll && (
             <>
               <button
@@ -401,7 +405,7 @@ export default function Gallery() {
                 aria-label="Previous image"
                 data-testid="gallery-prev-button"
                 onClick={prev}
-                className="absolute left-0 top-[calc(50%-24px)] z-20 hidden h-12 w-12 -translate-x-6 items-center justify-center rounded-full border border-[#E7DDC5] bg-white/95 text-[#174D32] shadow-[0_14px_30px_rgba(45,35,15,0.16)] backdrop-blur-sm transition-[transform,background-color,color,border-color] duration-300 hover:scale-110 hover:border-[#174D32] hover:bg-[#174D32] hover:text-[#F7EFD9] md:flex"
+                className="absolute left-2 top-[calc(50%-24px)] z-20 hidden h-12 w-12 items-center justify-center rounded-full border border-[#E7DDC5] bg-white/95 text-[#174D32] shadow-[0_14px_30px_rgba(45,35,15,0.16)] backdrop-blur-sm transition-[transform,background-color,color,border-color] duration-300 hover:scale-110 hover:border-[#174D32] hover:bg-[#174D32] hover:text-[#F7EFD9] md:flex lg:left-4"
               >
                 <ChevronLeft size={22} />
               </button>
@@ -410,7 +414,7 @@ export default function Gallery() {
                 aria-label="Next image"
                 data-testid="gallery-next-button"
                 onClick={next}
-                className="absolute right-0 top-[calc(50%-24px)] z-20 hidden h-12 w-12 translate-x-6 items-center justify-center rounded-full border border-[#E7DDC5] bg-white/95 text-[#174D32] shadow-[0_14px_30px_rgba(45,35,15,0.16)] backdrop-blur-sm transition-[transform,background-color,color,border-color] duration-300 hover:scale-110 hover:border-[#174D32] hover:bg-[#174D32] hover:text-[#F7EFD9] md:flex"
+                className="absolute right-2 top-[calc(50%-24px)] z-20 hidden h-12 w-12 items-center justify-center rounded-full border border-[#E7DDC5] bg-white/95 text-[#174D32] shadow-[0_14px_30px_rgba(45,35,15,0.16)] backdrop-blur-sm transition-[transform,background-color,color,border-color] duration-300 hover:scale-110 hover:border-[#174D32] hover:bg-[#174D32] hover:text-[#F7EFD9] md:flex lg:right-4"
               >
                 <ChevronRight size={22} />
               </button>

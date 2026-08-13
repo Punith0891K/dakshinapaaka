@@ -2,9 +2,10 @@
 
 import { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, ArrowUpRight, Flame, Clock, Sparkles } from "lucide-react";
 import Image from "next/image";
-import { signatureDishes } from "@/data/signatureDishes";
+import { signatureDishes, type SignatureDish } from "@/data/signatureDishes";
+import DishDetailSheet from "@/components/ui/DishDetailSheet";
 import heroThali from "@/public/images/food/hero-thali.png";
 interface SignatureCollectionModalProps {
   open: boolean;
@@ -17,6 +18,7 @@ export default function SignatureCollectionModal({
 }: SignatureCollectionModalProps) {
 
   const [activeCategory, setActiveCategory] = useState("All");
+  const [selectedDish, setSelectedDish] = useState<SignatureDish | null>(null);
   const showHero = activeCategory === "All";
 const [compactHeader, setCompactHeader] = useState(false);
 const ticking = useRef(false);
@@ -590,75 +592,68 @@ and premium ingredients.
   style={{ willChange: "transform" }}
     key={activeCategory}
     exit="hidden"
-initial={{
-  opacity: 0,
-  y: 20,
-}}
-
-animate={{
-  opacity: 1,
-  y: 0,
-}}
-
-transition={{
-  duration: 0.35,
-}}
-    className="grid gap-8 md:grid-cols-2 xl:grid-cols-3"
+    initial="hidden"
+    animate="visible"
+    variants={{
+      hidden: {},
+      visible: {
+        transition: {
+          staggerChildren: 0.07,
+          delayChildren: 0.05,
+        },
+      },
+    }}
+    className="grid gap-6 md:gap-8 md:grid-cols-2 xl:grid-cols-3"
   >
 
-    {filteredDishes.map((dish, index) => (
+    {filteredDishes.map((dish) => (
 
-      <motion.div
+      <motion.button
+        type="button"
+        onClick={() => setSelectedDish(dish)}
         key={dish.name}
+        data-testid={`sig-modal-card-${dish.id}`}
        variants={{
   hidden: {
     opacity: 0,
     y: 35,
-    scale: 0.96,
+    scale: 0.95,
   },
-
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+    },
   },
 }}
-     transition={{
-  duration: 0.55,
-  delay: index * 0.06,
-  ease: [0.22, 1, 0.36, 1],
-}}
+        whileHover={{ y: -6 }}
+        transition={{ type: "spring", stiffness: 260, damping: 22 }}
         className="
           group
+          relative
           overflow-hidden
           rounded-[28px]
           border
           border-[#E3D5B3]
           bg-white
-hover:-translate-y-1
-hover:border-[#C8A44D]
-shadow-sm
-hover:shadow-md
+          text-left
+          shadow-[0_14px_36px_rgba(45,35,15,0.08)]
+          transition-[border-color,box-shadow]
+          duration-500
+          hover:border-[#C8A44D]
+          hover:shadow-[0_28px_60px_rgba(45,35,15,0.18)]
         "
       >
 
         {/* Image */}
 
-        <div className="relative h-64 overflow-hidden">
-
-          
-<div
-  className="
-    absolute
-    inset-0
-    bg-white/5
-    opacity-0
-    transition-opacity
-    duration-300
-    group-hover:opacity-100
-    z-20
-  "
-/>
+        <motion.div
+          layoutId={`dish-image-${dish.id}`}
+          className="relative h-64 overflow-hidden"
+        >
 
          <Image
   src={dish.image}
@@ -673,52 +668,106 @@ hover:shadow-md
   className="
     object-cover
     transition-transform
-    duration-500
-    group-hover:scale-[1.015]
+    duration-[900ms]
+    ease-out
+    group-hover:scale-[1.08]
   "
 />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
 
+          {/* Category chip */}
           <span
             className="
               absolute
               left-5
               top-5
               rounded-full
-              bg-[#174D32]
-              px-4
-              py-2
-              text-xs
+              border
+              border-white/25
+              bg-[#174D32]/85
+              px-3.5
+              py-1.5
+              text-[10px]
+              font-semibold
               uppercase
-              tracking-[0.2em]
+              tracking-[0.22em]
               text-white
+              backdrop-blur-md
             "
           >
             {dish.category}
           </span>
 
-        </div>
+          {/* Meta chips (prep + spice) */}
+          <div className="absolute right-4 top-4 flex flex-col items-end gap-1.5">
+            {dish.prepTime && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-[10px] font-medium text-white/90 backdrop-blur-md">
+                <Clock size={11} strokeWidth={2} /> {dish.prepTime}
+              </span>
+            )}
+            {dish.spiceLevel !== undefined && dish.spiceLevel > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#F4A56D]/40 bg-[#C24B3A]/45 px-2.5 py-1 text-[10px] font-medium text-[#FFE8CF] backdrop-blur-md">
+                <Flame size={11} strokeWidth={2.2} />
+                {dish.spiceLevel === 3 ? "Spicy" : dish.spiceLevel === 2 ? "Medium" : "Mild"}
+              </span>
+            )}
+          </div>
+
+          {/* Sheen sweep on hover */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -inset-[100%] rotate-12 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
+          </div>
+        </motion.div>
 
         {/* Content */}
 
         <div className="p-6">
 
-          <p className="text-xs uppercase tracking-[0.25em] text-[#C8A44D]">
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.25em] text-[#B88B2C]">
+            <Sparkles size={12} className="text-[#C8A44D]" />
             {dish.badge}
           </p>
 
-          <h3 className="mt-3 font-serif text-3xl text-[#1E1E1E]">
+          <motion.h3
+            layoutId={`dish-title-${dish.id}`}
+            className="mt-3 font-serif text-2xl leading-tight text-[#1E1E1E] md:text-3xl"
+          >
             {dish.name}
-          </h3>
+          </motion.h3>
 
-          <p className="mt-4 leading-7 text-[#6B5B45]">
+          <p className="mt-3 line-clamp-3 text-[14.5px] leading-7 text-[#6B5B45]">
             {dish.description}
           </p>
 
+          {dish.highlights && (
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {dish.highlights.map((h) => (
+                <span
+                  key={h}
+                  className="rounded-full border border-[#E3D5B3] bg-[#FBF6ED] px-2.5 py-0.5 text-[10px] font-medium text-[#7A6B55]"
+                >
+                  {h}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-5 flex items-center justify-between border-t border-[#EFE4CE] pt-4">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#174D32] transition-all duration-300 group-hover:tracking-[0.28em]">
+              View Details
+            </span>
+            <motion.span
+              whileHover={{ rotate: 45, scale: 1.06 }}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#174D32]/25 bg-[#F1EED5] text-[#174D32] transition-all duration-300 group-hover:border-[#174D32] group-hover:bg-[#174D32] group-hover:text-[#F4D06F]"
+            >
+              <ArrowUpRight size={14} strokeWidth={2.2} />
+            </motion.span>
+          </div>
+
         </div>
 
-      </motion.div>
+      </motion.button>
 
     ))}
 
@@ -754,6 +803,18 @@ hover:shadow-md
           </motion.div>
         </motion.div>
       )}
+
+      {/* Direct DishDetailSheet — mounted at portal-level via AnimatePresence
+          so the shared-element layoutId animation glides seamlessly. */}
+      <AnimatePresence>
+        {selectedDish && (
+          <DishDetailSheet
+            dish={selectedDish}
+            onClose={() => setSelectedDish(null)}
+            onSelectRelated={(d) => setSelectedDish(d)}
+          />
+        )}
+      </AnimatePresence>
     </AnimatePresence>
   );
 }
