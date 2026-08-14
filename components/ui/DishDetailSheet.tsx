@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion, useMotionValue, useTransform, type Variants } from "framer-motion";
 import { X, Flame, Clock, Users, Leaf, ChefHat, Sparkles } from "lucide-react";
 import { signatureDishes, type SignatureDish } from "@/data/signatureDishes";
 import { useEffect } from "react";
@@ -13,6 +13,49 @@ interface DishDetailSheetProps {
   onSelectRelated?: (dish: SignatureDish) => void;
 }
 
+// A slow, weighted "easeOutExpo"-style curve. The deceleration reads as
+// considered and unhurried rather than snappy — that unhurriedness is what
+// makes a reveal feel premium instead of merely fast. Used for anything
+// entering (opening).
+const LUXE_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+// The mirror image of LUXE_EASE — accelerates away instead of decelerating
+// in. Closing should feel quicker and more decisive than opening, the way a
+// heavy drawer is easy to push shut but was eased open carefully.
+const LUXE_EASE_IN: [number, number, number, number] = [0.7, 0, 0.84, 0];
+
+// Overlay: a soft, slow bloom in; a quick fade on the way out so the page
+// underneath feels immediately available again.
+const overlayVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 0.65,
+    transition: { duration: 0.5, ease: LUXE_EASE },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.32, ease: LUXE_EASE_IN },
+  },
+};
+
+// Sheet: rises into place with a weighted spring (a little settle at the
+// end reads as considered), then drops away on a brisk tween — closing
+// shouldn't linger. Scale + opacity are layered on top of the y-slide so
+// the motion feels dimensional rather than a flat curtain.
+const sheetVariants: Variants = {
+  hidden: { y: "100%", opacity: 0.6 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 260, damping: 32, mass: 0.9 },
+  },
+  exit: {
+    y: "100%",
+    opacity: 0.7,
+    transition: { duration: 0.4, ease: LUXE_EASE_IN },
+  },
+};
+
 export default function DishDetailSheet({
   dish,
   onClose,
@@ -20,9 +63,14 @@ export default function DishDetailSheet({
 }: DishDetailSheetProps) {
   // Swipe-down-to-dismiss (mobile). The sheet content stays visible while
   // the user drags — release past 120px OR fast downward velocity closes.
-  const y = useMotionValue(0);
-  const overlayOpacity = useTransform(y, [0, 400], [0.65, 0]);
-  const sheetScale = useTransform(y, [0, 400], [1, 0.96]);
+  // This lives on its own motion value (separate from the mount/exit slide
+  // below) — mixing a drag-tracked value into the same key that `variants`
+  // also animates is what caused the open/close transitions to be skipped
+  // entirely: an externally-created motion value always wins over a
+  // declarative `initial`/`animate` target on the same property, so the
+  // sheet was rendering at its final position from the very first frame.
+  const dragY = useMotionValue(0);
+  const sheetScale = useTransform(dragY, [0, 400], [1, 0.96]);
 
   // Lock body scroll while open.
   useEffect(() => {
@@ -40,15 +88,22 @@ export default function DishDetailSheet({
   return (
     <>
       <motion.div
-        style={{ opacity: overlayOpacity }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.65 }}
-        exit={{ opacity: 0 }}
+        variants={overlayVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
         onClick={onClose}
         data-testid="dish-sheet-backdrop"
         className="fixed inset-0 z-[1200] bg-black backdrop-blur-md"
       />
 
+      <motion.div
+        variants={sheetVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="fixed inset-x-0 bottom-0 z-[1201] max-w-full sm:mx-auto sm:max-w-2xl"
+      >
       <motion.div
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
@@ -56,26 +111,30 @@ export default function DishDetailSheet({
         onDragEnd={(_, info) => {
           if (info.offset.y > 120 || info.velocity.y > 500) onClose();
         }}
-        style={{ y, scale: sheetScale }}
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "spring", stiffness: 260, damping: 30 }}
-        className="fixed inset-x-0 bottom-0 z-[1201] flex h-[92dvh] max-w-full flex-col overflow-hidden rounded-t-[34px] bg-gradient-to-b from-[#FFFDF9] via-[#FBF5E6] to-[#F8EEDA] shadow-[0_-24px_60px_rgba(0,0,0,0.28)] sm:mx-auto sm:h-[88dvh] sm:max-w-2xl sm:rounded-[34px]"
+        style={{ y: dragY, scale: sheetScale }}
+        className="flex h-[92dvh] w-full max-w-full flex-col overflow-hidden rounded-t-[34px] bg-gradient-to-b from-[#FFFDF9] via-[#FBF5E6] to-[#F8EEDA] shadow-[0_-24px_60px_rgba(0,0,0,0.28)] sm:h-[88dvh] sm:rounded-[34px]"
         data-testid={`dish-sheet-${dish.id}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={`dish-title-${dish.id}`}
       >
         {/* Drag indicator */}
-        <div className="relative z-30 flex shrink-0 justify-center pb-2 pt-3">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.08, duration: 0.35, ease: LUXE_EASE }}
+          className="relative z-30 flex shrink-0 justify-center pb-2 pt-3"
+        >
           <div className="h-1.5 w-14 rounded-full bg-gradient-to-r from-[#EAD8A6] via-[#C8A44D] to-[#EAD8A6] shadow-[0_1px_6px_rgba(200,164,77,0.35)]" />
-        </div>
+        </motion.div>
 
         {/* Close — sits above the scroll container so it stays reachable
             even when the sheet content is scrolled. */}
         <motion.button
           onClick={onClose}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.14, duration: 0.4, ease: LUXE_EASE }}
           whileTap={{ scale: 0.92 }}
           whileHover={{ scale: 1.05, rotate: 90 }}
           className="absolute right-5 top-5 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white backdrop-blur-xl shadow-[0_6px_18px_rgba(0,0,0,0.35)] transition-shadow duration-300"
@@ -90,33 +149,53 @@ export default function DishDetailSheet({
           {/* Hero image */}
           <motion.div
             layoutId={`dish-image-${dish.id}`}
-            transition={{ type: "spring", stiffness: 220, damping: 28 }}
+            transition={{ type: "spring", stiffness: 210, damping: 30 }}
             className="relative h-[260px] overflow-hidden sm:h-[320px]"
           >
-            <Image
-              fill
-              src={dish.image}
-              alt={dish.name}
-              sizes="(max-width: 640px) 100vw, 640px"
-              priority
-              className="object-cover object-[center_40%]"
-            />
+            {/* Slow Ken Burns settle — independent of the layout move so the
+                shared-element transition stays crisp while the image itself
+                still breathes in. */}
+            <motion.div
+              initial={{ scale: 1.15 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 1.6, ease: LUXE_EASE }}
+              className="absolute inset-0"
+            >
+              <Image
+                fill
+                src={dish.image}
+                alt={dish.name}
+                sizes="(max-width: 640px) 100vw, 640px"
+                priority
+                className="object-cover object-[center_40%]"
+              />
+            </motion.div>
             <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F0F]/85 via-[#0F0F0F]/25 to-transparent" />
 
             {/* Category chip */}
-            <div className="absolute left-5 top-5 rounded-full border border-white/25 bg-black/40 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-white backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.17, duration: 0.45, ease: LUXE_EASE }}
+              className="absolute left-5 top-5 rounded-full border border-white/25 bg-black/40 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-white backdrop-blur-md"
+            >
               {dish.category}
-            </div>
+            </motion.div>
 
             {/* Badge */}
             <div className="absolute bottom-6 left-6 right-24 sm:right-28">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-[#F4D06F]">
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.45, ease: LUXE_EASE }}
+                className="text-[10px] font-semibold uppercase tracking-[0.35em] text-[#F4D06F]"
+              >
                 {dish.badge}
-              </p>
+              </motion.p>
               <motion.h1
                 layoutId={`dish-title-${dish.id}`}
                 id={`dish-title-${dish.id}`}
-                transition={{ type: "spring", stiffness: 220, damping: 28 }}
+                transition={{ type: "spring", stiffness: 210, damping: 30 }}
                 className="mt-2 font-serif text-[26px] leading-[1.05] tracking-[-0.02em] text-white sm:text-[34px]"
               >
                 {dish.name}
@@ -126,9 +205,9 @@ export default function DishDetailSheet({
 
           {/* Meta strip */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.24, duration: 0.5, ease: LUXE_EASE }}
             className="mx-5 -mt-6 grid grid-cols-3 gap-2 rounded-2xl border border-[#E3D5B3] bg-white/85 p-3 shadow-[0_18px_40px_rgba(45,35,15,0.12)] backdrop-blur-xl sm:mx-8 sm:gap-3 sm:p-4"
           >
             <MetaItem
@@ -150,7 +229,12 @@ export default function DishDetailSheet({
 
           {/* Dietary chips */}
           {dish.dietary && dish.dietary.length > 0 && (
-            <div className="mx-5 mt-4 flex flex-wrap gap-2 sm:mx-8">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5, ease: LUXE_EASE }}
+              className="mx-5 mt-4 flex flex-wrap gap-2 sm:mx-8"
+            >
               {dish.dietary.map((tag) => (
                 <span
                   key={tag}
@@ -160,22 +244,28 @@ export default function DishDetailSheet({
                   {tag}
                 </span>
               ))}
-            </div>
+            </motion.div>
           )}
 
           {/* Description */}
-          <div className="mx-5 mt-6 sm:mx-8 sm:mt-8">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.34, duration: 0.5, ease: LUXE_EASE }}
+            className="mx-5 mt-6 sm:mx-8 sm:mt-8"
+          >
             <p className="font-serif text-[16px] leading-[1.75] text-[#3E3527] sm:text-[17px]">
               {dish.description}
             </p>
-          </div>
+          </motion.div>
 
           {/* Ingredients */}
           {dish.ingredients && dish.ingredients.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.7, ease: LUXE_EASE }}
               className="mx-5 mt-8 sm:mx-8"
             >
               <div className="mb-3 flex items-center gap-2">
@@ -183,16 +273,27 @@ export default function DishDetailSheet({
                 <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#8C6A2D]">
                   Made With
                 </p>
-                <span className="h-px flex-1 bg-gradient-to-r from-[#C8A44D]/50 to-transparent" />
+                <motion.span
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ delay: 0.25, duration: 0.7, ease: LUXE_EASE }}
+                  style={{ transformOrigin: "left" }}
+                  className="h-px flex-1 bg-gradient-to-r from-[#C8A44D]/50 to-transparent"
+                />
               </div>
               <div className="flex flex-wrap gap-2">
-                {dish.ingredients.map((ing) => (
-                  <span
+                {dish.ingredients.map((ing, i) => (
+                  <motion.span
                     key={ing}
+                    initial={{ opacity: 0, y: 8 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.4 }}
+                    transition={{ delay: i * 0.04, duration: 0.4, ease: LUXE_EASE }}
                     className="rounded-full border border-[#E3D5B3] bg-white px-3 py-1.5 text-[12px] font-medium text-[#5F5241] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
                   >
                     {ing}
-                  </span>
+                  </motion.span>
                 ))}
               </div>
             </motion.div>
@@ -201,9 +302,10 @@ export default function DishDetailSheet({
           {/* Chef's note */}
           {dish.chefNote && (
             <motion.blockquote
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.7, ease: LUXE_EASE }}
               className="mx-5 mt-8 overflow-hidden rounded-2xl border border-[#D8C89F] bg-gradient-to-br from-[#174D32] to-[#0F3722] p-6 text-white sm:mx-8 sm:p-7"
             >
               <div className="flex items-center gap-2">
@@ -225,22 +327,41 @@ export default function DishDetailSheet({
 
           {/* Related */}
           {related.length > 0 && (
-            <div className="mx-5 mt-10 mb-6 sm:mx-8 sm:mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.7, ease: LUXE_EASE }}
+              className="mx-5 mt-10 mb-6 sm:mx-8 sm:mb-8"
+            >
               <div className="mb-4 flex items-center gap-2">
                 <span className="text-[#C8A44D]">✦</span>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#8C6A2D]">
                   You Might Also Love
                 </p>
-                <span className="h-px flex-1 bg-gradient-to-r from-[#C8A44D]/50 to-transparent" />
+                <motion.span
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ delay: 0.25, duration: 0.7, ease: LUXE_EASE }}
+                  style={{ transformOrigin: "left" }}
+                  className="h-px flex-1 bg-gradient-to-r from-[#C8A44D]/50 to-transparent"
+                />
               </div>
               <div className="dp-thumb-scroller -mx-2 flex gap-3 overflow-x-auto px-2 pb-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible">
-                {related.map((r) => (
-                  <button
+                {related.map((r, i) => (
+                  <motion.button
                     key={r.id}
                     type="button"
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.4 }}
+                    transition={{ delay: i * 0.08, duration: 0.5, ease: LUXE_EASE }}
+                    whileHover={{ y: -4 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => onSelectRelated?.(r)}
                     data-testid={`related-dish-${r.id}`}
-                    className="group flex w-[180px] shrink-0 flex-col overflow-hidden rounded-2xl border border-[#E3D5B3] bg-white text-left shadow-[0_10px_25px_rgba(45,35,15,0.08)] transition-all hover:-translate-y-1 hover:border-[#C8A44D] hover:shadow-[0_18px_40px_rgba(45,35,15,0.18)] sm:w-full"
+                    className="group flex w-[180px] shrink-0 flex-col overflow-hidden rounded-2xl border border-[#E3D5B3] bg-white text-left shadow-[0_10px_25px_rgba(45,35,15,0.08)] transition-all duration-300 hover:border-[#C8A44D] hover:shadow-[0_18px_40px_rgba(45,35,15,0.18)] sm:w-full"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden">
                       <Image
@@ -259,14 +380,20 @@ export default function DishDetailSheet({
                         {r.name}
                       </p>
                     </div>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* CTA */}
-          <div className="mx-5 mb-8 flex flex-col gap-3 sm:mx-8 sm:flex-row">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.6, ease: LUXE_EASE }}
+            className="mx-5 mb-8 flex flex-col gap-3 sm:mx-8 sm:flex-row"
+          >
             <a
               href="#menu"
               onClick={onClose}
@@ -282,8 +409,9 @@ export default function DishDetailSheet({
             >
               Reserve a Table
             </a>
-          </div>
+          </motion.div>
         </div>
+      </motion.div>
       </motion.div>
     </>
   );
