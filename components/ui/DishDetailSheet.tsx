@@ -4,7 +4,8 @@ import Image from "next/image";
 import { motion, useMotionValue, useTransform, type Variants } from "framer-motion";
 import { X, Flame, Clock, Users, Leaf, ChefHat, Sparkles } from "lucide-react";
 import { signatureDishes, type SignatureDish } from "@/data/signatureDishes";
-import { useEffect } from "react";
+import { useMemo } from "react";
+import { useScrollLock } from "@/lib/useScrollLock";
 
 interface DishDetailSheetProps {
   dish: SignatureDish;
@@ -72,18 +73,21 @@ export default function DishDetailSheet({
   const dragY = useMotionValue(0);
   const sheetScale = useTransform(dragY, [0, 400], [1, 0.96]);
 
-  // Lock body scroll while open.
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+  // Lock body scroll while open. Shared/reference-counted with the sheet(s)
+  // this can be nested inside (mobile collection sheet, safety lock on the
+  // homepage grid) — see /lib/useScrollLock.ts. Using a local, independent
+  // lock here (as before) is exactly the pattern that caused the frozen-
+  // scroll bug elsewhere: two locks racing to capture/restore
+  // document.body.style.overflow.
+  useScrollLock(true);
 
-  const related = signatureDishes
-    .filter((d) => d.id !== dish.id && d.category === dish.category)
-    .slice(0, 3);
+  const related = useMemo(
+    () =>
+      signatureDishes
+        .filter((d) => d.id !== dish.id && d.category === dish.category)
+        .slice(0, 3),
+    [dish.id, dish.category]
+  );
 
   return (
     <>
@@ -94,7 +98,7 @@ export default function DishDetailSheet({
         exit="exit"
         onClick={onClose}
         data-testid="dish-sheet-backdrop"
-        className="fixed inset-0 z-[1200] bg-black backdrop-blur-md"
+        className="fixed inset-0 z-[1200] bg-black backdrop-blur-md transform-gpu will-change-[opacity]"
       />
 
       <motion.div
@@ -102,7 +106,7 @@ export default function DishDetailSheet({
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="fixed inset-x-0 bottom-0 z-[1201] max-w-full sm:mx-auto sm:max-w-2xl"
+        className="fixed inset-x-0 bottom-0 z-[1201] max-w-full transform-gpu will-change-transform sm:mx-auto sm:max-w-2xl"
       >
       <motion.div
         drag="y"
@@ -112,7 +116,7 @@ export default function DishDetailSheet({
           if (info.offset.y > 120 || info.velocity.y > 500) onClose();
         }}
         style={{ y: dragY, scale: sheetScale }}
-        className="flex h-[92dvh] w-full max-w-full flex-col overflow-hidden rounded-t-[34px] bg-gradient-to-b from-[#FFFDF9] via-[#FBF5E6] to-[#F8EEDA] shadow-[0_-24px_60px_rgba(0,0,0,0.28)] sm:h-[88dvh] sm:rounded-[34px]"
+        className="flex h-[92dvh] w-full max-w-full flex-col overflow-hidden rounded-t-[34px] bg-gradient-to-b from-[#FFFDF9] via-[#FBF5E6] to-[#F8EEDA] shadow-[0_-24px_60px_rgba(0,0,0,0.28)] transform-gpu will-change-transform sm:h-[88dvh] sm:rounded-[34px]"
         data-testid={`dish-sheet-${dish.id}`}
         role="dialog"
         aria-modal="true"
@@ -137,7 +141,7 @@ export default function DishDetailSheet({
           transition={{ delay: 0.14, duration: 0.4, ease: LUXE_EASE }}
           whileTap={{ scale: 0.92 }}
           whileHover={{ scale: 1.05, rotate: 90 }}
-          className="absolute right-5 top-5 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white backdrop-blur-xl shadow-[0_6px_18px_rgba(0,0,0,0.35)] transition-shadow duration-300"
+          className="absolute right-5 top-5 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white backdrop-blur-xl shadow-[0_6px_18px_rgba(0,0,0,0.35)] transition-shadow duration-300 transform-gpu"
           aria-label="Close dish details"
           data-testid={`dish-sheet-close-${dish.id}`}
         >
@@ -159,7 +163,7 @@ export default function DishDetailSheet({
               initial={{ scale: 1.15 }}
               animate={{ scale: 1 }}
               transition={{ duration: 1.6, ease: LUXE_EASE }}
-              className="absolute inset-0"
+              className="absolute inset-0 transform-gpu will-change-transform"
             >
               <Image
                 fill
@@ -361,7 +365,7 @@ export default function DishDetailSheet({
                     whileTap={{ scale: 0.97 }}
                     onClick={() => onSelectRelated?.(r)}
                     data-testid={`related-dish-${r.id}`}
-                    className="group flex w-[180px] shrink-0 flex-col overflow-hidden rounded-2xl border border-[#E3D5B3] bg-white text-left shadow-[0_10px_25px_rgba(45,35,15,0.08)] transition-all duration-300 hover:border-[#C8A44D] hover:shadow-[0_18px_40px_rgba(45,35,15,0.18)] sm:w-full"
+                    className="group flex w-[180px] shrink-0 flex-col overflow-hidden rounded-2xl border border-[#E3D5B3] bg-white text-left shadow-[0_10px_25px_rgba(45,35,15,0.08)] transition-all duration-300 hover:border-[#C8A44D] hover:shadow-[0_18px_40px_rgba(45,35,15,0.18)] transform-gpu will-change-transform sm:w-full"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden">
                       <Image
@@ -398,16 +402,19 @@ export default function DishDetailSheet({
               href="#menu"
               onClick={onClose}
               data-testid={`view-in-menu-${dish.id}`}
-              className="group flex flex-1 items-center justify-center gap-2 rounded-full bg-[#174D32] px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[0_14px_35px_rgba(23,77,50,0.25)] transition-all duration-300 hover:-translate-y-[1px] hover:bg-[#1E5C3A] hover:shadow-[0_22px_45px_rgba(23,77,50,0.35)]"
+              className="group flex flex-1 items-center justify-center gap-2 rounded-full bg-[#174D32] px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[0_14px_35px_rgba(23,77,50,0.25)] transition-all duration-300 hover:-translate-y-[1px] hover:bg-[#1E5C3A] hover:shadow-[0_22px_45px_rgba(23,77,50,0.35)] transform-gpu"
             >
               View in Full Menu
-              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+              <span className="transition-transform duration-300 group-hover:translate-x-1 transform-gpu">→</span>
             </a>
             <a
-              href="tel:+919999999999"
-              className="flex flex-1 items-center justify-center gap-2 rounded-full border border-[#174D32]/25 bg-white px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-[#174D32] transition-all hover:border-[#174D32] hover:bg-[#F1EED5]"
+              href="https://maps.app.goo.gl/ZU5dS9ytqPs8meV27"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid={`visit-now-${dish.id}`}
+              className="flex flex-1 items-center justify-center gap-2 rounded-full border border-[#174D32]/25 bg-white px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-[#174D32] transition-all hover:border-[#174D32] hover:bg-[#F1EED5] transform-gpu"
             >
-              Reserve a Table
+              Visit Now
             </a>
           </motion.div>
         </div>

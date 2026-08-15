@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, X } from "lucide-react";
 import { signatureDishes } from "@/data/signatureDishes";
 import DishDetailSheet from "@/components/ui/DishDetailSheet";
+import { useScrollLock } from "@/lib/useScrollLock";
 interface SignatureCollectionMobileProps {
   open: boolean;
   onClose: () => void;
@@ -47,16 +48,12 @@ const handleClose = () => {
   onClose();
 };
 
-useEffect(() => {
-  if (!open) return;
-
-  const previousOverflow = document.body.style.overflow;
-  document.body.style.overflow = "hidden";
-
-  return () => {
-    document.body.style.overflow = previousOverflow;
-  };
-}, [open]);
+// Locks page scroll while the sheet is open. Shared/reference-counted with
+// the parent's lock (see /lib/useScrollLock.ts) — this is what fixes the
+// "freeze after closing" bug: two independent locks were racing to
+// capture/restore document.body.style.overflow, and the loser restored
+// the body to "hidden" instead of its real original value.
+useScrollLock(open);
 
 useEffect(() => {
   if (!open) return;
@@ -103,6 +100,8 @@ useEffect(() => {
               z-[999]
               bg-black/45
               backdrop-blur-md
+              transform-gpu
+              will-change-[opacity]
             "
           />
 
@@ -131,6 +130,8 @@ useEffect(() => {
               rounded-t-[32px]
               bg-[radial-gradient(circle_at_top,#FFFDF9_0%,#FBF6EE_45%,#F4E8D9_100%)]
               shadow-[0_-20px_60px_rgba(0,0,0,0.28)]
+              transform-gpu
+              will-change-transform
             "
             style={{
               paddingTop: "max(20px, env(safe-area-inset-top))",
@@ -223,6 +224,7 @@ useEffect(() => {
         backdrop-blur-xl
         transition-all
         active:scale-95
+        transform-gpu
       "
     >
       <X size={26} strokeWidth={1.8} />
@@ -829,6 +831,8 @@ activeCategory===category
     bg-white
     text-left
     shadow-[0_8px_22px_rgba(0,0,0,0.07)]
+    transform-gpu
+    will-change-transform
   "
 >
 

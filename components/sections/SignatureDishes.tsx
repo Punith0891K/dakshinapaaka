@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Flame, Clock, Sparkles } from "lucide-react";
 import { signatureDishes, type SignatureDish } from "@/data/signatureDishes";
 import SignatureCollectionModal from "@/components/ui/SignatureCollectionModal";
 import SignatureCollectionMobile from "@/components/ui/SignatureCollectionMobile";
 import DishDetailSheet from "@/components/ui/DishDetailSheet";
+import { useScrollLock } from "@/lib/useScrollLock";
 import {
   fadeUp,
   staggerContainer,
@@ -19,8 +20,9 @@ export default function SignatureDishes() {
   const [isMobile, setIsMobile] = useState(false);
   const [selectedDish, setSelectedDish] = useState<SignatureDish | null>(null);
 
-  const homepageDishes = signatureDishes.filter((dish) =>
-    [1, 2, 5, 6].includes(dish.id)
+  const homepageDishes = useMemo(
+    () => signatureDishes.filter((dish) => [1, 2, 5, 6].includes(dish.id)),
+    []
   );
 
   useEffect(() => {
@@ -32,16 +34,11 @@ export default function SignatureDishes() {
   }, []);
 
   // Safety scroll-lock while EITHER overlay is open (belt & braces — the
-  // individual overlays should also lock, but this guarantees it.)
-  useEffect(() => {
-    const anyOpen = openCollection || !!selectedDish;
-    if (!anyOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [openCollection, selectedDish]);
+  // individual overlays should also lock, but this guarantees it). Uses a
+  // shared, reference-counted lock so it can never fight with the lock
+  // inside SignatureCollectionMobile/Modal — see /lib/useScrollLock.ts for
+  // why that fight is what was causing the frozen-scroll bug.
+  useScrollLock(openCollection || !!selectedDish);
 
   return (
     <>
@@ -130,7 +127,7 @@ export default function SignatureDishes() {
             {Array.from({ length: 8 }).map((_, i) => (
               <motion.span
                 key={i}
-                className="absolute h-1.5 w-1.5 rounded-full bg-[#C8A44D]/40"
+                className="absolute h-1.5 w-1.5 rounded-full bg-[#C8A44D]/40 transform-gpu will-change-transform"
                 style={{
                   left: `${(i * 137) % 100}%`,
                   top: `${(i * 71) % 100}%`,
@@ -151,7 +148,7 @@ export default function SignatureDishes() {
 
           {/* Decorative Mandala — z-[2] */}
           <motion.div
-            className="pointer-events-none absolute inset-x-0 top-8 z-[2] flex justify-center opacity-[0.06]"
+            className="pointer-events-none absolute inset-x-0 top-8 z-[2] flex justify-center opacity-[0.06] transform-gpu"
             initial={{ rotate: -8, scale: 1.15 }}
             whileInView={{ rotate: 0, scale: 1 }}
             transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
@@ -264,15 +261,25 @@ export default function SignatureDishes() {
                 aria-haspopup="dialog"
                 data-testid="explore-more-signature-btn"
                 onClick={() => setOpenCollection(true)}
-                className="group mx-auto mt-8 flex max-w-full items-center justify-center gap-3 whitespace-nowrap rounded-full bg-[#174D32] px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-white shadow-[0_14px_35px_rgba(23,77,50,0.25)] transition-all duration-500 hover:-translate-y-1 hover:bg-[#1E5C3A] hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)] sm:inline-flex sm:px-10 sm:py-5 sm:text-sm sm:tracking-[0.18em]"
+                className="group mx-auto mt-8 flex max-w-full items-center justify-center gap-3 whitespace-nowrap rounded-full bg-[#174D32] px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-white shadow-[0_14px_35px_rgba(23,77,50,0.25)] transition-all duration-500 hover:-translate-y-1 hover:bg-[#1E5C3A] hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)] sm:inline-flex sm:px-10 sm:py-5 sm:text-sm sm:tracking-[0.18em] transform-gpu"
               >
                 Explore More Signature Dishes
-                <span className="text-lg transition-transform duration-300 group-hover:translate-x-1">→</span>
+                <span className="text-lg transition-transform duration-300 group-hover:translate-x-1 transform-gpu">→</span>
               </button>
             </motion.div>
           </div>
         </div>
       </section>
+
+      {/* Shared shimmer keyframes for every DishCard — defined once here
+          instead of once per card (it used to be inlined inside DishCard,
+          so every card re-inserted an identical <style> node). */}
+      <style>{`
+        @keyframes dp-sig-shine {
+          from { transform: translateX(-40%) rotate(12deg); }
+          to { transform: translateX(60%) rotate(12deg); }
+        }
+      `}</style>
 
       {/* =============================================================== */}
       {/* MODALS HOISTED OUT of <section> so `position: fixed` overlays    */}
@@ -311,14 +318,14 @@ interface DishCardProps {
   onSelect: () => void;
 }
 
-function DishCard({ dish, onSelect }: DishCardProps) {
+const DishCard = memo(function DishCard({ dish, onSelect }: DishCardProps) {
   return (
     <motion.article
       variants={cardVariant}
       layoutId={`dish-card-${dish.id}`}
       whileHover={{ y: -8 }}
       transition={{ type: "spring", stiffness: 240, damping: 22 }}
-      className="group relative isolate h-[440px] cursor-pointer overflow-hidden rounded-[30px] border border-[#C8A44D]/30 bg-black shadow-[0_30px_60px_-20px_rgba(60,40,10,0.35),0_0_0_1px_rgba(200,164,77,0.15)] ring-1 ring-[#C8A44D]/25 transition-shadow duration-500 hover:border-[#C8A44D]/60 hover:shadow-[0_40px_90px_-20px_rgba(60,40,10,0.45),0_0_0_1px_rgba(200,164,77,0.25)] sm:h-[480px] lg:h-[520px]"
+      className="group relative isolate h-[440px] cursor-pointer overflow-hidden rounded-[30px] border border-[#C8A44D]/30 bg-black shadow-[0_30px_60px_-20px_rgba(60,40,10,0.35),0_0_0_1px_rgba(200,164,77,0.15)] ring-1 ring-[#C8A44D]/25 transition-shadow duration-500 hover:border-[#C8A44D]/60 hover:shadow-[0_40px_90px_-20px_rgba(60,40,10,0.45),0_0_0_1px_rgba(200,164,77,0.25)] sm:h-[480px] lg:h-[520px] transform-gpu will-change-transform"
       onClick={onSelect}
       role="button"
       tabIndex={0}
@@ -352,14 +359,8 @@ function DishCard({ dish, onSelect }: DishCardProps) {
 
       {/* Shimmer sweep on hover */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -inset-[100%] rotate-12 bg-gradient-to-r from-transparent via-white/8 to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100 group-hover:animate-[dp-sig-shine_1.2s_ease-out]" />
+        <div className="absolute -inset-[100%] rotate-12 bg-gradient-to-r from-transparent via-white/8 to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100 group-hover:animate-[dp-sig-shine_1.2s_ease-out] transform-gpu will-change-transform" />
       </div>
-      <style>{`
-        @keyframes dp-sig-shine {
-          from { transform: translateX(-40%) rotate(12deg); }
-          to { transform: translateX(60%) rotate(12deg); }
-        }
-      `}</style>
 
       {/* Top row: category + brand */}
       <div className="absolute inset-x-6 top-6 flex items-start justify-between gap-2 sm:inset-x-7 lg:inset-x-8">
@@ -428,7 +429,7 @@ function DishCard({ dish, onSelect }: DishCardProps) {
             View Details
           </span>
           <motion.span
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#C8A44D]/50 bg-[#C8A44D]/15 text-[#F4D06F] backdrop-blur-md transition-all duration-300 group-hover:border-[#C8A44D] group-hover:bg-[#C8A44D] group-hover:text-[#0A1712]"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#C8A44D]/50 bg-[#C8A44D]/15 text-[#F4D06F] backdrop-blur-md transition-all duration-300 group-hover:border-[#C8A44D] group-hover:bg-[#C8A44D] group-hover:text-[#0A1712] transform-gpu"
             whileHover={{ rotate: 45, scale: 1.05 }}
           >
             <ArrowUpRight size={16} strokeWidth={2.2} />
@@ -440,4 +441,4 @@ function DishCard({ dish, onSelect }: DishCardProps) {
       <div className="pointer-events-none absolute inset-0 rounded-[30px] ring-1 ring-inset ring-white/10" />
     </motion.article>
   );
-}
+});
