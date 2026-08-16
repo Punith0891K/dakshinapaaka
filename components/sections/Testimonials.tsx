@@ -142,10 +142,32 @@ export default function Testimonials() {
           className="absolute -right-32 bottom-12 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle,rgba(226,196,110,0.16)_0%,transparent_60%)] will-change-transform [transform:translateZ(0)]"
         />
 
-        <div className="absolute -right-40 top-24 hidden h-[520px] w-[520px] rounded-full border border-[#C8A44D]/12 sm:block" />
-        <div className="absolute -right-24 top-40 hidden h-[380px] w-[380px] rounded-full border border-[#C8A44D]/08 sm:block" />
-        <div className="absolute -left-40 bottom-24 hidden h-[520px] w-[520px] rounded-full border border-[#C8A44D]/12 sm:block" />
-        <div className="absolute -left-24 bottom-40 hidden h-[380px] w-[380px] rounded-full border border-[#C8A44D]/08 sm:block" />
+        {/* Gold rings — kept visible (scaled down) on mobile instead of
+            disappearing below sm, so small screens carry the same
+            ornamentation as desktop, just lighter and cheaper to paint. */}
+        <div className="absolute -right-24 top-16 h-[280px] w-[280px] rounded-full border border-[#C8A44D]/10 sm:-right-40 sm:top-24 sm:h-[520px] sm:w-[520px] sm:border-[#C8A44D]/12" />
+        <div className="absolute -right-12 top-32 h-[210px] w-[210px] rounded-full border border-[#C8A44D]/[0.06] sm:-right-24 sm:top-40 sm:h-[380px] sm:w-[380px] sm:border-[#C8A44D]/08" />
+        <div className="absolute -left-24 bottom-16 h-[280px] w-[280px] rounded-full border border-[#C8A44D]/10 sm:-left-40 sm:bottom-24 sm:h-[520px] sm:w-[520px] sm:border-[#C8A44D]/12" />
+        <div className="absolute -left-12 bottom-32 h-[210px] w-[210px] rounded-full border border-[#C8A44D]/[0.06] sm:-left-24 sm:bottom-40 sm:h-[380px] sm:w-[380px] sm:border-[#C8A44D]/08" />
+
+        {/* Lower warmth — lights up the marquee + "review us" CTA area,
+            which used to be a flat unlit stretch below the carousel. Plain
+            radial fill, no filter/animation, cheap on mobile. */}
+        <div className="absolute left-1/2 bottom-[6%] h-[380px] w-[380px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(200,164,77,0.16)_0%,transparent_65%)] sm:h-[560px] sm:w-[560px]" />
+
+        {/* Lotus / kalasha flourish watermark — single static outline. */}
+        <svg
+          aria-hidden
+          viewBox="0 0 200 200"
+          className="absolute left-[4%] bottom-[10%] h-[160px] w-[160px] text-[#C8A44D]/[0.06] sm:h-[230px] sm:w-[230px]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+        >
+          <circle cx="100" cy="100" r="70" />
+          <circle cx="100" cy="100" r="48" />
+          <path d="M100 30 L100 170 M30 100 L170 100 M52 52 L148 148 M148 52 L52 148" strokeWidth="0.6" />
+        </svg>
 
         <div className="absolute inset-y-0 left-[8%] hidden w-px bg-gradient-to-b from-transparent via-[#C8A44D]/18 to-transparent sm:block" />
         <div className="absolute inset-y-0 right-[8%] hidden w-px bg-gradient-to-b from-transparent via-[#C8A44D]/18 to-transparent sm:block" />
@@ -742,5 +764,6 @@ function MiniCard({ testimonial, onClick, active, testId }: MiniCardProps) {
     </button>
   );
 }
+
 
 

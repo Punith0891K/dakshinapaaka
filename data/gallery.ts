@@ -18,7 +18,7 @@ export const galleryImages: GalleryImage[] = [
   },
   {
     id: "andhra-meals",
-    src: "/images/gallery/dishes-andhra-meals.jpg",
+    src: "/images/gallery/andra_meals.jpg",
     alt: "Traditional Andhra meals served on a banana leaf",
     title: "Andhra Meals",
     category: "Dishes",
@@ -27,7 +27,7 @@ export const galleryImages: GalleryImage[] = [
     id: "medu-vada",
     src: "/images/gallery/dishes-medu-vada.jpg",
     alt: "Crispy medu vada with coconut chutney and sambar",
-    title: "Medu Vada",
+    title: "Crispy Vada",
     category: "Dishes",
   },
   {
@@ -41,12 +41,12 @@ export const galleryImages: GalleryImage[] = [
     id: "soft-idli",
     src: "/images/gallery/dishes-soft-idli.jpg",
     alt: "Soft steamed idli with chutney and sambar",
-    title: "Soft Idli",
+    title: "Thatte Idli",
     category: "Dishes",
   },
   {
     id: "garlic-roti",
-    src: "/images/gallery/dishes-garlic-roti.jpg",
+    src: "/images/gallery/garlic_roti.jpg",
     alt: "Butter garlic roti fresh off the tandoor",
     title: "Butter Garlic Roti",
     category: "Dishes",

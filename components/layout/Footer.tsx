@@ -67,10 +67,10 @@ function WhatsAppIcon({ size = 16, className = "" }: { size?: number; className?
 
 const CONTACT = {
   email: "Vishnubhavan2023@gmail.com",
-  phone: "+91 72044 88774",
-  phoneHref: "tel:+917204488774",
+  phone: "+91 72044 88784",
+  phoneHref: "tel:+917204488784",
   whatsappHref:
-    "https://wa.me/917204488774?text=" +
+    "https://wa.me/917204488784?text=" +
     encodeURIComponent("Hi Dakshina Paaka! I'd like to know more."),
   location: "https://maps.app.goo.gl/Ti1EHVyQyUFZWZCM9",
   // Coordinates for the Google Maps embed. Sourced from the shared maps
@@ -90,8 +90,8 @@ const QUICK_LINKS = [
 ];
 
 const HOURS = [
-  { day: "Mon – Fri", time: "7:30 AM – 10:30 PM" },
-  { day: "Saturday", time: "7:30 AM – 11:00 PM" },
+  { day: "Mon – Fri", time: "7:00 AM – 10:30 PM" },
+  { day: "Saturday", time: "7:00 AM – 11:00 PM" },
   { day: "Sunday", time: "7:00 AM – 11:00 PM" },
 ];
 
@@ -258,10 +258,36 @@ export default function Footer() {
         <div className="absolute -bottom-32 -left-40 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(200,164,77,0.22)_0%,transparent_60%)]" />
         <div className="absolute -bottom-32 -right-32 h-[440px] w-[440px] rounded-full bg-[radial-gradient(circle,rgba(226,196,110,0.16)_0%,transparent_65%)]" />
 
-        {/* Gold rings */}
-        <div className="absolute -left-40 top-20 hidden h-[520px] w-[520px] rounded-full border border-[#C8A44D]/12 sm:block" />
-        <div className="absolute -left-24 top-40 hidden h-[380px] w-[380px] rounded-full border border-[#C8A44D]/08 sm:block" />
-        <div className="absolute -right-40 bottom-24 hidden h-[520px] w-[520px] rounded-full border border-[#C8A44D]/12 sm:block" />
+        {/* Mid-section warmth — lights up the Explore / Hours / Get in Touch
+            grid, which used to sit in a flat, unlit stretch between the map
+            card and the bottom bar (most visible on mobile, where that grid
+            stacks tall). Plain radial-gradient fills, positioned by
+            percentage so they track the grid regardless of content height —
+            no filters, no animation, so they stay free on low-end phones. */}
+        <div className="absolute left-[6%] top-[42%] h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle,rgba(15,91,67,0.4)_0%,transparent_65%)] sm:h-[480px] sm:w-[480px]" />
+        <div className="absolute right-[2%] top-[54%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,rgba(200,164,77,0.2)_0%,transparent_65%)] sm:h-[440px] sm:w-[440px]" />
+
+        {/* Gold rings — kept visible (scaled down) on mobile instead of
+            disappearing below the sm breakpoint, so small screens carry the
+            same ornamentation as desktop, just lighter. */}
+        <div className="absolute -left-24 top-14 h-[280px] w-[280px] rounded-full border border-[#C8A44D]/10 sm:-left-40 sm:top-20 sm:h-[520px] sm:w-[520px] sm:border-[#C8A44D]/12" />
+        <div className="absolute -left-12 top-32 h-[210px] w-[210px] rounded-full border border-[#C8A44D]/[0.06] sm:-left-24 sm:top-40 sm:h-[380px] sm:w-[380px] sm:border-[#C8A44D]/08" />
+        <div className="absolute -right-24 bottom-16 h-[280px] w-[280px] rounded-full border border-[#C8A44D]/10 sm:-right-40 sm:bottom-24 sm:h-[520px] sm:w-[520px] sm:border-[#C8A44D]/12" />
+
+        {/* Lotus / kalasha flourish watermark behind the Get in Touch
+            column — single static outline, no filter or animation. */}
+        <svg
+          aria-hidden
+          viewBox="0 0 200 200"
+          className="absolute right-[3%] top-[46%] h-[170px] w-[170px] text-[#C8A44D]/[0.07] sm:h-[250px] sm:w-[250px]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+        >
+          <circle cx="100" cy="100" r="70" />
+          <circle cx="100" cy="100" r="48" />
+          <path d="M100 30 L100 170 M30 100 L170 100 M52 52 L148 148 M148 52 L52 148" strokeWidth="0.6" />
+        </svg>
 
         {/* Temple silhouette (CSS-drawn — a stylised triple peak) */}
         <svg
