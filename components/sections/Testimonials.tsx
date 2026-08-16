@@ -23,14 +23,29 @@ import {
   BadgeCheck,
   Camera,
   MessageSquare,
+  Play,
+  Pause,
+  Share2,
+  Check,
 } from "lucide-react";
 import { testimonials, testimonialStats } from "@/data/testimonials";
 
 const AUTOPLAY_MS = 6500;
 
+// Real, current Google Business numbers for Dakshina Paaka — kept as literal
+// constants (rather than derived from testimonialStats) so this figure can
+// only ever say what Google actually shows. Update these two values if the
+// listing's rating or review count changes.
+const GOOGLE_RATING = 4.2;
+const GOOGLE_REVIEW_COUNT = 1717;
+const GOOGLE_REVIEW_COUNT_DISPLAY = "1,700+";
+
 export default function Testimonials() {
   const [featured, setFeatured] = useState(0);
   const [hovering, setHovering] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [autoplayPaused, setAutoplayPaused] = useState(false);
+  const [copied, setCopied] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
 
@@ -45,12 +60,45 @@ export default function Testimonials() {
     setFeatured((i) => (i - 1 + total) % total);
   }, [total]);
 
-  // Autoplay for the featured card — pauses on hover.
+  // Arrow-key navigation — only acts while the carousel region itself is
+  // focused or hovered, so it never hijacks arrow keys used elsewhere on
+  // the page (standard accessible-carousel pattern).
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        next();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prev();
+      }
+    },
+    [next, prev]
+  );
+
+  // Copies the current review's text + attribution — a real way to share a
+  // review without a screenshot.
+  const handleCopyQuote = useCallback(async () => {
+    const text = `"${current.body}" — ${current.name}, Google Reviews`;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1800);
+      }
+    } catch {
+      // Clipboard permission denied or unavailable — fail quietly, the
+      // button simply won't show the confirmation state.
+    }
+  }, [current]);
+
+  // Autoplay for the featured card — pauses on hover, drag, keyboard focus,
+  // or the explicit pause control.
   useEffect(() => {
-    if (hovering) return;
+    if (hovering || isDragging || autoplayPaused) return;
     const t = setInterval(next, AUTOPLAY_MS);
     return () => clearInterval(t);
-  }, [hovering, next, featured]);
+  }, [hovering, isDragging, autoplayPaused, next, featured]);
 
   // Subtle parallax so the background scenes breathe with scroll.
   const { scrollYProgress } = useScroll({
@@ -67,7 +115,7 @@ export default function Testimonials() {
       id="testimonials"
       ref={sectionRef}
       data-testid="testimonials-section"
-      className="relative overflow-hidden scroll-mt-24 bg-[#0B1F17] pb-24 pt-24 sm:pb-28 sm:pt-32 lg:pb-32 lg:pt-36"
+      className="relative overflow-hidden scroll-mt-24 bg-[#0B1F17] pb-16 pt-14 sm:pb-20 sm:pt-16 lg:pb-24 lg:pt-20"
     >
       {/* ============================================================
          BACKGROUND — deep emerald canvas layered with:
@@ -83,15 +131,15 @@ export default function Testimonials() {
 
         <motion.div
           style={reduceMotion ? undefined : { y: bgFloat }}
-          className="absolute left-1/2 top-1/3 h-[820px] w-[820px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(15,91,67,0.55)_0%,rgba(15,91,67,0)_65%)]"
+          className="absolute left-1/2 top-1/3 h-[820px] w-[820px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(15,91,67,0.55)_0%,rgba(15,91,67,0)_65%)] will-change-transform [transform:translateZ(0)]"
         />
         <motion.div
           style={reduceMotion ? undefined : { y: bgFloat }}
-          className="absolute -left-40 top-16 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(200,164,77,0.22)_0%,transparent_60%)]"
+          className="absolute -left-40 top-16 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(200,164,77,0.22)_0%,transparent_60%)] will-change-transform [transform:translateZ(0)]"
         />
         <motion.div
           style={reduceMotion ? undefined : { y: bgFloat }}
-          className="absolute -right-32 bottom-12 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle,rgba(226,196,110,0.16)_0%,transparent_60%)]"
+          className="absolute -right-32 bottom-12 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle,rgba(226,196,110,0.16)_0%,transparent_60%)] will-change-transform [transform:translateZ(0)]"
         />
 
         <div className="absolute -right-40 top-24 hidden h-[520px] w-[520px] rounded-full border border-[#C8A44D]/12 sm:block" />
@@ -104,8 +152,15 @@ export default function Testimonials() {
 
         <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay [background-image:radial-gradient(circle_at_22%_25%,rgba(240,220,170,0.65)_1px,transparent_1.6px),radial-gradient(circle_at_74%_46%,rgba(240,220,170,0.5)_1px,transparent_1.6px),radial-gradient(circle_at_42%_82%,rgba(240,220,170,0.55)_1px,transparent_1.6px)] [background-size:28px_28px]" />
 
-        {/* Top blend into the ivory Gallery above */}
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#FAF6EE] via-[#FAF6EE]/40 to-transparent" />
+        {/* ---- Seam from Gallery ----
+            Gallery's own floor now dissolves all the way to this exact
+            tone (#0A1F16) before it hands off, so this section opens
+            already color-matched — no second "from cream" gradient
+            competing for the same rows. Only a soft warm halo echoes
+            across the boundary, mirroring the one Gallery draws at its
+            own floor, so the glow reads as one continuous light instead
+            of two independent fades meeting at a hard edge. */}
+        <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(ellipse_60%_100%_at_50%_0%,rgba(200,164,77,0.14),transparent_75%)] sm:h-28" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-[1450px] px-5 sm:px-8 lg:px-12">
@@ -115,7 +170,7 @@ export default function Testimonials() {
             data-testid="testimonials-eyebrow"
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.3, margin: "0px 0px -15% 0px" }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="inline-flex items-center gap-2.5 rounded-full border border-[#C8A44D]/40 bg-[#0F5B43]/40 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#E9CE85] backdrop-blur-sm sm:text-xs sm:tracking-[0.38em]"
           >
@@ -128,7 +183,7 @@ export default function Testimonials() {
             <motion.span
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.05 }}
+              viewport={{ once: true, amount: 0.05, margin: "0px 0px -15% 0px" }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               className="block"
             >
@@ -137,7 +192,7 @@ export default function Testimonials() {
             <motion.span
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.05 }}
+              viewport={{ once: true, amount: 0.05, margin: "0px 0px -15% 0px" }}
               transition={{ duration: 0.7, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
               className="block italic text-[#E9CE85]"
             >
@@ -148,8 +203,8 @@ export default function Testimonials() {
           <motion.div
             initial={{ opacity: 0, scaleX: 0 }}
             whileInView={{ opacity: 1, scaleX: 1 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, amount: 0.3, margin: "0px 0px -15% 0px" }}
+            transition={{ duration: 0.6, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto mt-6 flex w-40 items-center justify-center gap-3"
           >
             <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#C8A44D]/70" />
@@ -160,8 +215,8 @@ export default function Testimonials() {
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, amount: 0.3, margin: "0px 0px -15% 0px" }}
+            transition={{ duration: 0.55, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto mt-5 max-w-xl text-[15px] leading-7 text-[#D4CFB8]/90 sm:text-lg sm:leading-8"
           >
             Handwritten memories from the guests who&apos;ve broken bread with us —
@@ -173,25 +228,22 @@ export default function Testimonials() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.2, margin: "0px 0px -15% 0px" }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="mx-auto mt-10 flex max-w-3xl flex-col items-center gap-4 rounded-2xl border border-[#C8A44D]/25 bg-white/[0.04] px-6 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl sm:mt-14 sm:flex-row sm:justify-between sm:gap-2 sm:rounded-full sm:px-10 sm:py-6"
+          className="mx-auto mt-10 flex max-w-3xl flex-col items-center gap-4 rounded-2xl border border-[#C8A44D]/25 bg-white/[0.04] px-6 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md sm:mt-14 sm:flex-row sm:justify-between sm:gap-2 sm:rounded-full sm:px-10 sm:py-6 sm:backdrop-blur-xl"
           data-testid="testimonials-stats"
         >
           <div className="flex items-center gap-4">
             <GoogleGlyph />
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    size={16}
-                    className="fill-[#E9CE85] text-[#E9CE85]"
-                    strokeWidth={1.5}
-                  />
-                ))}
+                <PartialStars
+                  rating={GOOGLE_RATING}
+                  size={16}
+                  testId="testimonials-rating-stars"
+                />
                 <span className="ml-1 font-serif text-lg text-[#F5EFDE]">
-                  {testimonialStats.rating.toFixed(1)}
+                  {GOOGLE_RATING.toFixed(1)}
                 </span>
               </div>
               <span className="mt-0.5 text-[10px] uppercase tracking-[0.3em] text-[#D4CFB8]/70">
@@ -202,12 +254,15 @@ export default function Testimonials() {
 
           <div className="hidden h-8 w-px bg-[#C8A44D]/25 sm:block" />
 
-          <div className="flex flex-col items-center sm:items-start">
+          <div
+            className="flex flex-col items-center sm:items-start"
+            aria-label={`${GOOGLE_REVIEW_COUNT.toLocaleString()} Google reviews`}
+          >
             <span className="font-serif text-lg text-[#F5EFDE]">
-              {testimonialStats.totalReviews * 12}+
+              {GOOGLE_REVIEW_COUNT_DISPLAY}
             </span>
             <span className="text-[10px] uppercase tracking-[0.3em] text-[#D4CFB8]/70">
-              Happy Guests
+              Google Reviews
             </span>
           </div>
 
@@ -223,17 +278,30 @@ export default function Testimonials() {
 
         {/* ========= FEATURED CAROUSEL CARD ========= */}
         <div
-          className="mt-12 sm:mt-16"
+          className="mt-12 outline-none sm:mt-16"
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Guest testimonials"
+          tabIndex={0}
           onMouseEnter={() => setHovering(true)}
           onMouseLeave={() => setHovering(false)}
+          onTouchStart={() => setHovering(true)}
+          onTouchEnd={() => setHovering(false)}
+          onFocus={() => setHovering(true)}
+          onBlur={() => setHovering(false)}
+          onKeyDown={handleKeyDown}
         >
+          <p aria-live="polite" className="sr-only">
+            Showing testimonial {featured + 1} of {total}: {current.name},{" "}
+            {current.rating} out of 5 stars.
+          </p>
           <div className="relative mx-auto max-w-4xl">
             <div
               aria-hidden
               className="absolute -inset-2 rounded-[36px] bg-gradient-to-br from-[#C8A44D]/20 via-transparent to-[#0F5B43]/20 blur-2xl"
             />
 
-            <div className="relative overflow-hidden rounded-[28px] border border-[#C8A44D]/25 bg-[#0A1712]/85 shadow-[0_35px_80px_rgba(0,0,0,.55)] backdrop-blur-xl sm:rounded-[36px]">
+            <div className="relative overflow-hidden rounded-[28px] border border-[#C8A44D]/25 bg-[#0A1712]/85 shadow-[0_35px_80px_rgba(0,0,0,.55)] backdrop-blur-md sm:rounded-[36px] sm:backdrop-blur-xl">
               <CornerFlourish className="left-4 top-4" />
               <CornerFlourish className="right-4 top-4 scale-x-[-1]" />
               <CornerFlourish className="bottom-4 left-4 scale-y-[-1]" />
@@ -246,14 +314,36 @@ export default function Testimonials() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative px-6 py-8 sm:px-14 sm:py-14"
+                  className="relative cursor-grab select-none px-6 py-8 active:cursor-grabbing sm:px-14 sm:py-14"
                   data-testid={`featured-testimonial-${current.id}`}
+                  drag="x"
+                  dragElastic={0.12}
+                  dragConstraints={{ left: 0, right: 0 }}
+                  onDragStart={() => setIsDragging(true)}
+                  onDragEnd={(_event, info) => {
+                    setIsDragging(false);
+                    if (info.offset.x < -80 || info.velocity.x < -400) {
+                      next();
+                    } else if (info.offset.x > 80 || info.velocity.x > 400) {
+                      prev();
+                    }
+                  }}
                 >
                   <Quote
                     size={92}
                     strokeWidth={1}
                     className="pointer-events-none absolute -top-4 left-6 -rotate-6 text-[#C8A44D]/15 sm:left-10 sm:top-6"
                   />
+
+                  <button
+                    type="button"
+                    onClick={handleCopyQuote}
+                    aria-label={copied ? "Review copied" : "Copy this review"}
+                    data-testid="testimonial-copy-btn"
+                    className="absolute right-5 top-5 z-[1] flex h-9 w-9 items-center justify-center rounded-full border border-[#C8A44D]/30 bg-white/5 text-[#E9CE85]/70 backdrop-blur-sm transition-all duration-300 hover:border-[#C8A44D] hover:bg-[#C8A44D]/15 hover:text-[#E9CE85] sm:right-8 sm:top-8"
+                  >
+                    {copied ? <Check size={15} /> : <Share2 size={15} />}
+                  </button>
 
                   <div className="mb-5 flex items-center gap-1.5">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -325,7 +415,7 @@ export default function Testimonials() {
 
               {/* Autoplay progress */}
               <div className="relative h-[3px] w-full overflow-hidden bg-white/5">
-                {!hovering && (
+                {!hovering && !autoplayPaused && !isDragging && (
                   <motion.div
                     key={featured}
                     initial={{ width: "0%" }}
@@ -359,7 +449,7 @@ export default function Testimonials() {
             </button>
           </div>
 
-          {/* Pagination dots */}
+          {/* Pagination dots + autoplay control */}
           <div className="mt-6 flex items-center justify-center gap-2 sm:mt-8">
             {testimonials.map((t, i) => (
               <button
@@ -379,6 +469,16 @@ export default function Testimonials() {
                 />
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setAutoplayPaused((p) => !p)}
+              aria-label={autoplayPaused ? "Resume autoplay" : "Pause autoplay"}
+              aria-pressed={autoplayPaused}
+              data-testid="testimonial-autoplay-toggle"
+              className="ml-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#C8A44D]/30 text-[#E9CE85]/70 transition-all duration-300 hover:border-[#C8A44D] hover:text-[#E9CE85]"
+            >
+              {autoplayPaused ? <Play size={12} /> : <Pause size={12} />}
+            </button>
           </div>
 
           {/* Mobile Prev/Next + counter */}
@@ -414,11 +514,14 @@ export default function Testimonials() {
         >
           <style>{`
             @keyframes dp-marquee {
-              from { transform: translateX(0); }
-              to { transform: translateX(-50%); }
+              from { transform: translate3d(0,0,0); }
+              to { transform: translate3d(-50%,0,0); }
             }
             .dp-marquee-track {
               animation: dp-marquee 48s linear infinite;
+              will-change: transform;
+              backface-visibility: hidden;
+              transform: translate3d(0,0,0);
             }
             .dp-marquee-track:hover { animation-play-state: paused; }
             @media (prefers-reduced-motion: reduce) {
@@ -443,7 +546,7 @@ export default function Testimonials() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
+          viewport={{ once: true, amount: 0.4, margin: "0px 0px -15% 0px" }}
           transition={{ duration: 0.6, delay: 0.15 }}
           className="mt-14 flex flex-col items-center gap-3 text-center sm:mt-16"
         >
@@ -511,6 +614,59 @@ function GoogleGlyph({ small = false }: { small?: boolean }) {
         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
       </svg>
     </div>
+  );
+}
+
+function PartialStars({
+  rating,
+  size = 16,
+  testId,
+}: {
+  rating: number;
+  size?: number;
+  testId?: string;
+}) {
+  // Discrete full stars + at most one partially-clipped star, rather than
+  // clipping the whole 5-star row by percentage. Clipping the full row
+  // forces the flex container to shrink its children to fit the narrower
+  // box, which desyncs the filled row from the outline row underneath and
+  // shows up as a ghosted "double star". Clipping a single, isolated star
+  // (same approach as the Footer rating pill) has no flex context to
+  // shrink against, so it stays pixel-aligned with the row around it.
+  const clamped = Math.max(0, Math.min(5, rating));
+  const fullStars = Math.floor(clamped + 0.001);
+  const partial = clamped - fullStars;
+  const hasPartial = partial > 0.03 && fullStars < 5;
+  const emptyStars = 5 - fullStars - (hasPartial ? 1 : 0);
+
+  return (
+    <span className="inline-flex items-center gap-1.5" data-testid={testId} aria-hidden>
+      {Array.from({ length: fullStars }).map((_, i) => (
+        <Star
+          key={`full-${i}`}
+          size={size}
+          className="shrink-0 fill-[#E9CE85] text-[#E9CE85]"
+          strokeWidth={1.5}
+        />
+      ))}
+      {hasPartial && (
+        <span
+          className="relative inline-block shrink-0"
+          style={{ width: size, height: size }}
+        >
+          <Star size={size} className="absolute inset-0 text-white/20" strokeWidth={1.5} />
+          <span
+            className="absolute inset-0 overflow-hidden"
+            style={{ width: `${partial * 100}%` }}
+          >
+            <Star size={size} className="fill-[#E9CE85] text-[#E9CE85]" strokeWidth={1.5} />
+          </span>
+        </span>
+      )}
+      {Array.from({ length: emptyStars }).map((_, i) => (
+        <Star key={`empty-${i}`} size={size} className="shrink-0 text-white/20" strokeWidth={1.5} />
+      ))}
+    </span>
   );
 }
 
@@ -586,3 +742,5 @@ function MiniCard({ testimonial, onClick, active, testId }: MiniCardProps) {
     </button>
   );
 }
+
+

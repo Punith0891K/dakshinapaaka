@@ -130,7 +130,7 @@ export default function Menu() {
 
   <div>
     <p className="text-2xl font-bold text-[#1F5B45] sm:text-3xl">
-      100+
+      200+
     </p>
 
     <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[#9B7B35] sm:text-sm sm:tracking-[0.25em]">
@@ -140,7 +140,7 @@ export default function Menu() {
 
   <div>
     <p className="text-2xl font-bold text-[#1F5B45] sm:text-3xl">
-      5
+      8
     </p>
 
     <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[#9B7B35] sm:text-sm sm:tracking-[0.25em]">

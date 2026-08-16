@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useCallback, useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   MapPin,
   Phone,
@@ -8,10 +9,13 @@ import {
   Clock,
   Star,
   ArrowUpRight,
+  ArrowUp,
   Utensils,
   BookOpen,
   Camera,
   Sparkles,
+  Copy,
+  Check,
 } from "lucide-react";
 
 // lucide-react (installed version) doesn't export an Instagram icon, so we
@@ -42,10 +46,32 @@ function InstagramIcon({ size = 16, strokeWidth = 1.8, className = "" }: {
   );
 }
 
+// lucide-react doesn't export a WhatsApp glyph either — hand-drawn to match
+// the InstagramIcon above (filled, single-color, same size API).
+function WhatsAppIcon({ size = 16, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path d="M17.472 14.382c-.297-.149-1.758-.868-2.03-.967-.273-.099-.472-.148-.67.15-.198.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.626.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+      <path d="M12.001 2C6.478 2 2 6.478 2 12c0 1.94.55 3.75 1.5 5.29L2 22l4.86-1.47A9.95 9.95 0 0 0 12 22c5.523 0 10-4.478 10-10S17.523 2 12.001 2zm0 18.2a8.17 8.17 0 0 1-4.17-1.14l-.3-.18-3.09.94.95-3.01-.2-.31A8.19 8.19 0 1 1 20.2 12a8.2 8.2 0 0 1-8.2 8.2z" />
+    </svg>
+  );
+}
+
 const CONTACT = {
   email: "Vishnubhavan2023@gmail.com",
   phone: "+91 72044 88774",
   phoneHref: "tel:+917204488774",
+  whatsappHref:
+    "https://wa.me/917204488774?text=" +
+    encodeURIComponent("Hi Dakshina Paaka! I'd like to know more."),
   location: "https://maps.app.goo.gl/Ti1EHVyQyUFZWZCM9",
   // Coordinates for the Google Maps embed. Sourced from the shared maps
   // shortlink; tuned for the Mysuru location.
@@ -69,16 +95,153 @@ const HOURS = [
   { day: "Sunday", time: "7:00 AM – 11:00 PM" },
 ];
 
+// ---- Live open/closed status, derived from HOURS above ----
+// The "Open Now" badges used to be a hardcoded claim regardless of the
+// actual time. This computes it for real, client-side, against today's
+// slot, and is re-checked every minute.
+type OpenStatus = { isOpen: boolean; label: string };
+
+function parseClockToMinutes(clock: string): number {
+  const match = clock.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!match) return 0;
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const meridiem = match[3].toUpperCase();
+  if (meridiem === "PM" && hours !== 12) hours += 12;
+  if (meridiem === "AM" && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+}
+
+function minutesToClock12(total: number): string {
+  const h = Math.floor(total / 60) % 24;
+  const m = total % 60;
+  const displayHour = ((h + 11) % 12) + 1;
+  const meridiem = h >= 12 ? "PM" : "AM";
+  return `${displayHour}:${m.toString().padStart(2, "0")} ${meridiem}`;
+}
+
+function minutesToClock24(total: number): string {
+  const h = Math.floor(total / 60) % 24;
+  const m = total % 60;
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+}
+
+function getOpenStatus(now: Date): OpenStatus {
+  const day = now.getDay(); // 0 = Sunday … 6 = Saturday
+  const todayHours =
+    day === 0
+      ? HOURS.find((h) => h.day === "Sunday")
+      : day === 6
+      ? HOURS.find((h) => h.day === "Saturday")
+      : HOURS.find((h) => h.day === "Mon – Fri");
+
+  if (!todayHours) return { isOpen: false, label: "See Hours" };
+
+  const [openStr, closeStr] = todayHours.time.split("–").map((s) => s.trim());
+  const openMin = parseClockToMinutes(openStr);
+  const closeMin = parseClockToMinutes(closeStr);
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  if (nowMin < openMin) {
+    return { isOpen: false, label: `Opens ${minutesToClock12(openMin)}` };
+  }
+  if (nowMin >= closeMin) {
+    return { isOpen: false, label: "Closed Now" };
+  }
+  if (closeMin - nowMin <= 30) {
+    return { isOpen: true, label: "Closing Soon" };
+  }
+  return { isOpen: true, label: "Open Now" };
+}
+
 export default function Footer() {
   const reduceMotion = useReducedMotion();
   const year = new Date().getFullYear();
+
+  const [status, setStatus] = useState<OpenStatus | null>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Recompute the real open/closed status on mount and every minute.
+  useEffect(() => {
+    const update = () => setStatus(getOpenStatus(new Date()));
+    update();
+    const t = setInterval(update, 60000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Reveal the back-to-top button once the visitor has scrolled a screen
+  // or so down the page.
+  useEffect(() => {
+    const onScroll = () => setShowBackToTop(window.scrollY > 600);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const handleCopy = useCallback(async (field: string, value: string) => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        setCopiedField(field);
+        setTimeout(() => setCopiedField((f) => (f === field ? null : f)), 1800);
+      }
+    } catch {
+      // Clipboard permission denied or unavailable — fail quietly.
+    }
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+  }, [reduceMotion]);
+
+  // Restaurant structured data — reuses the same address, hours and rating
+  // already shown on the page, so search engines can surface it directly.
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    name: "Dakshina Paaka",
+    servesCuisine: "South Indian",
+    telephone: CONTACT.phone,
+    email: CONTACT.email,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Mysuru",
+      addressRegion: "Karnataka",
+      addressCountry: "IN",
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: 4.2,
+      reviewCount: 1717,
+    },
+    openingHoursSpecification: HOURS.map((h) => {
+      const [openStr, closeStr] = h.time.split("–").map((s) => s.trim());
+      const dayOfWeek =
+        h.day === "Mon – Fri"
+          ? ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+          : [h.day];
+      return {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek,
+        opens: minutesToClock24(parseClockToMinutes(openStr)),
+        closes: minutesToClock24(parseClockToMinutes(closeStr)),
+      };
+    }),
+    sameAs: [CONTACT.instagram, CONTACT.location],
+  };
 
   return (
     <footer
       id="footer"
       data-testid="footer"
-      className="relative isolate overflow-hidden bg-[#050E0A] pt-24 pb-8 text-[#EFE5CB] sm:pt-28"
+      className="relative isolate overflow-hidden bg-[#050E0A] pt-16 pb-8 text-[#EFE5CB] sm:pt-20"
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
       {/* ================== BACKGROUND ================== */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         {/* Base */}
@@ -86,7 +249,7 @@ export default function Footer() {
 
         {/* Emerald spotlight top */}
         <motion.div
-          className="absolute -top-40 left-1/2 h-[720px] w-[720px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(15,91,67,0.42)_0%,rgba(15,91,67,0)_60%)]"
+          className="absolute -top-40 left-1/2 h-[720px] w-[720px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(15,91,67,0.42)_0%,rgba(15,91,67,0)_60%)] will-change-[opacity] [transform:translateZ(0)]"
           animate={reduceMotion ? undefined : { opacity: [0.6, 0.85, 0.6] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -161,6 +324,55 @@ export default function Footer() {
         <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#C8A44D]/60" />
       </div>
 
+      {/* ================== QUICK TRUST STRIP ================== */}
+      {/* Sits in what used to be a dead stretch of background between the
+          divider and the map card — gives that space a job instead of
+          leaving it empty, and doubles as another honest, correctly-sourced
+          nudge toward calling in. */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.4, margin: "0px 0px -10% 0px" }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        data-testid="footer-trust-strip"
+        className="relative z-10 mx-auto mb-16 flex max-w-[1400px] flex-wrap items-center justify-center gap-x-8 gap-y-4 px-5 text-center sm:mb-20 sm:gap-x-12 sm:px-8 lg:px-12"
+      >
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5">
+            {[0, 1, 2, 3].map((i) => (
+              <Star key={i} size={14} className="fill-[#E9CE85] text-[#E9CE85]" strokeWidth={1.5} />
+            ))}
+            <div className="relative">
+              <Star size={14} className="text-white/20" strokeWidth={1.5} />
+              <span className="absolute inset-0 overflow-hidden" style={{ width: "20%" }}>
+                <Star size={14} className="fill-[#E9CE85] text-[#E9CE85]" strokeWidth={1.5} />
+              </span>
+            </div>
+          </div>
+          <span className="text-[12px] tracking-wide text-[#D4CFB8]/85">
+            <strong className="font-serif text-[#F5EFDE]">4.2</strong> on Google
+          </span>
+        </div>
+
+        <span className="hidden h-4 w-px bg-[#C8A44D]/25 sm:block" />
+
+        <span className="text-[12px] tracking-wide text-[#D4CFB8]/85">
+          <strong className="font-serif text-[#F5EFDE]">1,700+</strong> Google reviews
+        </span>
+
+        <span className="hidden h-4 w-px bg-[#C8A44D]/25 sm:block" />
+
+        <a
+          href={CONTACT.phoneHref}
+          data-testid="footer-trust-strip-call"
+          className="group inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#E9CE85] transition-colors duration-300 hover:text-[#F4D06F]"
+        >
+          <Phone size={13} strokeWidth={1.8} />
+          Call Now
+          <ArrowUpRight size={12} className="transition-transform duration-300 group-hover:translate-x-0.5" />
+        </a>
+      </motion.div>
+
       {/* ================== LIVE MAP PREVIEW ================== */}
       <div className="relative z-10 mx-auto mb-16 max-w-[1400px] px-5 sm:mb-20 sm:px-8 lg:px-12">
         <motion.a
@@ -219,7 +431,7 @@ export default function Footer() {
                   Dakshina Paaka, Mysuru
                 </h4>
                 <p className="mt-1 text-[12px] text-[#D4CFB8]/75 sm:text-[13px]">
-                  Karnataka, India · Open Now
+                  Karnataka, India · {status?.label ?? "Open Now"}
                 </p>
               </div>
 
@@ -278,7 +490,7 @@ export default function Footer() {
               className="group mt-7 inline-flex items-center gap-3 rounded-full border border-[#C8A44D]/40 bg-[#0F5B43]/25 px-5 py-2.5 backdrop-blur-md transition-all duration-300 hover:-translate-y-[1px] hover:border-[#C8A44D] hover:bg-[#0F5B43]/40"
             >
               <div className="flex items-center gap-0.5">
-                {[0, 1, 2, 3, 4].map((i) => (
+                {[0, 1, 2, 3].map((i) => (
                   <Star
                     key={i}
                     size={13}
@@ -286,8 +498,14 @@ export default function Footer() {
                     strokeWidth={1.5}
                   />
                 ))}
+                <div className="relative">
+                  <Star size={13} className="text-white/25" strokeWidth={1.5} />
+                  <span className="absolute inset-0 overflow-hidden" style={{ width: "20%" }}>
+                    <Star size={13} className="fill-[#E9CE85] text-[#E9CE85]" strokeWidth={1.5} />
+                  </span>
+                </div>
               </div>
-              <span className="font-serif text-sm text-[#F5EFDE]">5.0</span>
+              <span className="font-serif text-sm text-[#F5EFDE]">4.2</span>
               <span className="text-[10px] uppercase tracking-[0.28em] text-[#D4CFB8]/70">
                 on Google
               </span>
@@ -339,14 +557,31 @@ export default function Footer() {
             ))}
           </div>
 
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#C8A44D]/30 bg-[#C8A44D]/8 px-3 py-1.5">
-            <Clock size={12} className="text-[#E9CE85]" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#E9CE85]">
-              Open Now
+          <div
+            data-testid="footer-open-status"
+            className={`mt-6 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 ${
+              status?.isOpen
+                ? "border-[#C8A44D]/30 bg-[#C8A44D]/8"
+                : "border-white/15 bg-white/[0.03]"
+            }`}
+          >
+            <Clock size={12} className={status?.isOpen ? "text-[#E9CE85]" : "text-[#D4CFB8]/60"} />
+            <span
+              className={`text-[10px] font-semibold uppercase tracking-[0.28em] ${
+                status?.isOpen ? "text-[#E9CE85]" : "text-[#D4CFB8]/70"
+              }`}
+            >
+              {status?.label ?? "Open Now"}
             </span>
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#7BE087] opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#7BE087]" />
+              {status?.isOpen && (
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#7BE087] opacity-75" />
+              )}
+              <span
+                className={`relative inline-flex h-1.5 w-1.5 rounded-full ${
+                  status?.isOpen ? "bg-[#7BE087]" : "bg-[#D4CFB8]/50"
+                }`}
+              />
             </span>
           </div>
         </div>
@@ -365,10 +600,21 @@ export default function Footer() {
             />
             <ContactRow
               icon={<Phone size={15} strokeWidth={1.8} />}
-              label="Reservations"
+              label="Call Us"
               value={CONTACT.phone}
               href={CONTACT.phoneHref}
               testId="footer-contact-phone"
+              copyValue={CONTACT.phone}
+              copied={copiedField === "phone"}
+              onCopy={() => handleCopy("phone", CONTACT.phone)}
+            />
+            <ContactRow
+              icon={<WhatsAppIcon size={15} />}
+              label="WhatsApp"
+              value="Chat with us"
+              href={CONTACT.whatsappHref}
+              testId="footer-contact-whatsapp"
+              external
             />
             <ContactRow
               icon={<Mail size={15} strokeWidth={1.8} />}
@@ -376,6 +622,9 @@ export default function Footer() {
               value={CONTACT.email}
               href={`mailto:${CONTACT.email}`}
               testId="footer-contact-email"
+              copyValue={CONTACT.email}
+              copied={copiedField === "email"}
+              onCopy={() => handleCopy("email", CONTACT.email)}
             />
             <ContactRow
               icon={<InstagramIcon size={15} strokeWidth={1.8} />}
@@ -387,18 +636,27 @@ export default function Footer() {
             />
           </div>
 
-          {/* Reservation CTA */}
-          <a
-            href={CONTACT.phoneHref}
-            data-testid="footer-reserve-btn"
-            className="group mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#E9CE85] bg-[#C8A44D] px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0A1712] shadow-[0_16px_35px_rgba(200,164,77,0.28)] transition-all duration-300 hover:-translate-y-[1px] hover:bg-[#E9CE85] hover:shadow-[0_22px_45px_rgba(200,164,77,0.4)]"
-          >
-            Reserve a Table
-            <ArrowUpRight
-              size={14}
-              className="transition-transform duration-300 group-hover:translate-x-0.5"
-            />
-          </a>
+          {/* Call + WhatsApp CTAs */}
+          <div className="mt-7 flex flex-col gap-2.5 sm:flex-row">
+            <a
+              href={CONTACT.phoneHref}
+              data-testid="footer-reserve-btn"
+              className="group inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[#E9CE85] bg-[#C8A44D] px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0A1712] shadow-[0_16px_35px_rgba(200,164,77,0.28)] transition-all duration-300 hover:-translate-y-[1px] hover:bg-[#E9CE85] hover:shadow-[0_22px_45px_rgba(200,164,77,0.4)]"
+            >
+              <Phone size={14} strokeWidth={2} />
+              Call Now
+            </a>
+            <a
+              href={CONTACT.whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="footer-whatsapp-btn"
+              className="group inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[#25D366]/50 bg-[#25D366]/10 px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7BE087] transition-all duration-300 hover:-translate-y-[1px] hover:bg-[#25D366] hover:text-[#04240F]"
+            >
+              <WhatsAppIcon size={14} />
+              WhatsApp
+            </a>
+          </div>
         </div>
       </div>
 
@@ -433,6 +691,16 @@ export default function Footer() {
               <InstagramIcon size={14} />
             </a>
             <a
+              href={CONTACT.whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="WhatsApp"
+              data-testid="footer-social-whatsapp"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#C8A44D]/30 bg-white/[0.03] text-[#E9CE85] transition-all duration-300 hover:-translate-y-[1px] hover:border-[#25D366] hover:bg-[#25D366] hover:text-[#04240F]"
+            >
+              <WhatsAppIcon size={14} />
+            </a>
+            <a
               href={CONTACT.location}
               target="_blank"
               rel="noopener noreferrer"
@@ -460,6 +728,26 @@ export default function Footer() {
           Dakshina Paaka
         </p>
       </div>
+
+      {/* ================== BACK TO TOP ================== */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            type="button"
+            onClick={scrollToTop}
+            aria-label="Back to top"
+            data-testid="footer-back-to-top"
+            initial={{ opacity: 0, y: 12, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.9 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={reduceMotion ? undefined : { y: -3 }}
+            className="fixed bottom-6 right-5 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-[#C8A44D]/50 bg-[#0A1712]/95 text-[#E9CE85] shadow-[0_16px_36px_rgba(0,0,0,0.45)] backdrop-blur-md transition-colors duration-300 hover:border-[#C8A44D] hover:bg-[#C8A44D] hover:text-[#0A1712] sm:bottom-8 sm:right-8"
+          >
+            <ArrowUp size={18} strokeWidth={2.2} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </footer>
   );
 }
@@ -485,6 +773,11 @@ interface ContactRowProps {
   href: string;
   testId?: string;
   external?: boolean;
+  /** When set, renders a separate copy button beside the link (kept out of
+   *  the <a> itself — nesting a <button> inside an <a> is invalid HTML). */
+  copyValue?: string;
+  copied?: boolean;
+  onCopy?: () => void;
 }
 
 function ContactRow({
@@ -494,30 +787,48 @@ function ContactRow({
   href,
   testId,
   external,
+  copyValue,
+  copied,
+  onCopy,
 }: ContactRowProps) {
   return (
-    <a
-      href={href}
-      target={external ? "_blank" : undefined}
-      rel={external ? "noopener noreferrer" : undefined}
-      data-testid={testId}
-      className="group flex items-start gap-3.5 rounded-xl border border-transparent p-2 transition-all duration-300 hover:-translate-y-[1px] hover:border-[#C8A44D]/25 hover:bg-white/[0.03]"
-    >
-      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#C8A44D]/30 bg-[#0F5B43]/20 text-[#E9CE85] transition-all duration-300 group-hover:border-[#C8A44D] group-hover:bg-[#0F5B43]/45 group-hover:text-[#F4D06F]">
-        {icon}
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[#D4CFB8]/60">
-          {label}
+    <div className="group flex items-start gap-1 rounded-xl border border-transparent transition-all duration-300 hover:border-[#C8A44D]/25 hover:bg-white/[0.03]">
+      <a
+        href={href}
+        target={external ? "_blank" : undefined}
+        rel={external ? "noopener noreferrer" : undefined}
+        data-testid={testId}
+        className="flex min-w-0 flex-1 items-start gap-3.5 p-2"
+      >
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#C8A44D]/30 bg-[#0F5B43]/20 text-[#E9CE85] transition-all duration-300 group-hover:border-[#C8A44D] group-hover:bg-[#0F5B43]/45 group-hover:text-[#F4D06F]">
+          {icon}
         </span>
-        <span className="mt-0.5 truncate text-[13px] text-[#F5EFDE] group-hover:text-[#F4D06F]">
-          {value}
-        </span>
-      </div>
-      <ArrowUpRight
-        size={14}
-        className="mt-2 shrink-0 text-[#E9CE85]/40 opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100"
-      />
-    </a>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="text-[9px] font-semibold uppercase tracking-[0.28em] text-[#D4CFB8]/60">
+            {label}
+          </span>
+          <span className="mt-0.5 truncate text-[13px] text-[#F5EFDE] group-hover:text-[#F4D06F]">
+            {value}
+          </span>
+        </div>
+        {!copyValue && (
+          <ArrowUpRight
+            size={14}
+            className="mt-2 shrink-0 text-[#E9CE85]/40 opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100"
+          />
+        )}
+      </a>
+      {copyValue && onCopy && (
+        <button
+          type="button"
+          onClick={onCopy}
+          aria-label={copied ? `${label} copied` : `Copy ${label.toLowerCase()}`}
+          data-testid={testId ? `${testId}-copy` : undefined}
+          className="mr-1 mt-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#E9CE85]/40 opacity-0 transition-all duration-300 hover:text-[#F4D06F] group-hover:opacity-100"
+        >
+          {copied ? <Check size={13} /> : <Copy size={13} />}
+        </button>
+      )}
+    </div>
   );
 }

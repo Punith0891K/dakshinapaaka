@@ -110,7 +110,7 @@ export default function Gallery() {
       id="gallery"
       ref={sectionRef}
       data-testid="gallery-section"
-      className="relative overflow-hidden scroll-mt-24 bg-[#FAF6EE] pb-20 pt-28 sm:pb-24 sm:pt-32 lg:pb-28 lg:pt-36"
+      className="relative overflow-hidden scroll-mt-24 bg-[#FAF6EE] pb-14 pt-28 sm:pb-16 sm:pt-32 lg:pb-20 lg:pt-36"
     >
       {/* ============================================================
          Background: Scene 1 → Scene 2, one continuous heritage canvas.
@@ -133,7 +133,7 @@ export default function Gallery() {
             itself never scales and its painted edges stay intentional. */}
         <motion.div
           style={reduceMotion ? undefined : { y: sceneOneY }}
-          className="absolute inset-x-0 -top-16 opacity-[0.9] sm:opacity-100"
+          className="absolute inset-x-0 -top-16 opacity-[0.9] will-change-transform [transform:translateZ(0)] sm:opacity-100"
         >
           <div
             className="relative w-full"
@@ -158,7 +158,7 @@ export default function Gallery() {
         {/* Scene 2 — courtyard pillar and lamp, full-bleed from the bottom */}
         <motion.div
           style={reduceMotion ? undefined : { y: sceneTwoY }}
-          className="absolute -bottom-16 inset-x-0 opacity-[0.9] sm:opacity-100"
+          className="absolute -bottom-16 inset-x-0 opacity-[0.9] will-change-transform [transform:translateZ(0)] sm:opacity-100"
         >
           <div
             className="relative w-full"
@@ -193,8 +193,71 @@ export default function Gallery() {
         <div className="absolute -left-28 bottom-16 hidden h-[26rem] w-[26rem] rounded-full border border-[#C8A44D]/15 sm:block" />
         <div className="absolute -left-16 bottom-28 hidden h-72 w-72 rounded-full border border-[#C8A44D]/10 sm:block" />
 
-        {/* Fine paper grain over everything */}
-        <div className="absolute inset-0 opacity-[0.035] mix-blend-multiply [background-image:radial-gradient(circle_at_22%_25%,rgba(70,52,18,.55)_1px,transparent_1.5px),radial-gradient(circle_at_74%_46%,rgba(70,52,18,.4)_1px,transparent_1.5px),radial-gradient(circle_at_42%_82%,rgba(70,52,18,.45)_1px,transparent_1.5px)] [background-size:24px_24px]" />
+        {/* Kolam-style dotted motif — small, quiet accent tucked into the
+            top corners so the canvas feels a touch more handcrafted
+            without competing with the scenes underneath */}
+        <svg
+          aria-hidden
+          className="absolute left-4 top-8 hidden h-16 w-16 text-[#C8A44D]/25 sm:block lg:left-8"
+          viewBox="0 0 64 64"
+          fill="none"
+        >
+          {[
+            [8, 8], [24, 8], [40, 8], [56, 8],
+            [8, 24], [56, 24],
+            [8, 40], [56, 40],
+            [8, 56], [24, 56], [40, 56], [56, 56],
+          ].map(([cx, cy]) => (
+            <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.4" fill="currentColor" />
+          ))}
+        </svg>
+        <svg
+          aria-hidden
+          className="absolute right-4 top-8 hidden h-16 w-16 rotate-90 text-[#C8A44D]/25 sm:block lg:right-8"
+          viewBox="0 0 64 64"
+          fill="none"
+        >
+          {[
+            [8, 8], [24, 8], [40, 8], [56, 8],
+            [8, 24], [56, 24],
+            [8, 40], [56, 40],
+            [8, 56], [24, 56], [40, 56], [56, 56],
+          ].map(([cx, cy]) => (
+            <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.4" fill="currentColor" />
+          ))}
+        </svg>
+
+        {/* Slow, cheap ambient warmth pulse — opacity-only animation so it
+            stays GPU-composited and doesn't touch layout on scroll */}
+        <motion.div
+          aria-hidden
+          className="absolute left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(200,164,77,0.07),transparent_70%)] will-change-[opacity]"
+          animate={reduceMotion ? undefined : { opacity: [0.5, 0.9, 0.5] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        {/* Fine paper grain over everything, softened well before the
+            floor so it never sits on top of the dissolve below */}
+        <div className="absolute inset-0 bottom-40 opacity-[0.035] mix-blend-multiply [background-image:radial-gradient(circle_at_22%_25%,rgba(70,52,18,.55)_1px,transparent_1.5px),radial-gradient(circle_at_74%_46%,rgba(70,52,18,.4)_1px,transparent_1.5px),radial-gradient(circle_at_42%_82%,rgba(70,52,18,.45)_1px,transparent_1.5px)] [background-size:24px_24px] sm:bottom-56 lg:bottom-72" />
+
+        {/* ---- Seam into Testimonials ----
+            One long dissolve — cream, through a warm amber-olive midpoint,
+            down to the *exact* deep emerald Testimonials opens on
+            (#0A1F16) — so the two sections meet at one identical pixel
+            color instead of two independent gradients fighting for the
+            same few rows (that mismatch was the hard line you were
+            seeing). Testimonials no longer re-introduces cream at its own
+            top; it only echoes the halo below, so the glow reads as one
+            continuous light spanning both sections. */}
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(to_bottom,transparent_0%,rgba(140,106,45,0.18)_38%,#12271D_72%,#0A1F16_100%)] sm:h-56 lg:h-72" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-[radial-gradient(ellipse_60%_100%_at_50%_100%,rgba(200,164,77,0.14),transparent_75%)]" />
+
+        {/* Gold stitch — the single, intentional mark of the handoff */}
+        <div className="absolute inset-x-0 bottom-0 z-[1] flex items-center justify-center gap-4 px-10 pb-4">
+          <span className="h-px flex-1 max-w-[180px] bg-gradient-to-r from-transparent to-[#E9CE85]/60" />
+          <span className="h-2 w-2 rotate-45 border border-[#E9CE85]/80" />
+          <span className="h-px flex-1 max-w-[180px] bg-gradient-to-l from-transparent to-[#E9CE85]/60" />
+        </div>
       </div>
 
       <div className="relative z-10 mx-auto max-w-[1450px] px-5 sm:px-8 lg:px-12">
