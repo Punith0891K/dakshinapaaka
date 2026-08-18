@@ -47,7 +47,7 @@ export default function SignatureDishes() {
         data-testid="signature-dishes-section"
         className="relative overflow-hidden bg-[#F8F3E9]"
       >
-        <div className="signature-dishes-canvas relative overflow-hidden pt-14 pb-24 lg:pt-20 lg:pb-32">
+        <div className="signature-dishes-canvas relative overflow-hidden pt-14 pb-14 lg:pt-20 lg:pb-16">
           {/* ============================================================= */}
           {/* Layered scene background — z-0 (no negative z, no isolate)     */}
           {/* ============================================================= */}
@@ -107,7 +107,7 @@ export default function SignatureDishes() {
             <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#F8F3E9] via-[#F8F3E9]/70 to-transparent" />
 
             {/* 6. BOTTOM seam blend into Menu */}
-            <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-b from-transparent via-[#FAF7F2]/75 to-[#FAF7F2] sm:h-56 lg:h-72" />
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent via-[#FAF7F2]/75 to-[#FAF7F2] sm:h-36 lg:h-44" />
 
             {/* 7. Warm vignette */}
             <div

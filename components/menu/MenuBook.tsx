@@ -11,10 +11,41 @@ interface Props {
   onOpen: () => void;
 }
 
+// Mirrors the `lg` breakpoint (1024px) already used throughout this file's
+// Tailwind classes. Defaults to false (the mobile-safe branch) until the
+// media query resolves on the client — there's no viewport during SSR, and
+// the value only ever changes what happens *after* a user tap anyway.
+function useIsDesktopViewport() {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mql.matches);
+    const handleChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", handleChange);
+    return () => mql.removeEventListener("change", handleChange);
+  }, []);
+
+  return isDesktop;
+}
+
 export default function MenuBook({ onOpen }: Props) {
   const [opening, setOpening] = useState(false);
   const openTimer = useRef<number | null>(null);
   const reduceMotion = useReducedMotion();
+  const isDesktop = useIsDesktopViewport();
+
+  // The open flip pivots the cover from its left edge (transformOrigin:
+  // "left center"), so at -165deg it swings almost all the way flat,
+  // extending ~1x the cover's own width to the LEFT of the book. On
+  // desktop there's plenty of page around the book for that to land in.
+  // On mobile the book sits close to the viewport edge, so that same
+  // swing pushed the cover past x:0 and the section's `overflow-hidden`
+  // (in Menu.tsx) sliced it off mid-animation. Capping the swing to just
+  // past perpendicular on small screens keeps it fully on-screen — it's
+  // also a briefer visual beat than desktop's, which suits how quickly
+  // the fullscreen modal takes over right after.
+  const openRotateY = isDesktop ? -165 : -100;
 
   useEffect(() => () => {
     if (openTimer.current) window.clearTimeout(openTimer.current);
@@ -106,7 +137,7 @@ export default function MenuBook({ onOpen }: Props) {
 
       {/* 3D Scene */}
 <div
-  className="
+  className={`
     relative
 
     h-[390px]
@@ -120,7 +151,13 @@ export default function MenuBook({ onOpen }: Props) {
 
     xl:h-[700px]
     xl:w-[470px]
-  "
+
+    transition-transform
+    duration-700
+    ease-out
+
+    ${opening ? "translate-x-[22px] sm:translate-x-[26px] lg:translate-x-0" : "translate-x-0"}
+  `}
   style={{
     perspective: "1800px",
     // NOTE: this used to be `contain: "paint"`. Paint containment forces
@@ -269,9 +306,9 @@ export default function MenuBook({ onOpen }: Props) {
           {/* Front Cover */}
 <motion.div
   animate={{
-    rotateY: opening ? -165 : 0,
-    x: opening ? -2 : 0,
-    scale: opening ? 1.01 : 1,
+    rotateY: opening ? openRotateY : 0,
+    x: opening ? (isDesktop ? -2 : 0) : 0,
+    scale: opening ? (isDesktop ? 1.01 : 0.97) : 1,
   }}
 
   transition={{

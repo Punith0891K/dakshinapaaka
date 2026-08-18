@@ -79,4 +79,42 @@ export const galleryImages: GalleryImage[] = [
     title: "Meet Our Chefs",
     category: "Others",
   },
+
+{
+  id: "cash-counter",
+  src: "/images/gallery/cash_counter.jpg",
+  alt: "Dakshinapaaka cash counter and reception area",
+  title: "Reception & Cash Counter",
+  category: "Exterior & Interior",
+},
+{
+  id: "traditional-kitchen-1",
+  src: "/images/gallery/kitchen1.jpg",
+  alt: "Traditional Dakshinapaaka kitchen preparation area",
+  title: "Authentic Kitchen",
+  category: "Others",
+},
+
+{
+  id: "heritage-display",
+  src: "/images/gallery/display.jpg",
+  alt: "Traditional ingredients and heritage display wall",
+  title: "Heritage Display",
+  category: "Exterior & Interior",
+},
+
+{
+  id: "ac-dining-hall-1",
+  src: "/images/hero/interior1.jpeg",
+  alt: "Spacious air-conditioned dining hall at Dakshinapaaka",
+  title: "AC Dining Hall",
+  category: "Exterior & Interior",
+},
+{
+  id: "ac-dining-hall-3",
+  src: "/images/hero/interior3.png",
+  alt: "Elegant dining ambience at Dakshinapaaka",
+  title: "Dining Ambience",
+  category: "Exterior & Interior",
+},
 ];

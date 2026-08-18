@@ -13,7 +13,7 @@ export default function Menu() {
     <>
     <section
   id="menu"
-  className="relative min-h-[760px] scroll-mt-[92px] overflow-hidden py-20 sm:py-24 lg:min-h-[820px] lg:scroll-mt-[104px] lg:py-24 xl:min-h-[900px] xl:py-28"
+  className="relative min-h-[600px] scroll-mt-[92px] overflow-hidden pt-10 pb-20 sm:pt-12 sm:pb-24 lg:min-h-[680px] lg:scroll-mt-[104px] lg:pt-14 lg:pb-24 xl:min-h-[760px] xl:pt-16 xl:pb-28"
 >
      {/* Background */}
 
@@ -49,9 +49,18 @@ export default function Menu() {
 <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_68%_50%,rgba(212,175,55,0.14),transparent_32%),linear-gradient(to_bottom,rgba(255,253,247,0.2),transparent_18%,rgba(68,49,20,0.08))]" />
 
 {/* Top seam blend — matches SignatureDishes' bottom fade color exactly (both sides pre-blend to #FAF7F2) */}
-<div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-40 bg-gradient-to-b from-[#FAF7F2] via-[#FAF7F2]/85 to-transparent sm:h-48" />
+<div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-24 bg-gradient-to-b from-[#FAF7F2] via-[#FAF7F2]/85 to-transparent sm:h-32" />
 
 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#6A532D]/10 to-transparent" />
+
+{/* Bottom seam blend into Gallery — the hero photo + its left→right
+    overlay leave the right edge less cream than the left, so without
+    this the bottom edge isn't a uniform color for Gallery to fade from.
+    This flattens the full width to solid #FAF7F2 right at the bottom,
+    matching Gallery's own new top-seam (same color, fading the other
+    way) — both sides now pre-blend to one identical tone, same idea as
+    the Signature Dishes → Menu join above. */}
+<div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-20 bg-gradient-to-b from-transparent via-[#FAF7F2]/80 to-[#FAF7F2] sm:h-28 lg:h-36" />
 
         <div className="relative mx-auto grid max-w-[1450px] items-center gap-14 px-5 sm:px-8 lg:grid-cols-2 lg:gap-12 lg:px-12 xl:gap-20">
 

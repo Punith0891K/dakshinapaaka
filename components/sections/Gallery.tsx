@@ -47,6 +47,10 @@ export default function Gallery() {
   // Both scenes drift *into* the section as it travels the viewport —
   // never out of it — so the 64px bleed always covers the travel and no
   // painted edge (lamp, leaves, lotus) is ever clipped by the overflow.
+  // Each scene's block height is a % of the SECTION (not an intrinsic
+  // aspect-ratio derived from width) so it can never grow taller than the
+  // section itself — that mismatch was what let Scene 2's painted bottom
+  // half get clipped by the outer overflow-hidden on short viewports.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
@@ -114,11 +118,14 @@ export default function Gallery() {
     >
       {/* ============================================================
          Background: Scene 1 → Scene 2, one continuous heritage canvas.
-         Both scenes render full-bleed at their natural aspect ratio (no
-         crop, no zoom) with long multi-stop dissolves, so the artwork is
-         fully present and its painted edges stay intentional. A soft
-         veil keeps type readable without dimming the scenes.
-         Layer order: base → scenes → veil → warmth → rings → grain.
+         Each scene's block is sized as a % of the SECTION itself (not an
+         intrinsic aspect-ratio derived from image width), so it can never
+         grow taller than the section and get silently clipped by the
+         overflow — object-cover then does only the minimal edge trim
+         needed to fill that box, so the artwork still reads full-bleed
+         with long multi-stop dissolves. A soft veil keeps type readable
+         without dimming the scenes.
+         Layer order: base → scenes → Menu seam → veil → warmth → rings → grain.
          Everything here is z-0 + pointer-events-none; content sits at z-10.
          ============================================================ */}
       <div
@@ -133,12 +140,11 @@ export default function Gallery() {
             itself never scales and its painted edges stay intentional. */}
         <motion.div
           style={reduceMotion ? undefined : { y: sceneOneY }}
-          className="absolute inset-x-0 -top-16 opacity-[0.9] will-change-transform [transform:translateZ(0)] sm:opacity-100"
+          className="absolute inset-x-0 -top-16 h-[56%] opacity-[0.9] will-change-transform [transform:translateZ(0)] sm:h-[52%] sm:opacity-100 lg:h-[48%]"
         >
           <div
-            className="relative w-full"
+            className="relative h-full w-full"
             style={{
-              aspectRatio: "1672 / 941",
               maskImage:
                 "linear-gradient(to bottom, black 0%, black 46%, rgba(0,0,0,0.6) 68%, transparent 92%)",
               WebkitMaskImage:
@@ -155,19 +161,24 @@ export default function Gallery() {
           </div>
         </motion.div>
 
-        {/* Scene 2 — courtyard pillar and lamp, full-bleed from the bottom */}
+        {/* Scene 2 — courtyard pillar and lamp, full-bleed from the bottom.
+            Taller than Scene 1 and reveals itself earlier in its own mask
+            (24% vs the old 40%) so its visible artwork sits well above
+            where the Testimonials seam below turns solid — otherwise the
+            two were competing for the same final stretch of pixels and
+            the darkening always won, which is what read as "the bottom
+            is just cropped out" even after the artwork stopped clipping. */}
         <motion.div
           style={reduceMotion ? undefined : { y: sceneTwoY }}
-          className="absolute -bottom-16 inset-x-0 opacity-[0.9] will-change-transform [transform:translateZ(0)] sm:opacity-100"
+          className="absolute inset-x-0 -bottom-16 h-[62%] opacity-[0.9] will-change-transform [transform:translateZ(0)] sm:h-[66%] sm:opacity-100 lg:h-[70%]"
         >
           <div
-            className="relative w-full"
+            className="relative h-full w-full"
             style={{
-              aspectRatio: "1672 / 941",
               maskImage:
-                "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.55) 18%, black 40%, black 100%)",
+                "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 10%, black 24%, black 100%)",
               WebkitMaskImage:
-                "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.55) 18%, black 40%, black 100%)",
+                "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 10%, black 24%, black 100%)",
             }}
           >
             <Image
@@ -179,6 +190,16 @@ export default function Gallery() {
             />
           </div>
         </motion.div>
+
+        {/* ---- Seam from Menu ----
+            Arrives already at Menu's exact cream (#FAF7F2) and dissolves
+            down into the scene — pairs with Menu's own new bottom seam
+            (same color, same idea) so both sides pre-blend to one shared
+            tone instead of Menu just stopping dead against this section's
+            busier, gold-warmed canvas. Sits above both scene layers so it
+            reads clean no matter what's under it at the very top edge.
+            Shorter on mobile since there's less scroll room to spend. */}
+        <div className="absolute inset-x-0 top-0 z-[1] h-16 bg-gradient-to-b from-[#FAF7F2] via-[#FAF7F2]/65 to-transparent sm:h-24 lg:h-32" />
 
         {/* Soft ivory veil — only enough to keep type readable;
             the artwork stays present right up to the content */}
@@ -248,8 +269,11 @@ export default function Gallery() {
             same few rows (that mismatch was the hard line you were
             seeing). Testimonials no longer re-introduces cream at its own
             top; it only echoes the halo below, so the glow reads as one
-            continuous light spanning both sections. */}
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(to_bottom,transparent_0%,rgba(140,106,45,0.18)_38%,#12271D_72%,#0A1F16_100%)] sm:h-56 lg:h-72" />
+            continuous light spanning both sections. The ramp is deliberately
+            back-loaded (stays translucent until 55%, only fully solid past
+            85%) so it doesn't swallow Scene 2's artwork before it gets a
+            chance to show — same start/end colors, just more patient. */}
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(to_bottom,transparent_0%,rgba(140,106,45,0.15)_55%,#12271D_85%,#0A1F16_100%)] sm:h-56 lg:h-72" />
         <div className="absolute inset-x-0 bottom-0 h-28 bg-[radial-gradient(ellipse_60%_100%_at_50%_100%,rgba(200,164,77,0.14),transparent_75%)]" />
 
         {/* Gold stitch — the single, intentional mark of the handoff */}
@@ -668,3 +692,4 @@ function GalleryLightbox({
     </AnimatePresence>
   );
 }
+
