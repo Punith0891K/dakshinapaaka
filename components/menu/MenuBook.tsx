@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import MenuCover from "./MenuCover";
 import MenuCoverInside from "./MenuCoverInside";
 import MenuPages from "./MenuPages";
+import { useIsTouchDevice } from "@/lib/useIsTouchDevice";
 
 interface Props {
   onOpen: () => void;
@@ -30,10 +31,26 @@ function useIsDesktopViewport() {
 }
 
 export default function MenuBook({ onOpen }: Props) {
+  // Deliberately self-contained: this component does NOT take any prop
+  // reflecting whether the fullscreen modal is open. An earlier version
+  // tried that (to play a closing flip synced with the modal), but it
+  // depends on a parent correctly threading a live boolean through two
+  // components, and across a few rounds that wiring kept drifting out of
+  // sync in practice — the book got stuck open with no way to re-open it,
+  // which is a much worse bug than "the close isn't fancy." Tap open,
+  // auto-close shortly after (same as the flip's own timing), tap open
+  // again — always works, nothing external required.
   const [opening, setOpening] = useState(false);
   const openTimer = useRef<number | null>(null);
   const reduceMotion = useReducedMotion();
   const isDesktop = useIsDesktopViewport();
+  // Real hover doesn't exist on touch, but plenty of mobile browsers fire a
+  // synthetic hover on tap anyway — which used to leave the cover stuck
+  // mid-tilt (rotateY/rotateX/y offset) until some unrelated later tap
+  // cleared it. Scoping the 3D tilt to non-touch input fixes that and also
+  // skips a moderately expensive transform on exactly the devices least
+  // able to spare it. The press feedback (whileTap) still applies everywhere.
+  const isTouch = useIsTouchDevice();
 
   // The open flip pivots the cover from its left edge (transformOrigin:
   // "left center"), so at -165deg it swings almost all the way flat,
@@ -104,7 +121,8 @@ export default function MenuBook({ onOpen }: Props) {
           -translate-x-1/2
           rounded-full
           bg-black
-          blur-3xl
+          blur-2xl
+          sm:blur-3xl
         "
       />
 
@@ -130,7 +148,8 @@ export default function MenuBook({ onOpen }: Props) {
     -translate-y-1/2
     rounded-full
     bg-[#D6B15A]/35
-    blur-3xl
+    blur-2xl
+    sm:blur-3xl
     -z-10
   "
 />
@@ -183,13 +202,17 @@ export default function MenuBook({ onOpen }: Props) {
           tabIndex={0}
           aria-label="Open the full digital menu"
           data-testid="menu-book-open"
-        whileHover={{
-  rotateY: -10,
-  rotateX: 6,
-  rotateZ: -1,
-  y: -15,
-  scale: 1.03,
-}}
+        whileHover={
+  isTouch
+    ? undefined
+    : {
+        rotateY: -10,
+        rotateX: 6,
+        rotateZ: -1,
+        y: -15,
+        scale: 1.03,
+      }
+}
           whileTap={{
             scale: 0.99,
           }}

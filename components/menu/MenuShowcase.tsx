@@ -2,12 +2,18 @@
 
 import { motion } from "framer-motion";
 import MenuBook from "./MenuBook";
+import { useIsTouchDevice } from "@/lib/useIsTouchDevice";
 
 interface Props {
   onOpen: () => void;
 }
 
 export default function MenuShowcase({ onOpen }: Props) {
+  // Same reasoning as the hover tilt in MenuBook: skip the hover-only glow
+  // gesture on touch so a tap can't leave it stuck "hovered" until some
+  // later unrelated tap clears it.
+  const isTouch = useIsTouchDevice();
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 40 }}
@@ -52,7 +58,14 @@ export default function MenuShowcase({ onOpen }: Props) {
     >
       {/* Ambient Glow keyframes (CSS-driven so these infinite pulses run on
           the compositor thread instead of competing with the 3D book's
-          transforms for main-thread time — same pulse, same timing) */}
+          transforms for main-thread time — same pulse, same timing).
+
+          The pulsing scale/opacity loop is a nice ambient touch, but it's
+          an always-on compositor cost for as long as this section stays
+          mounted — worth paying on desktop where there's headroom, not
+          worth it on the phones most visitors are actually using. Below
+          `lg`, both glows render static (still visible, just not
+          breathing) instead of animating. */}
       <style>{`
         @keyframes dp-glow-main {
           0%, 100% { transform: scale(1); opacity: 0.25; }
@@ -61,6 +74,10 @@ export default function MenuShowcase({ onOpen }: Props) {
         @keyframes dp-glow-emerald {
           0%, 100% { transform: scale(1); opacity: 0.2; }
           50% { transform: scale(1.05); opacity: 0.35; }
+        }
+        @media (min-width: 1024px) {
+          .dp-glow-main { animation: dp-glow-main 5s ease-in-out infinite; }
+          .dp-glow-emerald { animation: dp-glow-emerald 4s ease-in-out infinite; }
         }
       `}</style>
 
@@ -77,22 +94,19 @@ export default function MenuShowcase({ onOpen }: Props) {
         was never clipped anyway (matches the untouched desktop look).
       */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[32px] lg:overflow-visible lg:rounded-none">
-        {/* Main Ambient Glow */}
+        {/* Main Ambient Glow — blur radius steps up with viewport size
+            (was a flat 130px down to the smallest phones; that's a heavy
+            GPU blur to run continuously on hardware with the least room
+            for it). */}
         <div
-          className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#D4AF37]/15 blur-[130px] sm:h-[560px] sm:w-[560px] lg:h-[720px] lg:w-[720px] lg:blur-[170px] xl:h-[820px] xl:w-[820px]"
-          style={{
-            animation: "dp-glow-main 5s ease-in-out infinite",
-            willChange: "transform, opacity",
-          }}
+          className="dp-glow-main absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#D4AF37]/15 blur-[70px] sm:h-[560px] sm:w-[560px] sm:blur-[110px] lg:h-[720px] lg:w-[720px] lg:blur-[170px] xl:h-[820px] xl:w-[820px]"
+          style={{ willChange: "transform, opacity" }}
         />
 
         {/* Emerald Glow */}
         <div
-          className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0F5B43]/18 blur-[90px] sm:h-[380px] sm:w-[380px] lg:h-[500px] lg:w-[500px] lg:blur-[120px] xl:h-[560px] xl:w-[560px]"
-          style={{
-            animation: "dp-glow-emerald 4s ease-in-out infinite",
-            willChange: "transform, opacity",
-          }}
+          className="dp-glow-emerald absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0F5B43]/18 blur-[50px] sm:h-[380px] sm:w-[380px] sm:blur-[75px] lg:h-[500px] lg:w-[500px] lg:blur-[120px] xl:h-[560px] xl:w-[560px]"
+          style={{ willChange: "transform, opacity" }}
         />
 
         {/* Decorative Ring */}
@@ -115,10 +129,14 @@ export default function MenuShowcase({ onOpen }: Props) {
   {/* Hover Glow */}
 
   <motion.div
-    whileHover={{
-      scale: 1.08,
-      opacity: 1,
-    }}
+    whileHover={
+      isTouch
+        ? undefined
+        : {
+            scale: 1.08,
+            opacity: 1,
+          }
+    }
     initial={{
       opacity: 0.45,
     }}

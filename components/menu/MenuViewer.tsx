@@ -13,7 +13,6 @@ import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
 
 import { menuPages } from "@/data/menu";
-import { useIsTouchDevice } from "@/lib/useIsTouchDevice";
 
 interface Props {
   page: number;
@@ -38,13 +37,21 @@ export default function MenuViewer({
   minimal = false,
 }: Props) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const isTouch = useIsTouchDevice();
-  const lastTapRef = useRef<number>(0);
+  // Tracks whether the pointer that's about to release actually dragged
+  // (swiped to change page) versus just tapped. Native click/tap events
+  // still fire right after a drag release, and without this a swipe could
+  // also pop the fullscreen lightbox open a beat later — same underlying
+  // problem the old double-tap-to-zoom workaround was dodging, solved
+  // directly instead so a single, ordinary tap can open zoom immediately.
+  const wasDraggedRef = useRef(false);
 
   const current = useMemo(() => menuPages[page], [page]);
 
   const handleSwipe = useCallback(
     (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      wasDraggedRef.current =
+        Math.abs(info.offset.x) > 10 || Math.abs(info.offset.y) > 10;
+
       if (Math.abs(info.offset.x) < Math.abs(info.offset.y)) return;
       const swipeT = 70;
       const velT = 350;
@@ -75,15 +82,16 @@ export default function MenuViewer({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxOpen, nextPage, prevPage]);
 
-  // Double-tap to zoom on touch devices.
-  const handleImageTap = useCallback(() => {
-    const now = Date.now();
-    if (now - lastTapRef.current < 320) {
-      setLightboxOpen(true);
-      lastTapRef.current = 0;
-    } else {
-      lastTapRef.current = now;
+  // Single tap/click opens the fullscreen zoom — on every input type, not
+  // just desktop. Swallows the one tap that immediately follows a real
+  // swipe (see `wasDraggedRef` above) so paging through the menu can't
+  // accidentally pop the lightbox open.
+  const openZoom = useCallback(() => {
+    if (wasDraggedRef.current) {
+      wasDraggedRef.current = false;
+      return;
     }
+    setLightboxOpen(true);
   }, []);
 
   // Preload neighbours so ← / → feels instant.
@@ -128,6 +136,17 @@ export default function MenuViewer({
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.05}
         onDragEnd={handleSwipe}
+        // MenuViewer mounts fresh every time the modal opens, so this plays
+        // once as the real "pages reveal" — the framed page rises and
+        // settles into place rather than just appearing. It's deliberately
+        // its own beat, timed just after the modal shell/chrome so the
+        // pages read as the payoff of the sequence, not one more thing
+        // popping in at the same instant. The per-page slide transition
+        // below (AnimatePresence) is unrelated and untouched — this only
+        // covers the very first reveal.
+        initial={{ opacity: 0, scale: 0.92, y: 24 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.65, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="relative flex h-full w-full items-center justify-center touch-pan-y select-none"
         data-testid="menu-viewer"
       >
@@ -160,10 +179,7 @@ export default function MenuViewer({
                 <motion.button
                   type="button"
                   key={page}
-                  onClick={() => {
-                    if (isTouch) handleImageTap();
-                    else setLightboxOpen(true);
-                  }}
+                  onClick={openZoom}
                   initial={{ opacity: 0, x: 30 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -30 }}
@@ -190,7 +206,7 @@ export default function MenuViewer({
                         <ZoomIn size={12} strokeWidth={2.2} /> Click to zoom
                       </span>
                       <span className="pointer-events-none absolute right-2.5 top-2.5 z-20 flex items-center gap-1 rounded-full bg-black/65 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.18em] text-[#F4D06F] backdrop-blur-md sm:hidden">
-                        <Maximize2 size={10} strokeWidth={2.2} /> Double-tap
+                        <Maximize2 size={10} strokeWidth={2.2} /> Tap to zoom
                       </span>
                     </>
                   )}

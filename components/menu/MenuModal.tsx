@@ -195,7 +195,7 @@ export default function MenuModal({ open, onClose }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.45 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             onClick={onClose}
             className="fixed inset-0 z-[9998] overflow-hidden bg-black/94 backdrop-blur-xl"
             data-testid="menu-modal-backdrop"
@@ -208,10 +208,17 @@ export default function MenuModal({ open, onClose }: Props) {
           {/* Modal shell — fixed to viewport, dvh-locked, no scroll */}
           <motion.div
             ref={rootRef}
-            initial={{ opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.04 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            // Rises up + settles into place on open (echoes the book cover
+            // lifting toward the viewer), and on close sinks back down
+            // rather than ballooning outward — a "returning to the book"
+            // motion that pairs with MenuBook's own closing flip, which
+            // now plays underneath at the same time. Longer + softer than
+            // before (0.45s -> 0.6s) so it reads as a considered reveal
+            // instead of a snap.
+            initial={{ opacity: 0, scale: 0.92, y: 26 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 16 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-0 z-[9999] flex flex-col overflow-hidden"
             style={{
               height: "100dvh",
@@ -233,8 +240,9 @@ export default function MenuModal({ open, onClose }: Props) {
           >
             {/* TOP BAR */}
             <motion.div
+              initial={{ opacity: 0, y: -16 }}
               animate={{ opacity: chromeOpacity, y: cinematic ? -20 : 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.35, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
               className={`${chromePointer} relative z-20 flex shrink-0 items-center justify-between gap-3 px-3 py-2.5 sm:px-6 sm:py-3.5`}
             >
               {/* Left cluster */}
@@ -308,8 +316,9 @@ export default function MenuModal({ open, onClose }: Props) {
 
             {/* CATEGORY CHIPS */}
             <motion.div
+              initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: chromeOpacity, y: cinematic ? -12 : 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.35, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
               className={`${chromePointer} relative z-20 shrink-0`}
               data-testid="category-quickjump"
             >
@@ -344,7 +353,9 @@ export default function MenuModal({ open, onClose }: Props) {
             >
               {/* Left arrow */}
               <motion.button
+                initial={{ opacity: 0 }}
                 animate={{ opacity: chromeOpacity }}
+                transition={{ duration: 0.35, delay: 0.22 }}
                 onClick={prevPage}
                 disabled={page === 0}
                 aria-label="Previous page"
@@ -364,7 +375,9 @@ export default function MenuModal({ open, onClose }: Props) {
 
               {/* Right arrow */}
               <motion.button
+                initial={{ opacity: 0 }}
                 animate={{ opacity: chromeOpacity }}
+                transition={{ duration: 0.35, delay: 0.22 }}
                 onClick={nextPage}
                 disabled={page === menuPages.length - 1}
                 aria-label="Next page"
@@ -378,8 +391,9 @@ export default function MenuModal({ open, onClose }: Props) {
 
             {/* BOTTOM BAR — progress + title + thumbnails */}
             <motion.div
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: chromeOpacity, y: cinematic ? 24 : 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               className={`${chromePointer} relative z-20 shrink-0 px-3 pb-2 pt-1 sm:px-6 sm:pb-3`}
             >
               {/* Progress */}
@@ -520,3 +534,4 @@ function ActionBtn({
     </button>
   );
 }
+
