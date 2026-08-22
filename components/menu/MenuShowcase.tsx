@@ -6,9 +6,15 @@ import { useIsTouchDevice } from "@/lib/useIsTouchDevice";
 
 interface Props {
   onOpen: () => void;
+  /**
+   * Pass the exact same boolean you give <MenuModal open={...} /> — see the
+   * detailed note on MenuBook's `isMenuOpen` prop for what this does and
+   * why it has to be the live state, not a derived/one-way flag.
+   */
+  isMenuOpen?: boolean;
 }
 
-export default function MenuShowcase({ onOpen }: Props) {
+export default function MenuShowcase({ onOpen, isMenuOpen }: Props) {
   // Same reasoning as the hover tilt in MenuBook: skip the hover-only glow
   // gesture on touch so a tap can't leave it stuck "hovered" until some
   // later unrelated tap clears it.
@@ -153,7 +159,7 @@ export default function MenuShowcase({ onOpen }: Props) {
     "
   />
 
-  <MenuBook onOpen={onOpen} />
+  <MenuBook onOpen={onOpen} isMenuOpen={isMenuOpen} />
 
 </div>
 
@@ -176,4 +182,3 @@ export default function MenuShowcase({ onOpen }: Props) {
     </motion.div>
   );
 }
-

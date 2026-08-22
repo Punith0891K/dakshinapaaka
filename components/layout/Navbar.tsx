@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Leaf } from "lucide-react";
 import MobileMenu from "@/components/ui/MobileMenu";
+import { CONTACT } from "@/lib/contact";
 import {
   navItems,
   scrollToSection,
@@ -167,14 +168,22 @@ export default function Navbar() {
               />
             </Link>
 
-            {/* Mobile brand text */}
-            <div className="flex items-center gap-1.5 lg:hidden">
+            {/* Mobile brand badge — same oval pill treatment as the desktop
+                badge below (border + rounded-full + tinted fill), just
+                condensed to fit the compact mobile bar. */}
+            <div
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 shadow-sm transition-all duration-500 lg:hidden ${
+                scrolled
+                  ? "border-[#2F6B3D]/25 bg-[#F4FBF5]"
+                  : "border-white/30 bg-white/10 backdrop-blur-md"
+              }`}
+            >
               <Leaf
-                className={`h-3.5 w-3.5 ${scrolled ? "text-[#2F6B3D]" : "text-[#8ED081]"}`}
+                className={`h-3 w-3 shrink-0 ${scrolled ? "text-[#2F6B3D]" : "text-[#8ED081]"}`}
                 aria-hidden="true"
               />
               <span
-                className={`-ml-0.5 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.22em] transition-colors duration-500 ${
+                className={`whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.2em] transition-colors duration-500 ${
                   scrolled ? "text-[#2F6B3D]" : "text-white"
                 }`}
               >
@@ -257,7 +266,7 @@ export default function Navbar() {
             className="hidden items-center gap-3 lg:flex"
           >
             <motion.a
-              href="https://maps.app.goo.gl/atMDsDsLRYFA8QYS8"
+              href={CONTACT.location}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Open Dakshinapaaka's location in Google Maps (opens in a new tab)"
@@ -273,8 +282,8 @@ export default function Navbar() {
             </motion.a>
 
             <motion.a
-              href="tel:7204488784"
-              aria-label="Call Dakshinapaaka at (720) 448-8784"
+              href={CONTACT.phoneHref}
+              aria-label={`Call Dakshinapaaka at ${CONTACT.phone}`}
               whileTap={{ scale: 0.96 }}
               className={`group relative inline-flex items-center gap-2 overflow-hidden rounded-full px-7 py-3 text-[15px] font-semibold transition-all duration-500 hover:-translate-y-1 hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8A44D] ${
                 scrolled

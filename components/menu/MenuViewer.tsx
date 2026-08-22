@@ -6,6 +6,7 @@ import {
   AnimatePresence,
   motion,
   PanInfo,
+  useReducedMotion,
 } from "framer-motion";
 import { ZoomIn, Maximize2 } from "lucide-react";
 import Lightbox from "yet-another-react-lightbox";
@@ -37,6 +38,22 @@ export default function MenuViewer({
   minimal = false,
 }: Props) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
+  // Which page images have actually finished loading. Next/Image (with
+  // `fill`) renders nothing until the bytes are in, so on a slow
+  // connection or a slow device the picture used to just pop in whenever
+  // it happened to finish — abrupt, and on top of whatever else was still
+  // settling into place, that pop is a big part of what read as
+  // "flickering." Fading each image in only once it's actually ready
+  // (and remembering which ones already have, so flipping back to a page
+  // never re-triggers the fade) makes every arrival smooth regardless of
+  // how long it took.
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(
+    () => new Set()
+  );
+  const markLoaded = useCallback((src: string) => {
+    setLoadedImages((prev) => (prev.has(src) ? prev : new Set(prev).add(src)));
+  }, []);
   // Tracks whether the pointer that's about to release actually dragged
   // (swiped to change page) versus just tapped. Native click/tap events
   // still fire right after a drag release, and without this a swipe could
@@ -143,10 +160,15 @@ export default function MenuViewer({
         // pages read as the payoff of the sequence, not one more thing
         // popping in at the same instant. The per-page slide transition
         // below (AnimatePresence) is unrelated and untouched — this only
-        // covers the very first reveal.
-        initial={{ opacity: 0, scale: 0.92, y: 24 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.65, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        // covers the very first reveal. Reduced-motion gets a plain,
+        // immediate fade — no travel, no wait.
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92, y: 24 }}
+        animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+        transition={
+          reduceMotion
+            ? { duration: 0.2 }
+            : { duration: 0.65, delay: 0.2, ease: [0.22, 1, 0.36, 1] }
+        }
         className="relative flex h-full w-full items-center justify-center touch-pan-y select-none"
         data-testid="menu-viewer"
       >
@@ -168,10 +190,19 @@ export default function MenuViewer({
           Source PNGs are ~1470×1070 (landscape 1.374:1). Locking the stage
           to the exact source aspect makes each menu page fill the frame
           edge-to-edge — no black letterboxing, no wasted viewport.
+
+          Sized off `100svh`, not `100dvh` — `dvh` tracks the live mobile
+          viewport and changes the instant the browser's address bar
+          collapses/expands, which this modal itself tends to trigger (body
+          scroll gets locked right as it opens). That resized the actual
+          page image a beat after it first appeared — the "menu pages
+          flicker for a second" on real phones. `svh` is pinned to the
+          smallest the viewport ever gets, so this number never moves once
+          painted.
         */}
         <div
           className="relative max-h-full max-w-full"
-          style={{ aspectRatio: "1470 / 1070", width: "min(100%, calc((100dvh - 210px) * (1470/1070)))" }}
+          style={{ aspectRatio: "1470 / 1070", width: "min(100%, calc((100svh - 210px) * (1470/1070)))" }}
         >
           <div className="relative h-full w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#E2C46E] via-[#0F5B43] to-[#C8A44D] p-[2px] shadow-[0_25px_70px_rgba(0,0,0,.5)] sm:rounded-[28px]">
             <div className="relative h-full w-full overflow-hidden rounded-[14px] bg-[#050505] sm:rounded-[26px]">
@@ -196,7 +227,10 @@ export default function MenuViewer({
                     draggable={false}
                     quality={78}
                     sizes="(max-width: 640px) 92vw, (max-width: 1024px) 60vw, 560px"
-                    className="select-none object-contain"
+                    onLoad={() => markLoaded(current.image)}
+                    className={`select-none object-contain transition-opacity duration-300 ease-out ${
+                      loadedImages.has(current.image) ? "opacity-100" : "opacity-0"
+                    }`}
                   />
 
                   {/* Zoom affordance badges */}

@@ -6,13 +6,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { PanInfo } from "framer-motion";
-import { Menu, X, MapPin, ExternalLink, Phone } from "lucide-react";
+import { Menu, X, MapPin, ExternalLink, Phone, Leaf } from "lucide-react";
 import {
   navItems,
   scrollToSection,
   NAV_HEIGHT_SCROLLED,
   NAV_HEIGHT_MOBILE_EXPANDED,
 } from "@/lib/navigation";
+import { CONTACT } from "@/lib/contact";
 
 type MobileMenuProps = {
   scrolled: boolean;
@@ -163,12 +164,14 @@ export default function MobileMenu({ scrolled, activeSection = "Home" }: MobileM
         </motion.div>
       </button>
 
-      {/* Background overlay — a brand-tinted dark wash rather than flat
-          black, so the drawer feels like part of the same world. */}
+      {/* Background overlay. No backdrop-blur here on purpose — blurring the
+          full viewport is one of the most expensive things you can animate
+          on a mid-range phone. A tinted gradient reads almost identically
+          and costs nothing to composite. */}
       <div
         onClick={closeMenu}
         aria-hidden="true"
-        className={`fixed inset-0 z-[998] bg-gradient-to-br from-black/75 via-[#0B1F14]/75 to-black/85 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[998] bg-gradient-to-br from-black/80 via-[#0B1F14]/82 to-black/88 transition-opacity duration-300 ${
           open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
@@ -187,17 +190,24 @@ export default function MobileMenu({ scrolled, activeSection = "Home" }: MobileM
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={{ left: 0, right: 0.6 }}
             onDragEnd={handleDragEnd}
-            initial={prefersReducedMotion ? { opacity: 0 } : { x: "100%", scale: 0.97, filter: "blur(6px)" }}
-            animate={{ x: 0, scale: 1, filter: "blur(0px)", opacity: 1 }}
-            exit={prefersReducedMotion ? { opacity: 0 } : { x: "100%", scale: 0.97, filter: "blur(6px)" }}
+            // Slide + scale only — no filter/blur here. Animating a CSS
+            // blur over a large, content-heavy panel forces the browser to
+            // re-rasterize the whole subtree every frame, which is the
+            // single most common cause of a janky drawer on real devices.
+            // Scale + opacity are compositor-only and stay smooth even on
+            // low-end phones.
+            initial={prefersReducedMotion ? { opacity: 0 } : { x: "100%", scale: 0.96, opacity: 0.4 }}
+            animate={{ x: 0, scale: 1, opacity: 1 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { x: "100%", scale: 0.96, opacity: 0.4 }}
             transition={
               prefersReducedMotion
                 ? { duration: 0.2 }
-                : { type: "spring", stiffness: 260, damping: 28 }
+                : { type: "spring", stiffness: 280, damping: 30, mass: 0.9 }
             }
             className="fixed right-0 top-0 z-[999] flex h-dvh w-[90%] max-w-[410px] flex-col overflow-hidden transform-gpu will-change-transform rounded-bl-[24px] border-l border-[#C8A44D]/20 bg-[#FBF6EC] shadow-[-12px_0_35px_rgba(0,0,0,0.16)]"
           >
-            {/* Subtle decorative background */}
+            {/* Subtle decorative background — static, no animation, so it
+                costs one paint and nothing more. */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 opacity-[0.07]"
@@ -207,7 +217,9 @@ export default function MobileMenu({ scrolled, activeSection = "Home" }: MobileM
               }}
             />
 
-            {/* Top decorative gold line, with a slow shimmer sweep */}
+            {/* Top decorative gold line, with a slow shimmer sweep — a
+                single small div animating `x` (transform-only, cheap) with
+                a long pause between passes. */}
             <div
               aria-hidden="true"
               className="absolute left-0 right-0 top-0 h-[2px] overflow-hidden bg-gradient-to-r from-transparent via-[#C8A44D] to-transparent"
@@ -222,35 +234,60 @@ export default function MobileMenu({ scrolled, activeSection = "Home" }: MobileM
             </div>
 
             {/* Header */}
-            <div className="relative z-10 flex items-center justify-between px-7 pb-5 pt-7">
-              <Link
-                href="/"
-                onClick={closeMenu}
-                className="relative flex items-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C8A44D]"
-              >
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 -m-3 rounded-full"
-                  style={{
-                    background:
-                      "radial-gradient(circle, rgba(200,164,77,0.22) 0%, rgba(200,164,77,0) 72%)",
-                  }}
-                />
-                <Image
-                  src="/images/logo/dakshinapaaka.png"
-                  alt="Dakshinapaaka"
-                  width={96}
-                  height={96}
-                  className="relative h-auto w-[84px] object-contain drop-shadow-[0_4px_10px_rgba(21,63,43,0.18)]"
-                />
-              </Link>
+            <motion.div
+              initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
+              className="relative z-10 flex items-center justify-between gap-3 px-6 pb-5 pt-7"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                {/* Logo medallion — a solid cream disc with a gold ring
+                    behind the mark, so the logo has guaranteed contrast and
+                    a fixed visual size no matter how much transparent
+                    padding the source PNG itself has. */}
+                <Link
+                  href="/"
+                  onClick={closeMenu}
+                  aria-label="Dakshinapaaka Home"
+                  className="relative flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full border-2 border-[#C8A44D] bg-white shadow-[0_10px_28px_rgba(21,63,43,0.28)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C8A44D]"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 -m-3 rounded-full"
+                    style={{
+                      background:
+                        "radial-gradient(circle, rgba(200,164,77,0.28) 0%, rgba(200,164,77,0) 72%)",
+                    }}
+                  />
+                  <Image
+                    src="/images/logo/dakshinapaaka.png"
+                    alt="Dakshinapaaka"
+                    width={96}
+                    height={96}
+                    className="relative h-[60px] w-[60px] object-contain"
+                  />
+                </Link>
+
+                {/* Pure Veg badge */}
+                <div className="flex flex-col items-start gap-1 rounded-2xl border border-[#C8A44D]/50 bg-gradient-to-b from-[#153F2B] to-[#0F3423] px-3 py-2 shadow-[0_6px_18px_rgba(21,63,43,0.3)]">
+                  <div className="flex items-center gap-1.5">
+                    <Leaf size={12} strokeWidth={2} className="text-[#8ED081]" aria-hidden="true" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#E9CE85]">
+                      Pure Veg
+                    </span>
+                  </div>
+                  <span className="text-[8px] font-medium uppercase tracking-[0.18em] text-[#D4CFB8]/70">
+                    Since 2024
+                  </span>
+                </div>
+              </div>
 
               <button
                 ref={closeBtnRef}
                 type="button"
                 aria-label="Close navigation menu"
                 onClick={closeMenu}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-[#C8A44D] bg-[#153F2B] text-[#E2B955] shadow-[0_8px_25px_rgba(21,63,43,0.25)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:rotate-45 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8A44D]"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#C8A44D] bg-[#153F2B] text-[#E2B955] shadow-[0_8px_25px_rgba(21,63,43,0.25)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:rotate-45 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8A44D]"
               >
                 <motion.div
                   initial={{ rotate: -90, scale: 0, opacity: 0 }}
@@ -260,14 +297,20 @@ export default function MobileMenu({ scrolled, activeSection = "Home" }: MobileM
                   <X size={24} strokeWidth={1.6} aria-hidden="true" />
                 </motion.div>
               </button>
-            </div>
+            </motion.div>
 
             {/* Small ornament */}
-            <div aria-hidden="true" className="relative z-10 flex items-center justify-center gap-3 px-8">
+            <motion.div
+              aria-hidden="true"
+              initial={prefersReducedMotion ? false : { opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+              className="relative z-10 flex items-center justify-center gap-3 px-8"
+            >
               <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#C8A44D]" />
               <span className="text-sm text-[#C8A44D]">✦</span>
               <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#C8A44D]" />
-            </div>
+            </motion.div>
 
             {/* Navigation */}
             <nav
@@ -379,7 +422,7 @@ export default function MobileMenu({ scrolled, activeSection = "Home" }: MobileM
                 </div>
 
                 <motion.a
-                  href="https://maps.app.goo.gl/atMDsDsLRYFA8QYS8"
+                  href={CONTACT.location}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Open Dakshinapaaka's location in Google Maps (opens in a new tab)"
@@ -393,8 +436,8 @@ export default function MobileMenu({ scrolled, activeSection = "Home" }: MobileM
 
               {/* Call Now */}
               <motion.a
-                href="tel:7204488784"
-                aria-label="Call Dakshinapaaka at (720) 448-8784"
+                href={CONTACT.phoneHref}
+                aria-label={`Call Dakshinapaaka at ${CONTACT.phone}`}
                 whileTap={{ scale: 0.97 }}
                 className="group relative mt-5 flex items-center justify-center gap-3 overflow-hidden rounded-full border border-[#C8A44D] bg-[#153F2B] px-8 py-4 font-semibold tracking-wide text-white shadow-[0_12px_30px_rgba(21,63,43,0.25)] transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E2B955]"
               >
@@ -427,3 +470,4 @@ export default function MobileMenu({ scrolled, activeSection = "Home" }: MobileM
     </>
   );
 }
+

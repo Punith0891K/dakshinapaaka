@@ -10,6 +10,24 @@ import { useIsTouchDevice } from "@/lib/useIsTouchDevice";
 
 interface Props {
   onOpen: () => void;
+  /**
+   * Mirrors whether the fullscreen menu modal is currently mounted/visible
+   * — pass the SAME boolean you give to <MenuModal open={...} />, not a
+   * copy, not a "has this ever been opened" flag. The book uses it to keep
+   * its cover swung open for as long as the modal is up, and to play a
+   * real, visible closing flip once that boolean goes back to false.
+   *
+   * If this is left undefined (prop not passed at all), the book falls
+   * back to closing itself automatically a moment after opening — safe,
+   * but no synced closing flip. If it's passed but never actually returns
+   * to false when the modal closes, the book will stay open indefinitely
+   * and stop responding to taps — that's not a bug in this component, it
+   * means the value being passed here isn't the live "is the modal open"
+   * state. Double-check it's wired to the exact same variable that
+   * controls <MenuModal open={...} />, not a second piece of state that
+   * only ever gets set to true.
+   */
+  isMenuOpen?: boolean;
 }
 
 // Mirrors the `lg` breakpoint (1024px) already used throughout this file's
@@ -30,17 +48,22 @@ function useIsDesktopViewport() {
   return isDesktop;
 }
 
-export default function MenuBook({ onOpen }: Props) {
-  // Deliberately self-contained: this component does NOT take any prop
-  // reflecting whether the fullscreen modal is open. An earlier version
-  // tried that (to play a closing flip synced with the modal), but it
-  // depends on a parent correctly threading a live boolean through two
-  // components, and across a few rounds that wiring kept drifting out of
-  // sync in practice — the book got stuck open with no way to re-open it,
-  // which is a much worse bug than "the close isn't fancy." Tap open,
-  // auto-close shortly after (same as the flip's own timing), tap open
-  // again — always works, nothing external required.
+export default function MenuBook({ onOpen, isMenuOpen }: Props) {
+  // `opening` covers only the brief initial flip, from tap to hand-off.
+  // `coverOpen` is the full visual "book is open" window: the flip itself,
+  // plus the whole time the fullscreen modal is up (when `isMenuOpen` is
+  // wired correctly — see the Props doc above). Everything below that
+  // affects the cover's look keys off `coverOpen`, so it stays swung open
+  // behind the modal instead of snapping shut the moment onOpen() fires,
+  // which is what made the close feel like a hard cut.
+  //
+  // `isControlled` distinguishes "the parent says the modal is closed"
+  // from "the parent isn't telling me anything" (prop simply omitted) —
+  // those need different fallbacks, and treating them the same is what
+  // caused the book to open fine but never close in an earlier version.
   const [opening, setOpening] = useState(false);
+  const isControlled = typeof isMenuOpen === "boolean";
+  const coverOpen = opening || (isControlled && isMenuOpen);
   const openTimer = useRef<number | null>(null);
   const reduceMotion = useReducedMotion();
   const isDesktop = useIsDesktopViewport();
@@ -69,7 +92,7 @@ export default function MenuBook({ onOpen }: Props) {
   }, []);
 
   const handleOpen = useCallback(() => {
-    if (opening) return;
+    if (coverOpen) return;
 
     setOpening(true);
     // Users who prefer reduced motion (or older mobile GPUs that stutter on
@@ -78,9 +101,24 @@ export default function MenuBook({ onOpen }: Props) {
     const openDelay = reduceMotion ? 220 : 1100;
     openTimer.current = window.setTimeout(() => {
       onOpen();
-      setOpening(false);
+      if (!isControlled) {
+        // No `isMenuOpen` wiring — fall back to the safe self-timed reset
+        // instead of waiting on a signal that will never arrive.
+        setOpening(false);
+      }
+      // When controlled, deliberately NOT setOpening(false) here — the
+      // effect below hands off to `isMenuOpen` once the parent's re-render
+      // actually lands, which avoids a one-frame flash-closed race.
     }, openDelay);
-  }, [opening, onOpen, reduceMotion]);
+  }, [coverOpen, isControlled, onOpen, reduceMotion]);
+
+  // Once the modal has taken over (isMenuOpen === true), `opening` has done
+  // its job — hand off cleanly so a later `isMenuOpen` -> false transition
+  // is the ONLY thing driving the cover shut, producing one real closing
+  // flip instead of two competing resets.
+  useEffect(() => {
+    if (isControlled && isMenuOpen && opening) setOpening(false);
+  }, [isControlled, isMenuOpen, opening]);
 
   return (
 <motion.div
@@ -102,9 +140,9 @@ export default function MenuBook({ onOpen }: Props) {
 
       <motion.div
       animate={{
-    scale: opening ? 1.22 : 1,
-    opacity: opening ? 0.5 : 0.18,
-    y: opening ? 6 : 0,
+    scale: coverOpen ? 1.22 : 1,
+    opacity: coverOpen ? 0.5 : 0.18,
+    y: coverOpen ? 6 : 0,
 }}
         transition={{ duration: 0.45 }}
         className="
@@ -128,8 +166,8 @@ export default function MenuBook({ onOpen }: Props) {
 
 <motion.div
   animate={{
-    opacity: opening ? 0.45 : 0.18,
-    scale: opening ? 1.15 : 1,
+    opacity: coverOpen ? 0.45 : 0.18,
+    scale: coverOpen ? 1.15 : 1,
   }}
   transition={{
     duration: 0.8,
@@ -175,7 +213,7 @@ export default function MenuBook({ onOpen }: Props) {
     duration-700
     ease-out
 
-    ${opening ? "translate-x-[22px] sm:translate-x-[26px] lg:translate-x-0" : "translate-x-0"}
+    ${coverOpen ? "translate-x-[22px] sm:translate-x-[26px] lg:translate-x-0" : "translate-x-0"}
   `}
   style={{
     perspective: "1800px",
@@ -299,8 +337,8 @@ export default function MenuBook({ onOpen }: Props) {
           <motion.div
   className="absolute inset-0"
   animate={{
-    x: opening ? 6 : 0,
-    scaleX: opening ? 0.985 : 1,
+    x: coverOpen ? 6 : 0,
+    scaleX: coverOpen ? 0.985 : 1,
   }}
   transition={{
     duration: 0.8,
@@ -321,7 +359,7 @@ export default function MenuBook({ onOpen }: Props) {
   <motion.div
     aria-hidden
     className="pointer-events-none absolute inset-y-0 left-0 w-2/3 rounded-[30px] bg-gradient-to-r from-black/25 via-black/5 to-transparent"
-    animate={{ opacity: opening ? 1 : 0 }}
+    animate={{ opacity: coverOpen ? 1 : 0 }}
     transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
   />
 </motion.div>
@@ -329,9 +367,9 @@ export default function MenuBook({ onOpen }: Props) {
           {/* Front Cover */}
 <motion.div
   animate={{
-    rotateY: opening ? openRotateY : 0,
-    x: opening ? (isDesktop ? -2 : 0) : 0,
-    scale: opening ? (isDesktop ? 1.01 : 0.97) : 1,
+    rotateY: coverOpen ? openRotateY : 0,
+    x: coverOpen ? (isDesktop ? -2 : 0) : 0,
+    scale: coverOpen ? (isDesktop ? 1.01 : 0.97) : 1,
   }}
 
   transition={{

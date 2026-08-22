@@ -183,7 +183,7 @@ export default function Menu() {
 
           {/* RIGHT */}
 
-          <MenuShowcase onOpen={() => setOpen(true)} />
+          <MenuShowcase onOpen={() => setOpen(true)} isMenuOpen={open} />
         </div>
 
       </section>

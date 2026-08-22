@@ -18,7 +18,7 @@ export const navItems: NavItem[] = [
   { name: "Menu", href: "#menu", sectionId: "menu", icon: UtensilsCrossed },
   { name: "Gallery", href: "#gallery", sectionId: "gallery", icon: Images },
   { name: "Testimonials", href: "#testimonials", sectionId: "testimonials", icon: Quote },
-  { name: "Contact", href: "#contact", sectionId: "contact", icon: Phone },
+  { name: "Contact", href: "#footer", sectionId: "footer", icon: Phone }, // contact details live in the Footer now
 ];
 
 // Fixed header heights, kept in one place so scroll-offset math can't drift
@@ -50,12 +50,13 @@ export function scrollToSection(
 
   if (!el) {
     // Don't fail silently — fall back to a native hash jump so the click
-    // still does *something*, and warn in dev so a missing/renamed
-    // section id (e.g. "contact" vs "contact-us", or a section that
-    // hasn't been built yet) is easy to spot in the console.
-    if (process.env.NODE_ENV !== "production") {
-      console.warn(`[scrollToSection] No element with id="${sectionId}" was found on the page.`);
-    }
+    // still does *something* visible, and warn (intentionally in every
+    // environment, not just dev, since this is exactly the kind of thing
+    // that's easy to miss on a deployed site) so a missing/renamed section
+    // id is impossible to miss in the console.
+    console.warn(
+      `[Dakshinapaaka nav] No element with id="${sectionId}" exists on this page, so the click just changed the URL hash instead of scrolling. Add id="${sectionId}" to that <section>, or update it in lib/navigation.ts if the section uses a different id.`
+    );
     window.location.hash = sectionId;
     return;
   }

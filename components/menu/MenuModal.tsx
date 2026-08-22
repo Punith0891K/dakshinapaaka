@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   X,
   ChevronLeft,
@@ -50,6 +50,13 @@ export default function MenuModal({ open, onClose }: Props) {
   const [autoplay, setAutoplay] = useState(false);
   const [cinematic, setCinematic] = useState(false);
   const isTouch = useIsTouchDevice();
+  // Every other animated component in this feature (MenuBook, MenuViewer)
+  // already respects this; the modal itself was the one gap. Beyond the
+  // accessibility win, it also gives anyone who's opted for less motion —
+  // often for exactly this kind of "too much moving at once feels janky"
+  // reason — a simpler, cheaper entrance: opacity-only, no y/scale travel,
+  // no staggered delays between sections.
+  const reduceMotion = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
 
   const currentPage = useMemo(() => menuPages[page], [page]);
@@ -185,6 +192,18 @@ export default function MenuModal({ open, onClose }: Props) {
 
   const chromeOpacity = cinematic ? 0 : 1;
   const chromePointer = cinematic ? "pointer-events-none" : "pointer-events-auto";
+  // Small helpers so every chrome section (top bar, chips, arrows, bottom
+  // bar) shares one reduced-motion rule instead of six separate ternaries:
+  // travel distance and stagger delay both collapse to nothing, opacity
+  // alone still does the work.
+  const chromeY = (hiddenOffset: number) =>
+    reduceMotion ? 0 : cinematic ? hiddenOffset : 0;
+  const mountInitial = (y: number) =>
+    reduceMotion ? { opacity: 0 } : { opacity: 0, y };
+  const mountTransition = (duration: number, delay: number) =>
+    reduceMotion
+      ? { duration: 0.2 }
+      : { duration, delay, ease: [0.22, 1, 0.36, 1] as const };
 
   return (
     <AnimatePresence>
@@ -200,12 +219,13 @@ export default function MenuModal({ open, onClose }: Props) {
             className="fixed inset-0 z-[9998] overflow-hidden bg-black/94 backdrop-blur-xl"
             data-testid="menu-modal-backdrop"
           >
-            <div className="absolute left-1/4 top-1/3 h-[380px] w-[380px] rounded-full bg-[#0F5B43]/28 blur-[150px]" />
-            <div className="absolute bottom-1/4 right-1/4 h-[320px] w-[320px] rounded-full bg-[#C8A44D]/22 blur-[130px]" />
+            <div className="absolute left-1/4 top-1/3 h-[220px] w-[220px] rounded-full bg-[#0F5B43]/28 blur-[80px] sm:h-[300px] sm:w-[300px] sm:blur-[110px] lg:h-[380px] lg:w-[380px] lg:blur-[150px]" />
+            <div className="absolute bottom-1/4 right-1/4 h-[190px] w-[190px] rounded-full bg-[#C8A44D]/22 blur-[70px] sm:h-[250px] sm:w-[250px] sm:blur-[95px] lg:h-[320px] lg:w-[320px] lg:blur-[130px]" />
             <div className="absolute inset-0 bg-[radial-gradient(circle,#C8A44D18_0%,transparent_65%)]" />
           </motion.div>
 
-          {/* Modal shell — fixed to viewport, dvh-locked, no scroll */}
+          {/* Modal shell — fixed to viewport, svh-locked, no scroll.
+              (See the height note below for why svh, not dvh.) */}
           <motion.div
             ref={rootRef}
             // Rises up + settles into place on open (echoes the book cover
@@ -215,13 +235,25 @@ export default function MenuModal({ open, onClose }: Props) {
             // now plays underneath at the same time. Longer + softer than
             // before (0.45s -> 0.6s) so it reads as a considered reveal
             // instead of a snap.
-            initial={{ opacity: 0, scale: 0.92, y: 26 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 16 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92, y: 26 }}
+            animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 16 }}
+            transition={{ duration: reduceMotion ? 0.25 : 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-0 z-[9999] flex flex-col overflow-hidden"
             style={{
-              height: "100dvh",
+              // `100dvh` tracks the LIVE viewport, which on mobile changes
+              // the instant the address bar collapses/expands — something
+              // that tends to happen at exactly this moment, since locking
+              // body scroll to open the modal is itself one of the things
+              // that triggers the browser to react. The shell (and the
+              // menu page image inside MenuViewer, sized off this same
+              // number) would visibly resize a beat after opening — the
+              // "flickers for a moment" on real devices. `100svh` is fixed
+              // to the smallest the viewport ever gets, so it never moves;
+              // the small trade-off is a sliver of unused space at the
+              // bottom on the (uncommon) frames where the chrome is fully
+              // collapsed, which is far less noticeable than a resize.
+              height: "100svh",
               paddingTop: "env(safe-area-inset-top)",
               paddingBottom: "env(safe-area-inset-bottom)",
               paddingLeft: "env(safe-area-inset-left)",
@@ -240,9 +272,9 @@ export default function MenuModal({ open, onClose }: Props) {
           >
             {/* TOP BAR */}
             <motion.div
-              initial={{ opacity: 0, y: -16 }}
-              animate={{ opacity: chromeOpacity, y: cinematic ? -20 : 0 }}
-              transition={{ duration: 0.35, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+              initial={mountInitial(-16)}
+              animate={{ opacity: chromeOpacity, y: chromeY(-20) }}
+              transition={mountTransition(0.35, 0.05)}
               className={`${chromePointer} relative z-20 flex shrink-0 items-center justify-between gap-3 px-3 py-2.5 sm:px-6 sm:py-3.5`}
             >
               {/* Left cluster */}
@@ -316,9 +348,9 @@ export default function MenuModal({ open, onClose }: Props) {
 
             {/* CATEGORY CHIPS */}
             <motion.div
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: chromeOpacity, y: cinematic ? -12 : 0 }}
-              transition={{ duration: 0.35, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+              initial={mountInitial(-12)}
+              animate={{ opacity: chromeOpacity, y: chromeY(-12) }}
+              transition={mountTransition(0.35, 0.12)}
               className={`${chromePointer} relative z-20 shrink-0`}
               data-testid="category-quickjump"
             >
@@ -355,7 +387,7 @@ export default function MenuModal({ open, onClose }: Props) {
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: chromeOpacity }}
-                transition={{ duration: 0.35, delay: 0.22 }}
+                transition={mountTransition(0.35, 0.22)}
                 onClick={prevPage}
                 disabled={page === 0}
                 aria-label="Previous page"
@@ -377,7 +409,7 @@ export default function MenuModal({ open, onClose }: Props) {
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: chromeOpacity }}
-                transition={{ duration: 0.35, delay: 0.22 }}
+                transition={mountTransition(0.35, 0.22)}
                 onClick={nextPage}
                 disabled={page === menuPages.length - 1}
                 aria-label="Next page"
@@ -391,9 +423,9 @@ export default function MenuModal({ open, onClose }: Props) {
 
             {/* BOTTOM BAR — progress + title + thumbnails */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: chromeOpacity, y: cinematic ? 24 : 0 }}
-              transition={{ duration: 0.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              initial={mountInitial(20)}
+              animate={{ opacity: chromeOpacity, y: chromeY(24) }}
+              transition={mountTransition(0.4, 0.2)}
               className={`${chromePointer} relative z-20 shrink-0 px-3 pb-2 pt-1 sm:px-6 sm:pb-3`}
             >
               {/* Progress */}
@@ -534,4 +566,3 @@ function ActionBtn({
     </button>
   );
 }
-
