@@ -22,6 +22,7 @@ import {
   useCallback,
   useState,
   useEffect,
+  useRef,
   type KeyboardEvent,
 } from "react";
 
@@ -72,8 +73,30 @@ export default function About() {
   const [isPaused, setIsPaused] = useState(false);
   const [direction, setDirection] = useState(1);
   const [showSwipeHint, setShowSwipeHint] = useState(false);
+  const [isInView, setIsInView] = useState(false);
   const reduceMotion = useReducedMotion();
   const isTouch = useIsTouchDevice();
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Pause autoplay (and with it, the Ken Burns zoom + progress-bar
+  // animation) once the carousel scrolls out of view — otherwise all
+  // three keep running every 5 seconds indefinitely, even while the
+  // person is reading a completely different part of the page. That's
+  // wasted GPU/CPU work sitting in the background and a real, avoidable
+  // source of jank on lower-end phones.
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setIsInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Briefly surface a "swipe to explore" hint on touch devices so the
   // drag gesture (already supported below) is actually discoverable —
@@ -138,14 +161,14 @@ export default function About() {
   }, [reduceMotion]);
 
   useEffect(() => {
-    if (isHovered || isPaused) return;
+    if (isHovered || isPaused || !isInView) return;
 
     const interval = setInterval(() => {
       nextImage();
     }, AUTOPLAY_MS);
 
     return () => clearInterval(interval);
-  }, [isHovered, isPaused, nextImage]);
+  }, [isHovered, isPaused, isInView, nextImage]);
 
   const variants = reduceMotion
     ? {
@@ -382,6 +405,7 @@ export default function About() {
                 {/* Image */}
                 <div className="relative h-[420px] overflow-hidden rounded-[30px] shadow-[0_30px_80px_rgba(46,35,20,0.22)] sm:h-[520px] lg:h-[690px]">
                   <div
+                    ref={carouselRef}
                     role="region"
                     aria-roledescription="carousel"
                     aria-label="Restaurant interior photos"
@@ -474,7 +498,7 @@ export default function About() {
                         transition={{ duration: 0.4 }}
                         className="pointer-events-none absolute inset-x-0 bottom-24 z-20 flex justify-center sm:hidden"
                       >
-                        <span className="inline-flex items-center gap-2 rounded-full bg-black/50 px-4 py-2 text-xs font-medium text-white backdrop-blur-md">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-black/65 px-4 py-2 text-xs font-medium text-white">
                           <MoveHorizontal size={14} aria-hidden="true" />
                           Swipe to explore
                         </span>
@@ -486,7 +510,7 @@ export default function About() {
                   <button
                     onClick={prevImage}
                     aria-label="Previous photo"
-                    className="absolute left-5 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-[#174D32] hover:text-white"
+                    className="absolute left-5 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-xl transition-transform duration-300 hover:scale-110 hover:bg-[#174D32] hover:text-white"
                   >
                     <ChevronLeft className="h-6 w-6" />
                   </button>
@@ -495,7 +519,7 @@ export default function About() {
                   <button
                     onClick={nextImage}
                     aria-label="Next photo"
-                    className="absolute right-5 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-[#174D32] hover:text-white"
+                    className="absolute right-5 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-xl transition-transform duration-300 hover:scale-110 hover:bg-[#174D32] hover:text-white"
                   >
                     <ChevronRight className="h-6 w-6" />
                   </button>
@@ -505,12 +529,12 @@ export default function About() {
                     <button
                       onClick={() => setIsPaused((p) => !p)}
                       aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-all duration-300 hover:bg-[#174D32]"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white transition-colors duration-300 hover:bg-[#174D32]"
                     >
                       {isPaused ? <Play size={14} /> : <Pause size={14} />}
                     </button>
 
-                    <div className="rounded-full bg-black/40 px-4 py-2 text-sm font-semibold tracking-[0.18em] text-white backdrop-blur-md">
+                    <div className="rounded-full bg-black/60 px-4 py-2 text-sm font-semibold tracking-[0.18em] text-white">
                       {String(currentImage + 1).padStart(2, "0")} /{" "}
                       {String(interiorImages.length).padStart(2, "0")}
                     </div>
@@ -520,7 +544,7 @@ export default function About() {
                       they never collide with the floating brand card that
                       sits over the bottom-right corner. */}
                   <div className="absolute bottom-5 left-5 z-20 flex flex-col gap-2">
-                    <span className="w-fit rounded-full bg-black/40 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-white/90 backdrop-blur-md">
+                    <span className="w-fit rounded-full bg-black/60 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-white/90">
                       {INTERIOR_CAPTION}
                     </span>
 
@@ -566,30 +590,38 @@ export default function About() {
                   </div>
                 </div>
 
-                  {/* Image gradient */}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-                </div>
+                {/* Image gradient */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
               </div>
 
-              {/* Floating Brand Card — stacks below the photo on phones
-                  (no room to overlap without colliding with the caption/
-                  indicator cluster), then overlaps the bottom-right corner
-                  from `sm:` up, matching the original premium look once
-                  there's enough width to spare. */}
-              <div className="relative mx-auto mt-4 w-fit rounded-[24px] border border-[#C8A44D]/60 bg-[#173D28]/95 px-5 py-4 text-center shadow-2xl sm:absolute sm:bottom-8 sm:right-8 sm:mx-0 sm:mt-0 sm:w-auto sm:px-8 sm:py-6">
-                <div className="mb-2 text-[#D5B15B]">
-                  ✦
+                {/* Floating Brand Card — lives INSIDE the photo-frame group
+                    (not the outer wrapper) specifically so its `bottom-8
+                    right-8` resolves against the photo's own box only.
+                    It briefly drifted down and overlapped the gallery
+                    teaser below because it was a sibling of that teaser
+                    inside the outer wrapper — once the teaser added real
+                    in-flow height there, "bottom" started measuring from
+                    the bottom of photo+teaser combined instead of just the
+                    photo. Nesting it here pins it to the photo regardless
+                    of whatever else gets added below in the future.
+                    Stacks below the photo on phones (no room to overlap
+                    without colliding with the caption/indicator cluster),
+                    then overlaps the bottom-right corner from `sm:` up. */}
+                <div className="relative mx-auto mt-4 w-fit rounded-[24px] border border-[#C8A44D]/60 bg-[#173D28]/95 px-5 py-4 text-center shadow-2xl sm:absolute sm:bottom-8 sm:right-8 sm:mx-0 sm:mt-0 sm:w-auto sm:px-8 sm:py-6">
+                  <div className="mb-2 text-[#D5B15B]">
+                    ✦
+                  </div>
+
+                  <p className="font-serif text-base leading-6 text-[#E6C875] sm:text-lg">
+                    Serving Authentic
+                    <br />
+                    South Indian Cuisine
+                  </p>
+
+                  <p className="mt-3 text-[10px] font-semibold uppercase tracking-[3px] text-[#D5B15B] sm:text-xs">
+                    Made with Love
+                  </p>
                 </div>
-
-                <p className="font-serif text-base leading-6 text-[#E6C875] sm:text-lg">
-                  Serving Authentic
-                  <br />
-                  South Indian Cuisine
-                </p>
-
-                <p className="mt-3 text-[10px] font-semibold uppercase tracking-[3px] text-[#D5B15B] sm:text-xs">
-                  Made with Love
-                </p>
               </div>
 
               {/* More from our gallery — the left column runs taller than

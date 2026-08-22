@@ -50,20 +50,8 @@ function useIsDesktopViewport() {
 
 export default function MenuBook({ onOpen, isMenuOpen }: Props) {
   // `opening` covers only the brief initial flip, from tap to hand-off.
-  // `coverOpen` is the full visual "book is open" window: the flip itself,
-  // plus the whole time the fullscreen modal is up (when `isMenuOpen` is
-  // wired correctly — see the Props doc above). Everything below that
-  // affects the cover's look keys off `coverOpen`, so it stays swung open
-  // behind the modal instead of snapping shut the moment onOpen() fires,
-  // which is what made the close feel like a hard cut.
-  //
-  // `isControlled` distinguishes "the parent says the modal is closed"
-  // from "the parent isn't telling me anything" (prop simply omitted) —
-  // those need different fallbacks, and treating them the same is what
-  // caused the book to open fine but never close in an earlier version.
   const [opening, setOpening] = useState(false);
   const isControlled = typeof isMenuOpen === "boolean";
-  const coverOpen = opening || (isControlled && isMenuOpen);
   const openTimer = useRef<number | null>(null);
   const reduceMotion = useReducedMotion();
   const isDesktop = useIsDesktopViewport();
@@ -74,6 +62,55 @@ export default function MenuBook({ onOpen, isMenuOpen }: Props) {
   // skips a moderately expensive transform on exactly the devices least
   // able to spare it. The press feedback (whileTap) still applies everywhere.
   const isTouch = useIsTouchDevice();
+
+  // `modalGone` mirrors `isMenuOpen`, but the TRUE->FALSE edge (modal
+  // closing) is debounced while the FALSE->TRUE edge (modal opening) is
+  // instant. Reacting to a close the moment `isMenuOpen` flips would start
+  // the book's ~0.95s closing flip at the exact same instant the modal
+  // itself starts fading/shrinking away (~0.5-0.6s) — the two races, and
+  // since the modal sits on top, most of the flip plays out hidden behind
+  // it. By the time the modal is actually gone, the flip's nearly done, so
+  // the sliver you actually get to watch reads as way too fast. Waiting
+  // for the modal to clear first means the full closing flip plays where
+  // it can actually be seen.
+  const [modalGone, setModalGone] = useState(
+    () => !(isControlled && isMenuOpen)
+  );
+  const closeHandoffTimer = useRef<number | null>(null);
+  // Slightly under the modal's own exit duration (0.6s, or 0.25s under
+  // reduced motion) so the book's close begins just as the modal is
+  // finishing up rather than after a dead pause — a handoff, not a gap.
+  const closeHandoffDelay = reduceMotion ? 150 : 500;
+
+  useEffect(() => {
+    if (!isControlled) return;
+    if (isMenuOpen) {
+      if (closeHandoffTimer.current) {
+        window.clearTimeout(closeHandoffTimer.current);
+        closeHandoffTimer.current = null;
+      }
+      setModalGone(false);
+      return;
+    }
+    closeHandoffTimer.current = window.setTimeout(() => {
+      setModalGone(true);
+      closeHandoffTimer.current = null;
+    }, closeHandoffDelay);
+    return () => {
+      if (closeHandoffTimer.current) {
+        window.clearTimeout(closeHandoffTimer.current);
+        closeHandoffTimer.current = null;
+      }
+    };
+  }, [isControlled, isMenuOpen, closeHandoffDelay]);
+
+  // `coverOpen` is the full visual "book is open" window: the flip itself,
+  // plus the whole time the fullscreen modal is up (or still finishing its
+  // own close, per `modalGone` above). Everything below that affects the
+  // cover's look keys off `coverOpen`, so it stays swung open behind the
+  // modal instead of snapping shut the moment onOpen() fires, and only
+  // starts closing once the modal has actually cleared out.
+  const coverOpen = opening || (isControlled && !modalGone);
 
   // The open flip pivots the cover from its left edge (transformOrigin:
   // "left center"), so at -165deg it swings almost all the way flat,
@@ -226,6 +263,15 @@ export default function MenuBook({ onOpen, isMenuOpen }: Props) {
     // subtree's layout/counters can't leak out and affect the rest of
     // the page) without forcing a clip on transformed content.
     contain: "layout style",
+    // Mobile Safari/Chrome don't promote a 3D-transformed subtree to its
+    // own GPU compositing layer until the moment it first actually
+    // animates — so the very first flip on a fresh page load pays that
+    // promotion cost live, as a one-time flash right at the start. Every
+    // open after that reuses the already-promoted layer and is smooth,
+    // which matches "it only flickers once." Declaring willChange here
+    // (permanently, not just while animating) asks the browser to
+    // promote the layer proactively at mount instead of on first use.
+    willChange: "transform",
   }}
 >
         <motion.div
@@ -262,6 +308,7 @@ export default function MenuBook({ onOpen, isMenuOpen }: Props) {
           style={{
             transformStyle: "preserve-3d",
             backfaceVisibility: "hidden",
+            willChange: "transform",
           }}
         >
           {/* Back Cover */}
@@ -272,6 +319,7 @@ export default function MenuBook({ onOpen, isMenuOpen }: Props) {
               transform: "translateZ(-16px)",
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
+              willChange: "transform",
             }}
           >
             <MenuCover animated={false} />
@@ -292,6 +340,7 @@ export default function MenuBook({ onOpen, isMenuOpen }: Props) {
   "
   style={{
     transform: "translateZ(3px)",
+    willChange: "transform",
   }}
 >
   <div
