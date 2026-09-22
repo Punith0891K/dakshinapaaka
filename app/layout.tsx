@@ -36,14 +36,12 @@ export const metadata: Metadata = {
     title: "Dakshinapaaka Mysuru | Authentic South Indian Restaurant",
     description:
       "Authentic South Indian cuisine in Mysuru — traditional breakfasts, dosas, meals, filter coffee and more.",
-    images: [
-      {
-        url: "/images/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Dakshinapaaka South Indian Restaurant in Mysuru",
-      },
-    ],
+   images: [
+  {
+    url: "/images/hero/hero-desktop.png",
+    alt: "Dakshinapaaka South Indian Restaurant in Mysuru",
+  },
+],
   },
 
   twitter: {
@@ -51,7 +49,7 @@ export const metadata: Metadata = {
     title: "Dakshinapaaka Mysuru | Authentic South Indian Restaurant",
     description:
       "Authentic South Indian cuisine in Mysuru — traditional flavours served with warmth.",
-    images: ["/images/og-image.jpg"],
+    images: ["/images/hero/hero-desktop.png"],
   },
 
   robots: {
