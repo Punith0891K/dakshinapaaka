@@ -10,11 +10,19 @@ import heroThali from "@/public/images/food/hero-thali.png";
 interface SignatureCollectionModalProps {
   open: boolean;
   onClose: () => void;
+  /** Viewport-relative % position (0-100) the modal should scale in from —
+   *  pass the Explore button's own position so the modal feels like it grew
+   *  out of the press rather than appearing centered regardless of where
+   *  the button was. Defaults to bottom-center. */
+  originX?: number;
+  originY?: number;
 }
 
 export default function SignatureCollectionModal({
   open,
   onClose,
+  originX = 50,
+  originY = 100,
 }: SignatureCollectionModalProps) {
 
   const [activeCategory, setActiveCategory] = useState("All");
@@ -22,8 +30,19 @@ export default function SignatureCollectionModal({
   const showHero = activeCategory === "All";
 const [compactHeader, setCompactHeader] = useState(false);
 const ticking = useRef(false);
+// NOTE: the collection modal intentionally shows the FULL catalog, with no
+// exclusion for dishes already featured on the homepage. This used to be
+// `signatureDishes.slice(1)`, which drops whatever dish sits at array
+// index 0 regardless of its category — that dish turned out to be
+// "Traditional South Indian Meals" (category "Meals"), which is exactly
+// why that category looked broken. A later attempt fixed the mechanism
+// (id-based instead of position-based) but kept excluding the same dish
+// on purpose, which was still wrong: the simplest and most correct fix is
+// no exclusion at all. Every dish's `category` value matches one of the
+// filter tabs exactly (checked against the real data file), so nothing
+// else needs special-casing.
 const filteredDishes = useMemo(() => {
-  const dishes = signatureDishes.slice(1);
+  const dishes = signatureDishes;
 
   if (activeCategory === "All")
     return dishes;
@@ -66,13 +85,16 @@ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
             onClick={onClose}
           />
 
-          {/* Main Window */}
+          {/* Main Window — scales in from wherever the Explore button was
+              pressed (transformOrigin set from originX/originY) rather than
+              a generic centered pop, so opening feels connected to the
+              press instead of just appearing. */}
           <motion.div
-           
+            style={{ transformOrigin: `${originX}% ${originY}%` }}
             initial={{
               opacity: 0,
-              y: 60,
-              scale: 0.95,
+              y: 40,
+              scale: 0.88,
             }}
             animate={{
               opacity: 1,
@@ -81,13 +103,14 @@ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
             }}
             exit={{
               opacity: 0,
-              y: 30,
-              scale: 0.98,
+              y: 20,
+              scale: 0.92,
             }}
             transition={{
               type: "spring",
-              stiffness: 120,
-              damping: 20,
+              stiffness: 200,
+              damping: 26,
+              mass: 0.8,
             }}
             className="
               relative
@@ -571,16 +594,30 @@ memories.
 </h3>
 
 <div className="my-8 h-px bg-[#B8892D]/60" />
-<p
-className="
-leading-8
-text-white/80
-"
->
-Prepared fresh every day using
-authentic South Indian recipes
-and premium ingredients.
-</p>
+
+{/* Same Authentic / Fresh / Timeless stat grid as the mobile philosophy
+    card — this used to be a plain paragraph here instead, so the two
+    surfaces made two different impressions of the same card. */}
+<div className="grid grid-cols-3 gap-3">
+  <div className="text-center">
+    <p className="text-[10px] uppercase tracking-[0.2em] text-[#D9B15F]">
+      Authentic
+    </p>
+    <p className="mt-1.5 text-sm text-white/80">Recipes</p>
+  </div>
+  <div className="text-center">
+    <p className="text-[10px] uppercase tracking-[0.2em] text-[#D9B15F]">
+      Fresh
+    </p>
+    <p className="mt-1.5 text-sm text-white/80">Ingredients</p>
+  </div>
+  <div className="text-center">
+    <p className="text-[10px] uppercase tracking-[0.2em] text-[#D9B15F]">
+      Timeless
+    </p>
+    <p className="mt-1.5 text-sm text-white/80">Hospitality</p>
+  </div>
+</div>
 </div>
 
 </div>
@@ -805,13 +842,22 @@ and premium ingredients.
       )}
 
       {/* Direct DishDetailSheet — mounted at portal-level via AnimatePresence
-          so the shared-element layoutId animation glides seamlessly. */}
-      <AnimatePresence>
+          so the shared-element layoutId animation glides seamlessly.
+          `key={selectedDish.id}` is what makes switching between related
+          dishes animate at all: without it, changing `selectedDish` just
+          updates the existing DishDetailSheet's props in place (same
+          component instance, same position in the tree), so there's no
+          unmount/remount for AnimatePresence to animate — the content just
+          snapped to the new dish. `mode="wait"` sequences the old sheet's
+          exit before the new one enters instead of the two overlapping. */}
+      <AnimatePresence mode="wait">
         {selectedDish && (
           <DishDetailSheet
+            key={selectedDish.id}
             dish={selectedDish}
             onClose={() => setSelectedDish(null)}
             onSelectRelated={(d) => setSelectedDish(d)}
+            onViewFullMenu={onClose}
           />
         )}
       </AnimatePresence>

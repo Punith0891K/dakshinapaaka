@@ -26,8 +26,15 @@ export default function SignatureCollectionMobile({
     "Desserts",
   ];
 
+  // NOTE: shows the FULL catalog, no homepage-dish exclusion. This used to
+  // be `signatureDishes.slice(1)`, which drops whatever dish sits at array
+  // index 0 regardless of category — that dish is "Traditional South
+  // Indian Meals" (category "Meals"), which is exactly why that category
+  // looked broken and could crash this screen's featured-card section
+  // below. Every dish's `category` matches a filter tab exactly (checked
+  // against the real data file), so no further exclusion is needed.
   const filteredDishes = useMemo(() => {
-    const dishes = signatureDishes.slice(1);
+    const dishes = signatureDishes;
 
     if (activeCategory === "All") return dishes;
 
@@ -43,9 +50,28 @@ const featuredCard = filteredDishes[0];
 const remainingCards = filteredDishes.slice(1);
 const closeButtonRef = useRef<HTMLButtonElement>(null);
 
+// Shrinks the header on scroll, same threshold/pattern as the desktop
+// modal, so "Dakshinapaaka" + the title condense out of the way instead of
+// permanently eating ~180px of the sheet's height.
+const [compactHeader, setCompactHeader] = useState(false);
+const scrollTicking = useRef(false);
+const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  if (scrollTicking.current) return;
+  const target = e.currentTarget;
+  scrollTicking.current = true;
+  requestAnimationFrame(() => {
+    const compact = target.scrollTop > 60;
+    setCompactHeader((prev) => (prev !== compact ? compact : prev));
+    scrollTicking.current = false;
+  });
+};
+
 const handleClose = () => {
   setSelectedDish(null);
   onClose();
+  // Reset for next time the sheet opens, so it doesn't flash in already-
+  // compact if the user had scrolled before closing.
+  setCompactHeader(false);
 };
 
 // Locks page scroll while the sheet is open. Shared/reference-counted with
@@ -98,8 +124,7 @@ useEffect(() => {
               fixed
               inset-0
               z-[999]
-              bg-black/45
-              backdrop-blur-md
+              bg-black/60
               transform-gpu
               will-change-[opacity]
             "
@@ -156,51 +181,74 @@ useEffect(() => {
               "
             />
 
-            {/* Header */}
+            {/* Header — shrinks on scroll (Dakshinapaaka label always stays
+                visible, just condenses) so it doesn't permanently occupy a
+                large slice of a mobile viewport's height. */}
 <header
-  className="
+  className={`
     relative
     z-30
     shrink-0
     border-b
     border-[#E8DDBF]
     bg-[#FFFDF8]/95
-    backdrop-blur-2xl
-  "
+    backdrop-blur-sm
+    transition-[padding]
+    duration-500
+  `}
 >
-  <div className="flex min-w-0 items-start justify-between gap-4 px-5 pb-4 pt-3">
+  <div
+    className={`flex min-w-0 items-center justify-between gap-4 px-5 transition-all duration-500 ${
+      compactHeader ? "py-2.5" : "pb-4 pt-4"
+    }`}
+  >
 
     <div className="min-w-0">
 
       <p
-        className="
-          text-[10px]
+        className={`
           uppercase
-          tracking-[0.38em]
           text-[#2F6B3D]
-          sm:text-[11px]
-          sm:tracking-[0.45em]
-        "
+          transition-all
+          duration-500
+          ${
+            compactHeader
+              ? "text-[9px] tracking-[0.32em]"
+              : "text-[10px] tracking-[0.38em] sm:text-[11px] sm:tracking-[0.45em]"
+          }
+        `}
       >
         Dakshinapaaka
       </p>
 
+      {/* Tighter leading (was 0.84 — cramped the two lines together) and a
+          slightly smaller ceiling on the clamp gives the title room to
+          breathe without eating more vertical space than before. Collapses
+          to a single compact line once scrolled. */}
    <h1
   id="signature-collection-title"
-  className="
-    mt-1.5
+  className={`
     font-serif
-    text-[clamp(2.25rem,10.8vw,2.75rem)]
-    leading-[0.84]
-    tracking-[-0.03em]
     text-balance
     text-[#1C1C1C]
-    md:text-[60px]
-  "
+    transition-all
+    duration-500
+    ${
+      compactHeader
+        ? "mt-0.5 text-[20px] leading-[1.15] tracking-[-0.01em]"
+        : "mt-2 text-[clamp(2rem,9.5vw,2.5rem)] leading-[0.98] tracking-[-0.025em] md:text-[54px]"
+    }
+  `}
 >
-  Signature
-  <br />
-  Collection
+  {compactHeader ? (
+    "Signature Collection"
+  ) : (
+    <>
+      Signature
+      <br />
+      Collection
+    </>
+  )}
 </h1>
 
     </div>
@@ -210,10 +258,8 @@ useEffect(() => {
       type="button"
       onClick={handleClose}
       aria-label="Close signature collection"
-      className="
+      className={`
         flex
-        h-12
-        w-12
         shrink-0
         items-center
         justify-center
@@ -223,11 +269,13 @@ useEffect(() => {
         bg-white/70
         backdrop-blur-xl
         transition-all
+        duration-500
         active:scale-95
         transform-gpu
-      "
+        ${compactHeader ? "h-10 w-10" : "h-12 w-12"}
+      `}
     >
-      <X size={26} strokeWidth={1.8} />
+      <X size={compactHeader ? 20 : 26} strokeWidth={1.8} />
     </button>
 
   </div>
@@ -236,6 +284,7 @@ useEffect(() => {
             {/* Scroll Area */}
 
             <div
+              onScroll={handleScroll}
               className="
               flex-1
                 min-h-0
@@ -622,6 +671,7 @@ activeCategory===category
 {/* ================= MENU GRID ================= */}
 <section className="mt-10 px-5">
 
+  {featuredCard ? (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -748,6 +798,18 @@ activeCategory===category
 
 </div>
   </motion.div>
+  ) : (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="py-16 text-center"
+    >
+      <h3 className="font-serif text-2xl text-[#174D32]">Nothing here yet</h3>
+      <p className="mt-3 text-sm text-[#6B5B45]">
+        Our chefs are preparing something delicious.
+      </p>
+    </motion.div>
+  )}
 
 </section>
 <section className="mt-12 px-5 pb-10">
@@ -849,6 +911,7 @@ activeCategory===category
     fill
     src={dish.image}
     alt={dish.name}
+    sizes="50vw"
     className="object-cover transition-transform duration-500 hover:scale-105"
   />
 </motion.div>
@@ -921,12 +984,23 @@ activeCategory===category
         </>
       )}
 
-{selectedDish && (
-  <DishDetailSheet
-    dish={selectedDish}
-    onClose={() => setSelectedDish(null)}
-  />
-)}
+{/* Own AnimatePresence + key={selectedDish.id}: without these, switching
+    between related dishes ("You Might Also Love") just updated the
+    existing sheet's props in place instead of unmounting/remounting it —
+    so there was nothing for AnimatePresence to animate and it just
+    snapped to the new dish. Also, onSelectRelated was never passed at
+    all here, so tapping a related dish silently did nothing regardless. */}
+<AnimatePresence mode="wait">
+  {selectedDish && (
+    <DishDetailSheet
+      key={selectedDish.id}
+      dish={selectedDish}
+      onClose={() => setSelectedDish(null)}
+      onSelectRelated={(d) => setSelectedDish(d)}
+      onViewFullMenu={handleClose}
+    />
+  )}
+</AnimatePresence>
     </AnimatePresence>
     </LayoutGroup>
   );

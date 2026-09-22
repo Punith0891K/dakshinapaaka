@@ -19,6 +19,11 @@ export default function SignatureDishes() {
   const [openCollection, setOpenCollection] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [selectedDish, setSelectedDish] = useState<SignatureDish | null>(null);
+  // Where the "Explore" button was pressed, as a viewport % — passed to the
+  // desktop modal so it scales in from that point instead of a generic
+  // centered pop. Defaults to bottom-center (roughly where the button
+  // always sits) so the very first paint before any click is reasonable.
+  const [collectionOrigin, setCollectionOrigin] = useState({ x: 50, y: 100 });
 
   const homepageDishes = useMemo(
     () => signatureDishes.filter((dish) => [1, 2, 5, 6].includes(dish.id)),
@@ -260,7 +265,14 @@ export default function SignatureDishes() {
                 type="button"
                 aria-haspopup="dialog"
                 data-testid="explore-more-signature-btn"
-                onClick={() => setOpenCollection(true)}
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setCollectionOrigin({
+                    x: ((rect.left + rect.width / 2) / window.innerWidth) * 100,
+                    y: ((rect.top + rect.height / 2) / window.innerHeight) * 100,
+                  });
+                  setOpenCollection(true);
+                }}
                 className="group mx-auto mt-8 flex max-w-full items-center justify-center gap-3 whitespace-nowrap rounded-full bg-[#174D32] px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-white shadow-[0_14px_35px_rgba(23,77,50,0.25)] transition-all duration-500 hover:-translate-y-1 hover:bg-[#1E5C3A] hover:shadow-[0_22px_50px_rgba(23,77,50,0.35)] sm:inline-flex sm:px-10 sm:py-5 sm:text-sm sm:tracking-[0.18em] transform-gpu"
               >
                 Explore More Signature Dishes
@@ -294,6 +306,8 @@ export default function SignatureDishes() {
         <SignatureCollectionModal
           open={openCollection}
           onClose={() => setOpenCollection(false)}
+          originX={collectionOrigin.x}
+          originY={collectionOrigin.y}
         />
       )}
 

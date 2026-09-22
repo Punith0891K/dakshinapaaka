@@ -7,12 +7,14 @@ import Gallery from "@/components/sections/Gallery";
 import Testimonials from "@/components/sections/Testimonials";
 import Footer from "@/components/layout/Footer";
 import FloatingMenuButton from "@/components/ui/FloatingMenuButton";
+import StructuredData from "@/app/structured-data";
 // import WhyChooseUs from "@/components/sections/WhyChooseUs";
 // import Contact from "@/components/sections/Contact";
 
 export default function Home() {
   return (
     <>
+    <StructuredData />
       <Navbar />
 
 <main>

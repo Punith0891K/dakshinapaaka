@@ -14,23 +14,68 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Dakshinapaaka | Authentic South Indian Cuisine",
-  description:
-    "Experience authentic South Indian cuisine in Mysuru with traditional recipes, warm hospitality, and a premium dining experience.",
-};
+  metadataBase: new URL("https://dakshinapaakamysuru.in"),
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${playfair.variable} ${poppins.variable} bg-[#FAF7F2] text-[#181818] antialiased`}
-      >
-        {children}
-      </body>
-    </html>
-  );
-}
+  title: {
+    default: "Dakshinapaaka Mysuru | Authentic South Indian Restaurant",
+    template: "%s | Dakshinapaaka Mysuru",
+  },
+
+  description:
+    "Dakshinapaaka is a South Indian vegetarian restaurant in Mysuru serving authentic dosas, idli, vada, traditional Karnataka dishes, meals, filter coffee and more.",
+
+  keywords: [
+    "Dakshinapaaka Mysuru",
+    "Dakshina Paaka Mysuru",
+    "South Indian restaurant in Mysuru",
+    "South Indian food Mysuru",
+    "vegetarian restaurant Mysuru",
+    "restaurant in Nazarbad Mysuru",
+    "Mysore masala dosa",
+    "South Indian breakfast Mysuru",
+    "Karnataka food Mysuru",
+    "authentic South Indian restaurant Mysore",
+  ],
+
+  alternates: {
+    canonical: "https://dakshinapaakamysuru.in/",
+  },
+
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://dakshinapaakamysuru.in/",
+    siteName: "Dakshinapaaka",
+    title: "Dakshinapaaka Mysuru | Authentic South Indian Restaurant",
+    description:
+      "Authentic South Indian cuisine in Mysuru — traditional breakfasts, dosas, meals, filter coffee and more.",
+    images: [
+      {
+        url: "/images/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Dakshinapaaka South Indian Restaurant in Mysuru",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Dakshinapaaka Mysuru | Authentic South Indian Restaurant",
+    description:
+      "Authentic South Indian cuisine in Mysuru — traditional flavours served with warmth.",
+    images: ["/images/og-image.jpg"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};

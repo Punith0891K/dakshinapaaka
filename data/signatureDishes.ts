@@ -113,7 +113,7 @@ export const signatureDishes: SignatureDish[] = [
       "A crisp golden dosa layered with authentic Mysore chutney and filled with flavourful potato masala, served alongside fresh chutneys and hot sambar.",
     image: "/images/food/food5.png",
     spiceLevel: 2,
-    prepTime: "15 min",
+    prepTime: "4 min",
     servingSize: "1 dosa",
     dietary: ["Veg", "Contains Dairy"],
     ingredients: [

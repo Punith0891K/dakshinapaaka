@@ -1,17 +1,27 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useMotionValue, useTransform, type Variants } from "framer-motion";
-import { X, Flame, Clock, Users, Leaf, ChefHat, Sparkles } from "lucide-react";
+import { AnimatePresence, motion, useMotionValue, useTransform, type Variants } from "framer-motion";
+import { X, Flame, Clock, Users, Leaf, ChefHat, Sparkles, Maximize2 } from "lucide-react";
 import { signatureDishes, type SignatureDish } from "@/data/signatureDishes";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useScrollLock } from "@/lib/useScrollLock";
+import { scrollToSection, NAV_HEIGHT_SCROLLED } from "@/lib/navigation";
 
 interface DishDetailSheetProps {
   dish: SignatureDish;
   onClose: () => void;
   /** Optional callback so the sheet can jump to a related dish inline. */
   onSelectRelated?: (dish: SignatureDish) => void;
+  /**
+   * Called (in addition to onClose) when "View in Full Menu" is pressed.
+   * When this sheet is opened from inside the Signature Collection modal/
+   * sheet, pass that overlay's own onClose here so it closes too — without
+   * it, the click only closed this sheet, leaving the collection overlay
+   * open (and the page scroll-locked) so the page never actually scrolled
+   * to #menu. Leave unset when there's no parent overlay to close.
+   */
+  onViewFullMenu?: () => void;
 }
 
 // A slow, weighted "easeOutExpo"-style curve. The deceleration reads as
@@ -61,6 +71,7 @@ export default function DishDetailSheet({
   dish,
   onClose,
   onSelectRelated,
+  onViewFullMenu,
 }: DishDetailSheetProps) {
   // Swipe-down-to-dismiss (mobile). The sheet content stays visible while
   // the user drags — release past 120px OR fast downward velocity closes.
@@ -72,6 +83,19 @@ export default function DishDetailSheet({
   // sheet was rendering at its final position from the very first frame.
   const dragY = useMotionValue(0);
   const sheetScale = useTransform(dragY, [0, 400], [1, 0.96]);
+
+  // Full-screen image viewer. Its own boolean, separate from the sheet's
+  // open/close — the sheet stays mounted underneath while this is open.
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxOpen]);
 
   // Lock body scroll while open. Shared/reference-counted with the sheet(s)
   // this can be nested inside (mobile collection sheet, safety lock on the
@@ -88,6 +112,18 @@ export default function DishDetailSheet({
         .slice(0, 3),
     [dish.id, dish.category]
   );
+
+  // Closes this sheet, closes any parent overlay (Collection modal/sheet),
+  // then scrolls to the Menu section once both have had a moment to
+  // animate out and release the scroll lock.
+  const handleViewFullMenu = () => {
+    onClose();
+    onViewFullMenu?.();
+    window.setTimeout(
+      () => scrollToSection("menu", NAV_HEIGHT_SCROLLED),
+      onViewFullMenu ? 380 : 60
+    );
+  };
 
   return (
     <>
@@ -150,11 +186,21 @@ export default function DishDetailSheet({
 
         {/* Scrollable body */}
         <div className="relative flex-1 overflow-y-auto overscroll-contain">
-          {/* Hero image */}
+          {/* Hero image — click/tap to open a full-screen viewer */}
           <motion.div
             layoutId={`dish-image-${dish.id}`}
             transition={{ type: "spring", stiffness: 210, damping: 30 }}
-            className="relative h-[260px] overflow-hidden sm:h-[320px]"
+            className="group/hero relative h-[260px] cursor-zoom-in overflow-hidden sm:h-[320px]"
+            onClick={() => setLightboxOpen(true)}
+            role="button"
+            tabIndex={0}
+            aria-label={`View full-size photo of ${dish.name}`}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setLightboxOpen(true);
+              }
+            }}
           >
             {/* Slow Ken Burns settle — independent of the layout move so the
                 shared-element transition stays crisp while the image itself
@@ -171,10 +217,18 @@ export default function DishDetailSheet({
                 alt={dish.name}
                 sizes="(max-width: 640px) 100vw, 640px"
                 priority
-                className="object-cover object-[center_40%]"
+                className="object-cover object-[center_40%] transition-transform duration-500 group-hover/hero:scale-[1.03]"
               />
             </motion.div>
             <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F0F]/85 via-[#0F0F0F]/25 to-transparent" />
+
+            {/* Expand affordance — makes the image's clickability obvious */}
+            <div
+              aria-hidden="true"
+              className="absolute right-5 bottom-5 flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white opacity-80 backdrop-blur-md transition-all duration-300 group-hover/hero:opacity-100 group-hover/hero:scale-110"
+            >
+              <Maximize2 size={15} strokeWidth={2} />
+            </div>
 
             {/* Category chip */}
             <motion.div
@@ -398,15 +452,15 @@ export default function DishDetailSheet({
             transition={{ duration: 0.6, ease: LUXE_EASE }}
             className="mx-5 mb-8 flex flex-col gap-3 sm:mx-8 sm:flex-row"
           >
-            <a
-              href="#menu"
-              onClick={onClose}
+            <button
+              type="button"
+              onClick={handleViewFullMenu}
               data-testid={`view-in-menu-${dish.id}`}
               className="group flex flex-1 items-center justify-center gap-2 rounded-full bg-[#174D32] px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[0_14px_35px_rgba(23,77,50,0.25)] transition-all duration-300 hover:-translate-y-[1px] hover:bg-[#1E5C3A] hover:shadow-[0_22px_45px_rgba(23,77,50,0.35)] transform-gpu"
             >
               View in Full Menu
               <span className="transition-transform duration-300 group-hover:translate-x-1 transform-gpu">→</span>
-            </a>
+            </button>
             <a
               href="https://maps.app.goo.gl/ZU5dS9ytqPs8meV27"
               target="_blank"
@@ -420,6 +474,54 @@ export default function DishDetailSheet({
         </div>
       </motion.div>
       </motion.div>
+
+      {/* Full-screen image viewer */}
+      <AnimatePresence>
+        {lightboxOpen && (
+          <motion.div
+            key="lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={() => setLightboxOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Full-size photo of ${dish.name}`}
+            className="fixed inset-0 z-[1400] flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm sm:p-10"
+          >
+            <motion.button
+              type="button"
+              onClick={() => setLightboxOpen(false)}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+              whileTap={{ scale: 0.92 }}
+              className="absolute right-5 top-5 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-xl"
+              aria-label="Close image viewer"
+            >
+              <X size={20} strokeWidth={2} />
+            </motion.button>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.3, ease: LUXE_EASE }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative h-full w-full max-w-4xl"
+            >
+              <Image
+                src={dish.image}
+                alt={dish.name}
+                fill
+                sizes="100vw"
+                className="object-contain"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
