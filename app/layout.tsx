@@ -24,19 +24,6 @@ export const metadata: Metadata = {
   description:
     "Dakshinapaaka is a South Indian vegetarian restaurant in Mysuru serving authentic dosas, idli, vada, traditional Karnataka dishes, meals, filter coffee and more.",
 
-  keywords: [
-    "Dakshinapaaka Mysuru",
-    "Dakshina Paaka Mysuru",
-    "South Indian restaurant in Mysuru",
-    "South Indian food Mysuru",
-    "vegetarian restaurant Mysuru",
-    "restaurant in Nazarbad Mysuru",
-    "Mysore masala dosa",
-    "South Indian breakfast Mysuru",
-    "Karnataka food Mysuru",
-    "authentic South Indian restaurant Mysore",
-  ],
-
   alternates: {
     canonical: "https://dakshinapaakamysuru.in/",
   },
@@ -79,3 +66,19 @@ export const metadata: Metadata = {
     },
   },
 };
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body
+        className={`${playfair.variable} ${poppins.variable} bg-[#FAF7F2] text-[#181818] antialiased`}
+      >
+        {children}
+      </body>
+    </html>
+  );
+}
