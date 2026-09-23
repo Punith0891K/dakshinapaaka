@@ -4,7 +4,6 @@ export default function StructuredData() {
   const data = {
     "@context": "https://schema.org",
     "@type": "Restaurant",
-
     "@id": "https://dakshinapaakamysuru.in/#restaurant",
 
     name: "Dakshinapaaka",
@@ -13,11 +12,10 @@ export default function StructuredData() {
     url: "https://dakshinapaakamysuru.in/",
 
     telephone: CONTACT.phone,
-
     email: CONTACT.email,
 
     image: [
-      "https://dakshinapaakamysuru.in/images/og-image.jpg",
+      "https://dakshinapaakamysuru.in/images/logo/logo.png",
     ],
 
     description:
@@ -28,8 +26,6 @@ export default function StructuredData() {
       "Karnataka",
       "Vegetarian",
     ],
-
-    priceRange: "₹₹",
 
     address: {
       "@type": "PostalAddress",

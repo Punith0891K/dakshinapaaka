@@ -25,23 +25,23 @@ export const metadata: Metadata = {
     "Dakshinapaaka is a South Indian vegetarian restaurant in Mysuru serving authentic dosas, idli, vada, traditional Karnataka dishes, meals, filter coffee and more.",
 
   alternates: {
-    canonical: "https://dakshinapaakamysuru.in/",
+    canonical: "/",
   },
 
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://dakshinapaakamysuru.in/",
+    url: "/",
     siteName: "Dakshinapaaka",
     title: "Dakshinapaaka Mysuru | Authentic South Indian Restaurant",
     description:
       "Authentic South Indian cuisine in Mysuru — traditional breakfasts, dosas, meals, filter coffee and more.",
-   images: [
-  {
-    url: "/images/hero/hero-desktop.png",
-    alt: "Dakshinapaaka South Indian Restaurant in Mysuru",
-  },
-],
+    images: [
+      {
+        url: "/images/hero/hero-desktop.png",
+        alt: "Dakshinapaaka South Indian Restaurant in Mysuru",
+      },
+    ],
   },
 
   twitter: {

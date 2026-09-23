@@ -297,10 +297,11 @@ export default function About() {
             {/* Description */}
             <FadeIn delay={0.3}>
               <p className="mx-auto mt-8 max-w-2xl text-center text-base leading-8 text-[#4B4B4B] sm:text-lg lg:mx-0 lg:text-left lg:leading-9">
-                At Dakshinapaaka, every meal celebrates the rich culinary
-                heritage of South India. Our chefs prepare each dish using
-                authentic recipes, premium ingredients, and time-honoured
-                cooking techniques to create an unforgettable dining experience.
+At Dakshinapaaka, every meal celebrates the rich culinary
+heritage of South India. Located in the heart of Mysuru, our
+restaurant serves authentic South Indian cuisine prepared with
+traditional recipes, fresh ingredients, and time-honoured
+cooking techniques.
               </p>
             </FadeIn>
 
