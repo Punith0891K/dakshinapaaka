@@ -181,40 +181,7 @@ export default function Footer() {
   }, [reduceMotion]);
 
   // Restaurant structured data — reuses the same address, hours and rating
-  // already shown on the page, so search engines can surface it directly.
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "Restaurant",
-    name: "Dakshina Paaka",
-    servesCuisine: "South Indian",
-    telephone: CONTACT.phone,
-    email: CONTACT.email,
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: "Mysuru",
-      addressRegion: "Karnataka",
-      addressCountry: "IN",
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: 4.2,
-      reviewCount: 1717,
-    },
-    openingHoursSpecification: HOURS.map((h) => {
-      const [openStr, closeStr] = h.time.split("–").map((s) => s.trim());
-      const dayOfWeek =
-        h.day === "Mon – Fri"
-          ? ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-          : [h.day];
-      return {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek,
-        opens: minutesToClock24(parseClockToMinutes(openStr)),
-        closes: minutesToClock24(parseClockToMinutes(closeStr)),
-      };
-    }),
-    sameAs: [CONTACT.instagram, CONTACT.location],
-  };
+
 
   return (
     <footer
@@ -222,10 +189,7 @@ export default function Footer() {
       data-testid="footer"
       className="relative isolate overflow-hidden bg-[#050E0A] pt-16 pb-8 text-[#EFE5CB] sm:pt-20"
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+   
 
       {/* ================== BACKGROUND ================== */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
