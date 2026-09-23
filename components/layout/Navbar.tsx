@@ -100,13 +100,13 @@ export default function Navbar() {
   );
 
   return (
-    <header
-      className={`fixed left-0 right-0 top-0 z-50 transition-all duration-500 ease-out ${
-        scrolled
-          ? "border-b border-[#C8A44D]/25 bg-[#FBF3E3]/85 backdrop-blur-2xl shadow-[0_12px_45px_rgba(66,49,20,0.10)]"
-          : "bg-gradient-to-b from-black/45 to-transparent"
-      }`}
-    >
+ <header
+  className={`fixed left-0 right-0 z-50 transition-all duration-500 ease-out ${
+    scrolled
+      ? "top-0 border-b border-[#C8A44D]/25 bg-[#FBF3E3]/85 backdrop-blur-2xl shadow-[0_12px_45px_rgba(66,49,20,0.10)]"
+      : "top-[72px] sm:top-[50px] bg-gradient-to-b from-black/45 to-transparent"
+  }`}
+>
       {/* Gold hairline — always present, brightens once scrolled */}
       <div
         aria-hidden="true"
